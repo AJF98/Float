@@ -655,6 +655,46 @@ function getRequestUserId(req: any): string | undefined {
   return undefined;
 }
 
+async function ensureRequestUserExists(req: any, userId: string): Promise<void> {
+  const existingUser = await storage.getUser(userId);
+  if (existingUser) {
+    return;
+  }
+
+  const claims = req.user?.claims ?? {};
+  const rawEmail =
+    claims.email ??
+    req.user?.email ??
+    req.session?.email;
+
+  const normalizedEmail =
+    typeof rawEmail === "string" && rawEmail.trim().length > 0
+      ? rawEmail.trim().toLowerCase()
+      : `${userId.replace(/[^a-zA-Z0-9._-]/g, "-")}@placeholder.local`;
+
+  const firstName =
+    typeof claims.first_name === "string" && claims.first_name.trim().length > 0
+      ? claims.first_name.trim()
+      : typeof req.user?.firstName === "string" && req.user.firstName.trim().length > 0
+        ? req.user.firstName.trim()
+        : null;
+
+  const lastName =
+    typeof claims.last_name === "string" && claims.last_name.trim().length > 0
+      ? claims.last_name.trim()
+      : typeof req.user?.lastName === "string" && req.user.lastName.trim().length > 0
+        ? req.user.lastName.trim()
+        : null;
+
+  await storage.upsertUser({
+    id: userId,
+    email: normalizedEmail,
+    firstName,
+    lastName,
+    authProvider: typeof req.session?.authProvider === "string" ? req.session.authProvider : null,
+  });
+}
+
 const DEMO_USER_ID = "demo-user";
 const demoUserSeed = {
   id: DEMO_USER_ID,
@@ -1252,6 +1292,8 @@ export function setupRoutes(app: Express) {
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
+
+      await ensureRequestUserExists(req, userId);
 
       const parseDate = (value: unknown): Date | null => {
         if (value instanceof Date) {
