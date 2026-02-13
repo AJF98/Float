@@ -2338,6 +2338,52 @@ export class DatabaseStorage implements IStorage {
 
   private tripMembersCompatInitialized = false;
 
+  private userLegacyPaymentCompatInitPromise: Promise<void> | null = null;
+
+  private userLegacyPaymentCompatInitialized = false;
+
+  private async ensureUserLegacyPaymentCompatibility(): Promise<void> {
+    if (this.userLegacyPaymentCompatInitialized) {
+      return;
+    }
+
+    if (this.userLegacyPaymentCompatInitPromise) {
+      await this.userLegacyPaymentCompatInitPromise;
+      return;
+    }
+
+    this.userLegacyPaymentCompatInitPromise = (async () => {
+      await query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS cash_app_username_legacy TEXT`,
+      );
+      await query(
+        `ALTER TABLE users ADD COLUMN IF NOT EXISTS cash_app_phone_legacy TEXT`,
+      );
+
+      await query(`
+        UPDATE users
+        SET cash_app_username_legacy = cash_app_username
+        WHERE cash_app_username_legacy IS NULL
+          AND cash_app_username IS NOT NULL
+      `);
+
+      await query(`
+        UPDATE users
+        SET cash_app_phone_legacy = cash_app_phone
+        WHERE cash_app_phone_legacy IS NULL
+          AND cash_app_phone IS NOT NULL
+      `);
+
+      this.userLegacyPaymentCompatInitialized = true;
+    })();
+
+    try {
+      await this.userLegacyPaymentCompatInitPromise;
+    } finally {
+      this.userLegacyPaymentCompatInitPromise = null;
+    }
+  }
+
   private async ensureTripMembersCompatibility(): Promise<void> {
     if (this.tripMembersCompatInitialized) {
       return;
@@ -3978,6 +4024,7 @@ export class DatabaseStorage implements IStorage {
     tripId: number,
   ): Promise<TripWithCreatorRow | undefined> {
     await this.ensureCoverPhotoColumns();
+    await this.ensureUserLegacyPaymentCompatibility();
 
     const { rows } = await query<TripWithCreatorRow>(
       `
@@ -4049,6 +4096,7 @@ export class DatabaseStorage implements IStorage {
     shareCode: string,
   ): Promise<TripWithCreatorRow | undefined> {
     await this.ensureCoverPhotoColumns();
+    await this.ensureUserLegacyPaymentCompatibility();
 
     const { rows } = await query<TripWithCreatorRow>(
       `
@@ -4112,6 +4160,7 @@ export class DatabaseStorage implements IStorage {
     tripId: number,
   ): Promise<(TripMember & { user: User })[]> {
     await this.ensureTripMembersCompatibility();
+    await this.ensureUserLegacyPaymentCompatibility();
     const { rows } = await query<TripMemberWithUserRow>(
       `
       SELECT
