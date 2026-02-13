@@ -3093,6 +3093,7 @@ export class DatabaseStorage implements IStorage {
       await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS cost DECIMAL`);
       await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS max_capacity INTEGER`);
       await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS category TEXT`);
+      await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS data JSONB`);
       await query(
         `UPDATE activities SET category = 'other' WHERE category IS NULL OR btrim(category) = ''`,
       );
