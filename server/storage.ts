@@ -2322,6 +2322,10 @@ export class DatabaseStorage implements IStorage {
 
   private activityInvitesInitialized = false;
 
+  private activitiesCompatInitPromise: Promise<void> | null = null;
+
+  private activitiesCompatInitialized = false;
+
   private packingInitPromise: Promise<void> | null = null;
 
   private packingInitialized = false;
@@ -2572,7 +2576,11 @@ export class DatabaseStorage implements IStorage {
 
       const aliasCompatibilityGroups: Record<string, string[][]> = {
         trip_members: [["trip_calendar_id", "trip_id"]],
-        activities: [["trip_calendar_id", "trip_id"]],
+        activities: [
+          ["trip_calendar_id", "trip_id"],
+          ["posted_by", "created_by"],
+          ["title", "name"],
+        ],
         hotels: [["created_by", "user_id"]],
         packing_items: [["created_by", "user_id"]],
         users: [
@@ -2867,6 +2875,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async ensureActivityStatusColumn(): Promise<void> {
+    await this.ensureActivitiesCompatibility();
+
     if (this.activityStatusColumnInitialized) {
       return;
     }
@@ -2896,6 +2906,86 @@ export class DatabaseStorage implements IStorage {
       await this.activityStatusInitPromise;
     } finally {
       this.activityStatusInitPromise = null;
+    }
+  }
+
+  private async ensureActivitiesCompatibility(): Promise<void> {
+    if (this.activitiesCompatInitialized) {
+      return;
+    }
+
+    if (this.activitiesCompatInitPromise) {
+      await this.activitiesCompatInitPromise;
+      return;
+    }
+
+    this.activitiesCompatInitPromise = (async () => {
+      const { rows } = await query<{ column_name: string }>(
+        `
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'activities'
+        `,
+      );
+
+      if (rows.length === 0) {
+        this.activitiesCompatInitialized = true;
+        return;
+      }
+
+      const columnNames = new Set(rows.map((row) => row.column_name));
+      const hasTripCalendarId = columnNames.has("trip_calendar_id");
+      const hasTripId = columnNames.has("trip_id");
+      const hasPostedBy = columnNames.has("posted_by");
+      const hasCreatedBy = columnNames.has("created_by");
+      const hasTitle = columnNames.has("title");
+      const hasName = columnNames.has("name");
+
+      if (!hasTripCalendarId && hasTripId) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS trip_calendar_id INTEGER`);
+        await query(`UPDATE activities SET trip_calendar_id = trip_id WHERE trip_calendar_id IS NULL`);
+      }
+
+      if (!hasTripId && hasTripCalendarId) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS trip_id INTEGER`);
+        await query(`UPDATE activities SET trip_id = trip_calendar_id WHERE trip_id IS NULL`);
+      }
+
+      if (!hasPostedBy && hasCreatedBy) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS posted_by TEXT`);
+        await query(`UPDATE activities SET posted_by = created_by WHERE posted_by IS NULL`);
+      }
+
+      if (!hasCreatedBy && hasPostedBy) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS created_by TEXT`);
+        await query(`UPDATE activities SET created_by = posted_by WHERE created_by IS NULL`);
+      }
+
+      if (!hasTitle && hasName) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS title TEXT`);
+        await query(`UPDATE activities SET title = name WHERE title IS NULL`);
+      }
+
+      if (!hasName && hasTitle) {
+        await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS name TEXT`);
+        await query(`UPDATE activities SET name = title WHERE name IS NULL`);
+      }
+
+      await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS cost DECIMAL`);
+      await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS max_capacity INTEGER`);
+      await query(`ALTER TABLE activities ADD COLUMN IF NOT EXISTS category TEXT`);
+      await query(
+        `UPDATE activities SET category = 'other' WHERE category IS NULL OR btrim(category) = ''`,
+      );
+
+      this.activitiesCompatInitialized = true;
+    })();
+
+    try {
+      await this.activitiesCompatInitPromise;
+    } finally {
+      this.activitiesCompatInitPromise = null;
     }
   }
 
