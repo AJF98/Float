@@ -2334,6 +2334,77 @@ export class DatabaseStorage implements IStorage {
 
   private flightDeletionAuditInitialized = false;
 
+  private tripMembersCompatInitPromise: Promise<void> | null = null;
+
+  private tripMembersCompatInitialized = false;
+
+  private async ensureTripMembersCompatibility(): Promise<void> {
+    if (this.tripMembersCompatInitialized) {
+      return;
+    }
+
+    if (this.tripMembersCompatInitPromise) {
+      await this.tripMembersCompatInitPromise;
+      return;
+    }
+
+    this.tripMembersCompatInitPromise = (async () => {
+      const { rows } = await query<{ column_name: string }>(
+        `
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'trip_members'
+        `,
+      );
+
+      if (rows.length === 0) {
+        this.tripMembersCompatInitialized = true;
+        return;
+      }
+
+      const columnNames = new Set(rows.map((row) => row.column_name));
+      const hasTripCalendarId = columnNames.has("trip_calendar_id");
+      const hasTripId = columnNames.has("trip_id");
+
+      if (!hasTripCalendarId && hasTripId) {
+        await query(`ALTER TABLE trip_members ADD COLUMN IF NOT EXISTS trip_calendar_id INTEGER`);
+        await query(`UPDATE trip_members SET trip_calendar_id = trip_id WHERE trip_calendar_id IS NULL`);
+      }
+
+      if (!hasTripId && hasTripCalendarId) {
+        await query(`ALTER TABLE trip_members ADD COLUMN IF NOT EXISTS trip_id INTEGER`);
+        await query(`UPDATE trip_members SET trip_id = trip_calendar_id WHERE trip_id IS NULL`);
+      }
+
+      await query(`
+        DELETE FROM trip_members a
+        USING trip_members b
+        WHERE a.id > b.id
+          AND a.user_id = b.user_id
+          AND a.trip_calendar_id = b.trip_calendar_id
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_trip_members_trip_calendar_id
+        ON trip_members(trip_calendar_id)
+      `);
+
+      await query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_trip_members_trip_calendar_id_user_id
+        ON trip_members(trip_calendar_id, user_id)
+      `);
+
+      this.tripMembersCompatInitialized = true;
+    })();
+
+    try {
+      await this.tripMembersCompatInitPromise;
+    } finally {
+      this.tripMembersCompatInitPromise = null;
+    }
+  }
+
   private async ensureWishListStructures(): Promise<void> {
     if (this.wishListInitialized) {
       return;
@@ -3050,6 +3121,7 @@ export class DatabaseStorage implements IStorage {
     trip: InsertTripCalendar,
     userId: string,
   ): Promise<TripCalendar> {
+    await this.ensureTripMembersCompatibility();
     await this.ensureCoverPhotoColumns();
 
     let shareCode = "";
@@ -3273,29 +3345,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserTrips(userId: string): Promise<TripWithDetails[]> {
-    const { rows: memberColumnRows } = await query<{ column_name: string }>(
-      `
-      SELECT column_name
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'trip_members'
-      `,
-    );
-
-    const memberColumnNames = new Set(
-      memberColumnRows.map(({ column_name }) => column_name),
-    );
-
-    const tripReferenceColumn = memberColumnNames.has("trip_calendar_id")
-      ? "trip_calendar_id"
-      : memberColumnNames.has("trip_id")
-        ? "trip_id"
-        : null;
-
-    if (!tripReferenceColumn) {
-      throw new Error("trip_members table is missing a trip reference column");
-    }
-
+    await this.ensureTripMembersCompatibility();
+    const tripReferenceColumn = "trip_calendar_id";
     const { rows } = await query<{ id: number }>(
       `
       SELECT tc.id
@@ -3317,29 +3368,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   async isTripMember(tripId: number, userId: string): Promise<boolean> {
-    const { rows: memberColumnRows } = await query<{ column_name: string }>(
-      `
-      SELECT column_name
-      FROM information_schema.columns
-      WHERE table_schema = 'public'
-        AND table_name = 'trip_members'
-      `,
-    );
-
-    const memberColumnNames = new Set(
-      memberColumnRows.map(({ column_name }) => column_name),
-    );
-
-    const tripReferenceColumn = memberColumnNames.has("trip_calendar_id")
-      ? "trip_calendar_id"
-      : memberColumnNames.has("trip_id")
-        ? "trip_id"
-        : null;
-
-    if (!tripReferenceColumn) {
-      throw new Error("trip_members table is missing a trip reference column");
-    }
-
+    await this.ensureTripMembersCompatibility();
+    const tripReferenceColumn = "trip_calendar_id";
     const { rows } = await query<{ exists: boolean }>(
       `
       SELECT EXISTS (
@@ -3361,6 +3391,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async isTripAdmin(tripId: number, userId: string): Promise<boolean> {
+    await this.ensureTripMembersCompatibility();
     const { rows } = await query<{ is_admin: boolean }>(
       `
       SELECT CASE
@@ -3390,6 +3421,7 @@ export class DatabaseStorage implements IStorage {
     userId: string,
     options?: { departureLocation?: string | null; departureAirport?: string | null },
   ): Promise<TripWithDetails> {
+    await this.ensureTripMembersCompatibility();
     const row = await this.fetchTripWithCreatorByShareCode(
       shareCode.trim().toUpperCase(),
     );
@@ -4079,6 +4111,7 @@ export class DatabaseStorage implements IStorage {
   private async fetchTripMembersWithUsers(
     tripId: number,
   ): Promise<(TripMember & { user: User })[]> {
+    await this.ensureTripMembersCompatibility();
     const { rows } = await query<TripMemberWithUserRow>(
       `
       SELECT
@@ -13699,4 +13732,3 @@ export const __testables = {
 };
 
 export const storage = new DatabaseStorage();
-
