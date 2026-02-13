@@ -2338,6 +2338,10 @@ export class DatabaseStorage implements IStorage {
 
   private tripMembersCompatInitialized = false;
 
+  private hotelsCreatorCompatInitPromise: Promise<void> | null = null;
+
+  private hotelsCreatorCompatInitialized = false;
+
   private userLegacyPaymentCompatInitPromise: Promise<void> | null = null;
 
   private userLegacyPaymentCompatInitialized = false;
@@ -2381,6 +2385,72 @@ export class DatabaseStorage implements IStorage {
       await this.userLegacyPaymentCompatInitPromise;
     } finally {
       this.userLegacyPaymentCompatInitPromise = null;
+    }
+  }
+
+  private async ensureHotelsCreatorCompatibility(): Promise<void> {
+    if (this.hotelsCreatorCompatInitialized) {
+      return;
+    }
+
+    if (this.hotelsCreatorCompatInitPromise) {
+      await this.hotelsCreatorCompatInitPromise;
+      return;
+    }
+
+    this.hotelsCreatorCompatInitPromise = (async () => {
+      const { rows } = await query<{ column_name: string }>(
+        `
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'hotels'
+        `,
+      );
+
+      if (rows.length === 0) {
+        this.hotelsCreatorCompatInitialized = true;
+        return;
+      }
+
+      const columnNames = new Set(rows.map((row) => row.column_name));
+      const hasCreatedBy = columnNames.has("created_by");
+      const hasUserId = columnNames.has("user_id");
+
+      if (!hasCreatedBy && !hasUserId) {
+        this.hotelsCreatorCompatInitialized = true;
+        return;
+      }
+
+      if (!hasCreatedBy && hasUserId) {
+        await query(`ALTER TABLE hotels ADD COLUMN IF NOT EXISTS created_by TEXT`);
+      }
+
+      if (!hasUserId && hasCreatedBy) {
+        await query(`ALTER TABLE hotels ADD COLUMN IF NOT EXISTS user_id TEXT`);
+      }
+
+      await query(`
+        UPDATE hotels
+        SET created_by = user_id
+        WHERE created_by IS NULL
+          AND user_id IS NOT NULL
+      `);
+
+      await query(`
+        UPDATE hotels
+        SET user_id = created_by
+        WHERE user_id IS NULL
+          AND created_by IS NOT NULL
+      `);
+
+      this.hotelsCreatorCompatInitialized = true;
+    })();
+
+    try {
+      await this.hotelsCreatorCompatInitPromise;
+    } finally {
+      this.hotelsCreatorCompatInitPromise = null;
     }
   }
 
@@ -7886,6 +7956,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
     hotel: InsertHotel | Record<string, unknown>,
     userId: string,
   ): Promise<Hotel> {
+    await this.ensureHotelsCreatorCompatibility();
+
     const record = hotel as Record<string, unknown>;
 
     const getValue = (camelKey: string): unknown => {
@@ -8248,6 +8320,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
   // PROPOSALS FEATURE: backfill proposals for any saved hotels missing a proposal link.
   private async ensureManualHotelsHaveProposals(tripId: number): Promise<void> {
     await this.ensureProposalLinkStructures();
+    await this.ensureHotelsCreatorCompatibility();
 
     const { rows: unsyncedHotels } = await query<HotelRow>(
       `
@@ -8278,6 +8351,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
     currentUserId: string;
     overrideDetails?: Partial<InsertHotel>;
   }): Promise<{ proposal: HotelProposalWithDetails; wasCreated: boolean; stayId: number }> {
+    await this.ensureHotelsCreatorCompatibility();
+
     const { hotelId, tripId, currentUserId, overrideDetails } = options;
 
     const client = await pool.connect();
@@ -9225,6 +9300,9 @@ ${selectUserColumns("participant_user", "participant_user_")}
   }
 
   async getTripHotels(tripId: number): Promise<HotelWithDetails[]> {
+    await this.ensureHotelsCreatorCompatibility();
+    await this.ensureUserLegacyPaymentCompatibility();
+
     const { rows } = await query<HotelWithDetailsRow>(
       `
       SELECT
@@ -9318,12 +9396,14 @@ ${selectUserColumns("participant_user", "participant_user_")}
     updates: Partial<InsertHotel>,
     userId: string,
   ): Promise<Hotel> {
+    await this.ensureHotelsCreatorCompatibility();
+
     const { rows: existingRows } = await query<HotelRow>(
       `
       SELECT
         id,
         trip_id,
-        user_id,
+        created_by,
         hotel_name,
         hotel_chain,
         hotel_rating,
@@ -9366,7 +9446,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       throw new Error("Hotel not found");
     }
 
-    if (existing.user_id !== userId) {
+    if (existing.created_by !== userId) {
       throw new Error("Only the creator can update this hotel");
     }
 
@@ -9490,7 +9570,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       RETURNING
         id,
         trip_id,
-        user_id,
+        created_by,
         hotel_name,
         hotel_chain,
         hotel_rating,
@@ -9539,6 +9619,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
   }
 
   async deleteHotel(hotelId: number, userId: string): Promise<void> {
+    await this.ensureHotelsCreatorCompatibility();
+
     const { rows } = await query<{ created_by: string }>(
       `
       SELECT created_by
@@ -9570,6 +9652,9 @@ ${selectUserColumns("participant_user", "participant_user_")}
   }
 
   async getUserHotels(userId: string): Promise<HotelWithDetails[]> {
+    await this.ensureHotelsCreatorCompatibility();
+    await this.ensureUserLegacyPaymentCompatibility();
+
     const { rows } = await query<HotelWithDetailsRow>(
       `
       SELECT
