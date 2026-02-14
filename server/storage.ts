@@ -11268,73 +11268,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
     return rows.map(mapRestaurantWithDetails);
   }
   private async ensureUniqueHotelRankingsForTrip(tripId: number): Promise<void> {
-    const client = await pool.connect();
-    const rankingIdsToDelete: number[] = [];
-    const affectedProposalIds = new Set<number>();
-
-    try {
-      await client.query("BEGIN");
-
-      const { rows } = await client.query<{
-        id: number;
-        proposal_id: number;
-        user_id: string;
-        ranking_value: number;
-        updated_at: Date | null;
-        created_at: Date | null;
-      }>(
-        `
-        SELECT
-          hr.id,
-          hr.proposal_id,
-          hr.user_id,
-          hr."rank" AS ranking_value,
-          hr.updated_at,
-          hr.created_at
-        FROM hotel_rankings hr
-        JOIN hotel_proposals hp ON hp.id = hr.proposal_id
-        WHERE hp.trip_id = $1
-        ORDER BY
-          hr.user_id,
-          ranking_value,
-          COALESCE(hr.updated_at, hr.created_at) DESC,
-          hr.id DESC
-        `,
-        [tripId],
-      );
-
-      const seenKeys = new Set<string>();
-
-      for (const row of rows) {
-        const key = `${row.user_id}:${row.ranking_value}`;
-        if (seenKeys.has(key)) {
-          rankingIdsToDelete.push(row.id);
-          affectedProposalIds.add(row.proposal_id);
-        } else {
-          seenKeys.add(key);
-        }
-      }
-
-      if (rankingIdsToDelete.length > 0) {
-        await client.query(
-          `DELETE FROM hotel_rankings WHERE id = ANY($1::int[])`,
-          [rankingIdsToDelete],
-        );
-      }
-
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
-
-    await Promise.all(
-      Array.from(affectedProposalIds).map((proposalId) =>
-        this.updateHotelProposalAverageRanking(proposalId),
-      ),
-    );
+    void tripId;
+    return;
   }
 
   private async fetchHotelProposals(
@@ -11453,73 +11388,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
   }
 
   private async ensureUniqueFlightRankingsForTrip(tripId: number): Promise<void> {
-    const client = await pool.connect();
-    const rankingIdsToDelete: number[] = [];
-    const affectedProposalIds = new Set<number>();
-
-    try {
-      await client.query("BEGIN");
-
-      const { rows } = await client.query<{
-        id: number;
-        proposal_id: number;
-        user_id: string;
-        ranking_value: number;
-        updated_at: Date | null;
-        created_at: Date | null;
-      }>(
-        `
-        SELECT
-          fr.id,
-          fr.proposal_id,
-          fr.user_id,
-          fr."rank" AS ranking_value,
-          fr.updated_at,
-          fr.created_at
-        FROM flight_rankings fr
-        JOIN flight_proposals fp ON fp.id = fr.proposal_id
-        WHERE fp.trip_id = $1
-        ORDER BY
-          fr.user_id,
-          ranking_value,
-          COALESCE(fr.updated_at, fr.created_at) DESC,
-          fr.id DESC
-        `,
-        [tripId],
-      );
-
-      const seenKeys = new Set<string>();
-
-      for (const row of rows) {
-        const key = `${row.user_id}:${row.ranking_value}`;
-        if (seenKeys.has(key)) {
-          rankingIdsToDelete.push(row.id);
-          affectedProposalIds.add(row.proposal_id);
-        } else {
-          seenKeys.add(key);
-        }
-      }
-
-      if (rankingIdsToDelete.length > 0) {
-        await client.query(
-          `DELETE FROM flight_rankings WHERE id = ANY($1::int[])`,
-          [rankingIdsToDelete],
-        );
-      }
-
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
-
-    await Promise.all(
-      Array.from(affectedProposalIds).map((proposalId) =>
-        this.updateFlightProposalAverageRanking(proposalId),
-      ),
-    );
+    void tripId;
+    return;
   }
 
   private async fetchFlightProposals(
@@ -11648,73 +11518,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
   }
 
   private async ensureUniqueRestaurantRankingsForTrip(tripId: number): Promise<void> {
-    const client = await pool.connect();
-    const rankingIdsToDelete: number[] = [];
-    const affectedProposalIds = new Set<number>();
-
-    try {
-      await client.query("BEGIN");
-
-      const { rows } = await client.query<{
-        id: number;
-        proposal_id: number;
-        user_id: string;
-        ranking_value: number;
-        updated_at: Date | null;
-        created_at: Date | null;
-      }>(
-        `
-        SELECT
-          rr.id,
-          rr.proposal_id,
-          rr.user_id,
-          rr."rank" AS ranking_value,
-          rr.updated_at,
-          rr.created_at
-        FROM restaurant_rankings rr
-        JOIN restaurant_proposals rp ON rp.id = rr.proposal_id
-        WHERE rp.trip_id = $1
-        ORDER BY
-          rr.user_id,
-          ranking_value,
-          COALESCE(rr.updated_at, rr.created_at) DESC,
-          rr.id DESC
-        `,
-        [tripId],
-      );
-
-      const seenKeys = new Set<string>();
-
-      for (const row of rows) {
-        const key = `${row.user_id}:${row.ranking_value}`;
-        if (seenKeys.has(key)) {
-          rankingIdsToDelete.push(row.id);
-          affectedProposalIds.add(row.proposal_id);
-        } else {
-          seenKeys.add(key);
-        }
-      }
-
-      if (rankingIdsToDelete.length > 0) {
-        await client.query(
-          `DELETE FROM restaurant_rankings WHERE id = ANY($1::int[])`,
-          [rankingIdsToDelete],
-        );
-      }
-
-      await client.query("COMMIT");
-    } catch (error) {
-      await client.query("ROLLBACK");
-      throw error;
-    } finally {
-      client.release();
-    }
-
-    await Promise.all(
-      Array.from(affectedProposalIds).map((proposalId) =>
-        this.updateRestaurantProposalAverageRanking(proposalId),
-      ),
-    );
+    void tripId;
+    return;
   }
 
   private async fetchRestaurantProposals(
