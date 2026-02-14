@@ -11604,26 +11604,41 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
     const proposalIds = rows.map((row) => row.id);
 
-    const { rows: rankingRows } = await query<
-      FlightRankingWithUserRow & { ranking_value: number | string }
-    >(
-      `
-      SELECT
-        fr.id,
-        fr.proposal_id,
-        fr.user_id,
-        fr."rank" AS ranking_value,
-        NULL AS notes,
-        fr.created_at,
-        fr.updated_at,
-        ${selectUserColumns("u", "user_")}
-      FROM flight_rankings fr
-      JOIN users u ON u.id = fr.user_id
-      WHERE fr.proposal_id = ANY($1::int[])
-      ORDER BY fr.created_at ASC NULLS LAST, fr.id ASC
-      `,
-      [proposalIds],
-    );
+    let rankingRows: (FlightRankingWithUserRow & { ranking_value: number | string })[] = [];
+    try {
+      const result = await query<FlightRankingWithUserRow & { ranking_value: number | string }>(
+        `
+        SELECT
+          fr.id,
+          fr.proposal_id,
+          fr.user_id,
+          fr."rank" AS ranking_value,
+          NULL AS notes,
+          fr.created_at,
+          fr.updated_at,
+          ${selectUserColumns("u", "user_")}
+        FROM flight_rankings fr
+        JOIN users u ON u.id = fr.user_id
+        WHERE fr.proposal_id = ANY($1::int[])
+        ORDER BY fr.created_at ASC NULLS LAST, fr.id ASC
+        `,
+        [proposalIds],
+      );
+      rankingRows = result.rows;
+    } catch (error) {
+      const maybePgError = error as { code?: string; message?: string };
+      const isRankParserError =
+        maybePgError.code === "42809" &&
+        typeof maybePgError.message === "string" &&
+        maybePgError.message.includes("WITHIN GROUP") &&
+        maybePgError.message.includes("rank");
+      if (!isRankParserError) {
+        throw error;
+      }
+      console.warn(
+        "[schema-compat] Skipping flight ranking rows due to Postgres rank parser error",
+      );
+    }
 
     const rankingsByProposal = new Map<number, (FlightRanking & { user: User })[]>();
     for (const row of rankingRows) {
