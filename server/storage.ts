@@ -11288,7 +11288,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           hr.id,
           hr.proposal_id,
           hr.user_id,
-          hr.rank,
+          hr."rank",
           hr.updated_at,
           hr.created_at
         FROM hotel_rankings hr
@@ -11296,7 +11296,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE hp.trip_id = $1
         ORDER BY
           hr.user_id,
-          hr.rank,
+          hr."rank",
           COALESCE(hr.updated_at, hr.created_at) DESC,
           hr.id DESC
         `,
@@ -11420,7 +11420,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         hr.id,
         hr.proposal_id,
         hr.user_id,
-        hr.rank,
+        hr."rank",
         hr.created_at,
         hr.updated_at,
         ${selectUserColumns("u", "user_")}
@@ -11473,7 +11473,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           fr.id,
           fr.proposal_id,
           fr.user_id,
-          fr.rank,
+          fr."rank",
           fr.updated_at,
           fr.created_at
         FROM flight_rankings fr
@@ -11481,7 +11481,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE fp.trip_id = $1
         ORDER BY
           fr.user_id,
-          fr.rank,
+          fr."rank",
           COALESCE(fr.updated_at, fr.created_at) DESC,
           fr.id DESC
         `,
@@ -11614,7 +11614,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         fr.id,
         fr.proposal_id,
         fr.user_id,
-        fr.rank,
+        fr."rank",
         NULL AS notes,
         fr.created_at,
         fr.updated_at,
@@ -11668,7 +11668,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           rr.id,
           rr.proposal_id,
           rr.user_id,
-          rr.rank,
+          rr."rank",
           rr.updated_at,
           rr.created_at
         FROM restaurant_rankings rr
@@ -11676,7 +11676,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE rp.trip_id = $1
         ORDER BY
           rr.user_id,
-          rr.rank,
+          rr."rank",
           COALESCE(rr.updated_at, rr.created_at) DESC,
           rr.id DESC
         `,
@@ -11789,7 +11789,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         rr.id,
         rr.proposal_id,
         rr.user_id,
-        rr.rank,
+        rr."rank",
         NULL AS notes,
         rr.created_at,
         rr.updated_at,
@@ -12055,7 +12055,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         JOIN hotel_proposals hp ON hp.id = hr.proposal_id
         WHERE hr.user_id = $1
           AND hp.trip_id = $2
-          AND hr.rank = $3
+          AND hr."rank" = $3
           AND hr.proposal_id <> $4
         `,
         [userId, tripId, ranking.ranking, ranking.proposalId],
@@ -12076,10 +12076,10 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
       await client.query(
         `
-        INSERT INTO hotel_rankings (proposal_id, user_id, rank)
+        INSERT INTO hotel_rankings (proposal_id, user_id, "rank")
         VALUES ($1, $2, $3)
         ON CONFLICT (proposal_id, user_id) DO UPDATE SET
-          rank = EXCLUDED.rank,
+          "rank" = EXCLUDED."rank",
           updated_at = NOW()
         `,
         [ranking.proposalId, userId, ranking.ranking],
@@ -12116,7 +12116,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
   async updateHotelProposalAverageRanking(proposalId: number): Promise<void> {
     const { rows } = await query<{ average: number | null }>(
       `
-      SELECT AVG(rank)::numeric(10,2) AS average
+      SELECT AVG("rank")::numeric(10,2) AS average
       FROM hotel_rankings
       WHERE proposal_id = $1
       `,
@@ -12685,7 +12685,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         JOIN flight_proposals fp ON fp.id = fr.proposal_id
         WHERE fr.user_id = $1
           AND fp.trip_id = $2
-          AND fr.rank = $3
+          AND fr."rank" = $3
           AND fr.proposal_id <> $4
         `,
         [userId, proposalRow.trip_id, ranking.ranking, ranking.proposalId],
@@ -12706,10 +12706,10 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
       await client.query(
         `
-        INSERT INTO flight_rankings (proposal_id, user_id, rank)
+        INSERT INTO flight_rankings (proposal_id, user_id, "rank")
         VALUES ($1, $2, $3)
         ON CONFLICT (proposal_id, user_id) DO UPDATE SET
-          rank = EXCLUDED.rank,
+          "rank" = EXCLUDED."rank",
           updated_at = NOW()
         `,
         [ranking.proposalId, userId, ranking.ranking],
@@ -12741,7 +12741,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
   async updateFlightProposalAverageRanking(proposalId: number): Promise<void> {
     const { rows } = await query<{ average: number | null }>(
       `
-      SELECT AVG(rank)::numeric(10,2) AS average
+      SELECT AVG("rank")::numeric(10,2) AS average
       FROM flight_rankings
       WHERE proposal_id = $1
       `,
@@ -14043,7 +14043,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         JOIN restaurant_proposals rp ON rp.id = rr.proposal_id
         WHERE rr.user_id = $1
           AND rp.trip_id = $2
-          AND rr.rank = $3
+          AND rr."rank" = $3
           AND rr.proposal_id <> $4
         `,
         [userId, proposalRow.trip_id, ranking.ranking, ranking.proposalId],
@@ -14064,10 +14064,10 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
       await client.query(
         `
-        INSERT INTO restaurant_rankings (proposal_id, user_id, rank)
+        INSERT INTO restaurant_rankings (proposal_id, user_id, "rank")
         VALUES ($1, $2, $3)
         ON CONFLICT (proposal_id, user_id) DO UPDATE SET
-          rank = EXCLUDED.rank,
+          "rank" = EXCLUDED."rank",
           updated_at = NOW()
         `,
         [ranking.proposalId, userId, ranking.ranking],
@@ -14093,7 +14093,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
   async updateRestaurantProposalAverageRanking(proposalId: number): Promise<void> {
     const { rows } = await query<{ average: number | null }>(
       `
-      SELECT AVG(rank)::numeric(10,2) AS average
+      SELECT AVG("rank")::numeric(10,2) AS average
       FROM restaurant_rankings
       WHERE proposal_id = $1
       `,
