@@ -11279,7 +11279,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         id: number;
         proposal_id: number;
         user_id: string;
-        rank: number;
+        ranking_value: number;
         updated_at: Date | null;
         created_at: Date | null;
       }>(
@@ -11288,7 +11288,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           hr.id,
           hr.proposal_id,
           hr.user_id,
-          hr."rank",
+          hr."rank" AS ranking_value,
           hr.updated_at,
           hr.created_at
         FROM hotel_rankings hr
@@ -11296,7 +11296,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE hp.trip_id = $1
         ORDER BY
           hr.user_id,
-          hr."rank",
+          ranking_value,
           COALESCE(hr.updated_at, hr.created_at) DESC,
           hr.id DESC
         `,
@@ -11306,7 +11306,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       const seenKeys = new Set<string>();
 
       for (const row of rows) {
-        const key = `${row.user_id}:${row.rank}`;
+        const key = `${row.user_id}:${row.ranking_value}`;
         if (seenKeys.has(key)) {
           rankingIdsToDelete.push(row.id);
           affectedProposalIds.add(row.proposal_id);
@@ -11464,7 +11464,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         id: number;
         proposal_id: number;
         user_id: string;
-        rank: number;
+        ranking_value: number;
         updated_at: Date | null;
         created_at: Date | null;
       }>(
@@ -11473,7 +11473,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           fr.id,
           fr.proposal_id,
           fr.user_id,
-          fr."rank",
+          fr."rank" AS ranking_value,
           fr.updated_at,
           fr.created_at
         FROM flight_rankings fr
@@ -11481,7 +11481,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE fp.trip_id = $1
         ORDER BY
           fr.user_id,
-          fr."rank",
+          ranking_value,
           COALESCE(fr.updated_at, fr.created_at) DESC,
           fr.id DESC
         `,
@@ -11491,7 +11491,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       const seenKeys = new Set<string>();
 
       for (const row of rows) {
-        const key = `${row.user_id}:${row.rank}`;
+        const key = `${row.user_id}:${row.ranking_value}`;
         if (seenKeys.has(key)) {
           rankingIdsToDelete.push(row.id);
           affectedProposalIds.add(row.proposal_id);
@@ -11659,7 +11659,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         id: number;
         proposal_id: number;
         user_id: string;
-        rank: number;
+        ranking_value: number;
         updated_at: Date | null;
         created_at: Date | null;
       }>(
@@ -11668,7 +11668,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           rr.id,
           rr.proposal_id,
           rr.user_id,
-          rr."rank",
+          rr."rank" AS ranking_value,
           rr.updated_at,
           rr.created_at
         FROM restaurant_rankings rr
@@ -11676,7 +11676,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         WHERE rp.trip_id = $1
         ORDER BY
           rr.user_id,
-          rr."rank",
+          ranking_value,
           COALESCE(rr.updated_at, rr.created_at) DESC,
           rr.id DESC
         `,
@@ -11686,7 +11686,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       const seenKeys = new Set<string>();
 
       for (const row of rows) {
-        const key = `${row.user_id}:${row.rank}`;
+        const key = `${row.user_id}:${row.ranking_value}`;
         if (seenKeys.has(key)) {
           rankingIdsToDelete.push(row.id);
           affectedProposalIds.add(row.proposal_id);
