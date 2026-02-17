@@ -4994,6 +4994,7 @@ export class DatabaseStorage implements IStorage {
           created_by,
           posted_by,
           title,
+          name,
           description,
           start_time,
           end_time,
@@ -5006,12 +5007,12 @@ export class DatabaseStorage implements IStorage {
           voting_deadline,
           data
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
         RETURNING
           id,
           trip_calendar_id,
           posted_by,
-          title as name,
+          COALESCE(title, name) as name,
           description,
           start_time,
           end_time,
@@ -5030,6 +5031,7 @@ export class DatabaseStorage implements IStorage {
           activity.tripCalendarId,
           userId,
           userId,
+          activity.name,
           activity.name,
           activity.description ?? null,
           activity.startTime,
