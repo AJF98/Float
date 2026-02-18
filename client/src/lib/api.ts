@@ -1,5 +1,9 @@
 // client/src/lib/api.ts
-const rawApiBaseUrl = import.meta.env.VITE_API_URL ?? "";
+const rawApiBaseUrl =
+  import.meta.env.VITE_API_URL ??
+  import.meta.env.VITE_API_BASE_URL ??
+  import.meta.env.VITE_BACKEND_URL ??
+  "";
 
 const API_BASE_URL = (() => {
   const sanitized = rawApiBaseUrl.replace(/\/+$/, "");
@@ -33,6 +37,13 @@ const API_BASE_URL = (() => {
 
   return sanitized;
 })();
+
+
+if (typeof window !== "undefined" && !API_BASE_URL && import.meta.env.PROD) {
+  console.warn(
+    "[API] No API base URL configured (VITE_API_URL / VITE_API_BASE_URL / VITE_BACKEND_URL). Falling back to same-origin /api requests.",
+  );
+}
 
 export function buildApiUrl(path: string) {
   if (/^https?:\/\//i.test(path)) {
