@@ -1174,10 +1174,24 @@ export default function HotelsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <CardTitle className="text-lg">{hotel.name}</CardTitle>
+                    {hotel.status === 'scheduled' ? (
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs border-green-400 text-green-600 dark:text-green-400">
+                          <CalendarCheck className="h-3 w-3 mr-1" />
+                          Scheduled
+                        </Badge>
+                      </div>
+                    ) : hotel.status === 'proposed' ? (
+                      <div className="flex items-center gap-2 mb-1">
+                        <Badge variant="outline" className="text-xs border-blue-400 text-blue-600 dark:text-blue-400">
+                          Proposed
+                        </Badge>
+                      </div>
+                    ) : null}
+                    <CardTitle className="text-lg">{hotel.hotelName}</CardTitle>
                     <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
                       <MapPin className="h-3 w-3" />
-                      {hotel.location}
+                      {[hotel.city, hotel.country].filter(Boolean).join(', ') || hotel.address}
                     </p>
                     {hotel.user && (
                       <AttributionLabel
@@ -1190,7 +1204,7 @@ export default function HotelsPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <div className="flex items-center gap-1">
-                      {getStarRating(hotel.rating || 5)}
+                      {getStarRating(hotel.hotelRating || 5)}
                     </div>
                   </div>
                 </div>
@@ -1207,7 +1221,7 @@ export default function HotelsPage() {
                   <span className="text-muted-foreground">Guests:</span>
                   <span className="font-medium flex items-center gap-1">
                     <Users className="h-3 w-3" />
-                    {hotel.guests}
+                    {hotel.guestCount}
                   </span>
                 </div>
 
@@ -1288,8 +1302,9 @@ export default function HotelsPage() {
                     </Button>
                   </div>
                   <div className="flex items-center gap-2">
-                    {/* Only show Propose button if hotel is not already proposed or scheduled */}
-                    {!hotelProposals.some(p => p.stayId === hotel.id) && hotel.status !== 'scheduled' && (
+                    {/* Only show Propose button if hotel is not already proposed or scheduled.
+                        A null/undefined status is treated as non-proposable for safety. */}
+                    {!hotelProposals.some(p => p.stayId === hotel.id) && !!hotel.status && hotel.status !== 'scheduled' && (
                       <Button
                         variant="outline"
                         size="sm"

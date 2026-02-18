@@ -9153,6 +9153,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         throw new Error("Hotel not found");
       }
 
+      // Scheduled lodgings are definitive and must not be converted into proposals.
+      if (hotel.status === 'scheduled') {
+        throw new Error("Cannot propose a lodging that is already scheduled");
+      }
+
       const normalizedHotelTripId =
         typeof hotel.trip_id === "number"
           ? hotel.trip_id
