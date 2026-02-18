@@ -1,6 +1,49 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 import { buildApiUrl } from "./api";
 
+const shouldLogApiDebug =
+  import.meta.env.DEV || import.meta.env.VITE_DEBUG_API === "true";
+
+const sanitizePayload = (value: unknown): unknown => {
+  if (value === null || value === undefined) {
+    return value;
+  }
+
+  if (typeof value === "string") {
+    try {
+      return sanitizePayload(JSON.parse(value));
+    } catch {
+      return value;
+    }
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => sanitizePayload(item));
+  }
+
+  if (typeof value === "object") {
+    const SENSITIVE_KEYS = new Set([
+      "password",
+      "token",
+      "accessToken",
+      "refreshToken",
+      "authorization",
+      "cookie",
+    ]);
+
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entryValue]) => {
+        if (SENSITIVE_KEYS.has(key)) {
+          return [key, "[REDACTED]"];
+        }
+        return [key, sanitizePayload(entryValue)];
+      }),
+    );
+  }
+
+  return value;
+};
+
 export class ApiError extends Error {
   status: number;
   data: unknown;
@@ -86,6 +129,7 @@ export async function apiRequest(
     headers?: Record<string, string>;
   } = { method: "GET" },
 ): Promise<Response> {
+  const requestUrl = buildApiUrl(url);
   const body =
     options.body !== undefined
       ? typeof options.body === "string"
@@ -100,12 +144,44 @@ export async function apiRequest(
   }
 
   try {
-    const res = await fetch(buildApiUrl(url), {
+    if (shouldLogApiDebug) {
+      console.info("[apiRequest] Request", {
+        url: requestUrl,
+        method: options.method,
+        payload: sanitizePayload(body),
+      });
+    }
+
+    const res = await fetch(requestUrl, {
       method: options.method,
       headers,
       body,
       credentials: "include",
     });
+
+    if (shouldLogApiDebug && !res.ok) {
+      const responseClone = res.clone();
+      let responseBody: unknown = null;
+      try {
+        const responseText = await responseClone.text();
+        if (responseText) {
+          try {
+            responseBody = JSON.parse(responseText);
+          } catch {
+            responseBody = responseText;
+          }
+        }
+      } catch {
+        responseBody = "[unreadable-response-body]";
+      }
+
+      console.error("[apiRequest] Response error", {
+        url: requestUrl,
+        method: options.method,
+        status: res.status,
+        response: sanitizePayload(responseBody),
+      });
+    }
 
     await throwIfResNotOk(res);
 
@@ -131,6 +207,14 @@ export async function apiRequest(
 
     return res;
   } catch (error) {
+    if (shouldLogApiDebug) {
+      console.error("[apiRequest] Exception", {
+        url: requestUrl,
+        method: options.method,
+        stack: error instanceof Error ? error.stack : error,
+      });
+    }
+
     if (error instanceof ApiError) {
       throw error;
     }
