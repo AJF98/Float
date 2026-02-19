@@ -9,9 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { buildApiUrl } from "@/lib/api";
 import { useLocation } from "wouter";
 import { Link } from "wouter";
 import { Plane, User, Mail, Phone, Lock, Eye, EyeOff } from "lucide-react";
+import { isNativeCapacitorApp, setMobileAccessToken } from "@/lib/native";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -27,6 +29,31 @@ const registerSchema = z.object({
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
+
+async function waitForAuthenticatedUser(maxAttempts = 8, delayMs = 250) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch(buildApiUrl("/api/auth/user"), {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    console.log("Post-register auth probe:", {
+      attempt,
+      status: response.status,
+      url: response.url,
+    });
+
+    if (response.ok) {
+      return response.json();
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => window.setTimeout(resolve, delayMs));
+    }
+  }
+
+  return null;
+}
 
 export default function Register() {
   const { toast } = useToast();
@@ -63,14 +90,37 @@ export default function Register() {
       });
       return response.json();
     },
-    onSuccess: (data) => {
-      // Invalidate auth query so the app recognizes the new session
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async (data: Record<string, unknown>) => {
+      const mobileAccessToken =
+        typeof data.mobileAccessToken === "string" ? data.mobileAccessToken : null;
+      if (isNativeCapacitorApp()) {
+        setMobileAccessToken(mobileAccessToken);
+      }
+
+      // Set auth state immediately to avoid a redirect race on iOS WebView.
+      queryClient.setQueryData(["/api/auth/user"], data);
+      const verifiedUser = await waitForAuthenticatedUser();
+      if (!verifiedUser) {
+        toast({
+          title: "Account created but session not ready",
+          description: "Please sign in once to continue.",
+          variant: "destructive",
+        });
+        setLocation("/login");
+        return;
+      }
+
+      queryClient.setQueryData(["/api/auth/user"], verifiedUser);
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Account created successfully!",
         description: "Welcome to Float! Let's plan your first trip.",
       });
-      setLocation('/');
+      if (typeof window !== "undefined") {
+        window.location.replace("/");
+        return;
+      }
+      setLocation("/");
     },
     onError: (error: any) => {
       let errorMessage = "Failed to create account. Please try again.";

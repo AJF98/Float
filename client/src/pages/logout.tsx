@@ -1,16 +1,43 @@
 import { useEffect } from "react";
 import { TravelLoading } from "@/components/LoadingSpinners";
+import { apiRequest } from "@/lib/queryClient";
+import {
+  getOrCreateMobileDeviceId,
+  isNativeCapacitorApp,
+  setMobileAccessToken,
+} from "@/lib/native";
 
 export default function Logout() {
   useEffect(() => {
-    // Clear all client-side data
-    localStorage.clear();
-    sessionStorage.clear();
-    
-    // Force a complete page reload to clear any cached state
-    setTimeout(() => {
-      window.location.replace('/');
-    }, 1000);
+    const run = async () => {
+      try {
+        if (isNativeCapacitorApp()) {
+          await apiRequest("/api/mobile/push/unregister", {
+            method: "POST",
+            body: { deviceId: getOrCreateMobileDeviceId() },
+          });
+        }
+      } catch (error) {
+        console.warn("Failed to unregister push device during logout", error);
+      }
+
+      try {
+        await apiRequest("/api/auth/logout", { method: "POST" });
+      } catch (error) {
+        console.warn("Failed to log out via API", error);
+      } finally {
+        if (isNativeCapacitorApp()) {
+          setMobileAccessToken(null);
+        }
+        localStorage.clear();
+        sessionStorage.clear();
+        setTimeout(() => {
+          window.location.replace("/");
+        }, 500);
+      }
+    };
+
+    void run();
   }, []);
 
   return (

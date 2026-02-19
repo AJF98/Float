@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
+import { useMobilePush } from "@/hooks/useMobilePush";
 import { TravelLoading } from "@/components/LoadingSpinners";
 import NotFound from "@/pages/not-found";
 import Landing from "@/pages/landing";
@@ -28,8 +29,13 @@ import Logout from "@/pages/logout";
 import HowItWorks from "@/pages/how-it-works";
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
+
+  useMobilePush({
+    enabled: isAuthenticated && !isLoading,
+    userId: user?.id ?? null,
+  });
 
   console.log("Router state:", { isAuthenticated, isLoading, location });
 

@@ -1468,3 +1468,13 @@ body.dark .page-shell::after {
   pointer-events: none;
   z-index: 1000;
 }
+
+.native-capacitor {
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.native-capacitor .page-shell {
+  padding-top: var(--safe-area-top);
+  padding-bottom: var(--safe-area-bottom);
+}

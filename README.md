@@ -60,3 +60,33 @@ This app uses a Vite frontend (`import.meta.env`) with an Express backend.
 - Do **not** put `PEXELS_API_KEY` in Vercel client env vars. Pexels requests are made server-side through `/api/photos/*`.
 - `VITE_API_URL` must point to the backend in production. If omitted, browser requests default to same-origin (`/api/...`) and fail on Vercel-only frontend deployments.
 - Cover photo URLs beginning with `/uploads/...` are backend-hosted and should be resolved against `VITE_API_URL` in the client.
+
+## iOS (Capacitor) setup
+
+This repo now includes Capacitor configuration for an iOS wrapper app:
+
+- `capacitor.config.ts`
+- Native runtime bridge in `client/src/lib/native.ts`
+- Push registration hook in `client/src/hooks/useMobilePush.ts`
+
+### Install and generate iOS project
+
+```bash
+npm install
+npx cap add ios
+npm run mobile:sync
+npm run mobile:open:ios
+```
+
+### Required backend env vars for APNs
+
+- `APNS_TEAM_ID`
+- `APNS_KEY_ID`
+- `APNS_PRIVATE_KEY` (full `.p8` contents; `\n` supported)
+- `APNS_BUNDLE_ID` (must match iOS bundle ID)
+- Optional: `APNS_USE_SANDBOX=true` for development/TestFlight sandbox behavior
+
+### New mobile push APIs
+
+- `POST /api/mobile/push/register`
+- `POST /api/mobile/push/unregister`

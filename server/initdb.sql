@@ -436,6 +436,26 @@ CREATE TABLE IF NOT EXISTS session (
 
 CREATE INDEX IF NOT EXISTS idx_session_expire ON session(expire);
 
+-- Mobile push device registrations (iOS APNs tokens)
+CREATE TABLE IF NOT EXISTS user_push_devices (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  device_id TEXT NOT NULL,
+  token TEXT NOT NULL,
+  platform TEXT NOT NULL,
+  app_version TEXT,
+  enabled BOOLEAN NOT NULL DEFAULT TRUE,
+  last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(user_id, device_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_push_devices_user_enabled
+  ON user_push_devices(user_id, enabled);
+CREATE INDEX IF NOT EXISTS idx_user_push_devices_token
+  ON user_push_devices(token);
+
 -- Trip documents table for secure document storage
 -- Each document can only be viewed by the user who uploaded it
 CREATE TABLE IF NOT EXISTS trip_documents (

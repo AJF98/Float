@@ -36,6 +36,11 @@ import { unfurlLinkMetadata } from "./wishListService";
 import { registerCoverPhotoUploadRoutes } from "./coverPhotoUpload";
 import { logCoverPhotoFailure, logActivityCreationFailure, trackActivityCreationMetric } from "./observability";
 import { nanoid } from "nanoid";
+import {
+  createMobileAccessToken,
+  extractBearerToken,
+  verifyMobileAccessToken,
+} from "./mobileAuth";
 
 type PostgresError = Error & {
   code?: string;
@@ -599,6 +604,17 @@ const flightSearchSchema = z.object({
   limit: z.number().min(1).max(50).optional().default(20),
   filter: z.enum(["best", "cheapest", "fastest"]).optional().default("best"),
 });
+
+const mobilePushRegisterSchema = z.object({
+  token: z.string().min(16, "Push token is required"),
+  platform: z.literal("ios").default("ios"),
+  appVersion: z.string().max(64).optional(),
+  deviceId: z.string().min(1, "Device ID is required").max(255, "Device ID is too long"),
+});
+
+const mobilePushUnregisterSchema = z.object({
+  deviceId: z.string().min(1, "Device ID is required").max(255, "Device ID is too long"),
+});
 import { searchFlights, searchHotels, searchActivities, getAirportCode, getHotelCityCode, getCityCoordinates } from "./amadeusService";
 import { searchDuffelFlights } from "./duffelService";
 import { foursquareService } from "./foursquareService";
@@ -629,6 +645,17 @@ function getRequestUserId(req: any): string | undefined {
   const sessionUserId = normalizeUserId(req.session?.userId);
   if (sessionUserId) {
     return sessionUserId;
+  }
+
+  const bearerToken = extractBearerToken(
+    req.headers?.authorization ?? req.headers?.Authorization,
+  );
+  if (bearerToken) {
+    const mobileUserId = verifyMobileAccessToken(bearerToken);
+    const normalizedMobileUserId = normalizeUserId(mobileUserId);
+    if (normalizedMobileUserId) {
+      return normalizedMobileUserId;
+    }
   }
 
   const user = req.user ?? {};
@@ -810,13 +837,15 @@ export function setupRoutes(app: Express) {
       // Remove password hash from response
       const { passwordHash, ...userResponse } = user;
 
+      const mobileAccessToken = createMobileAccessToken(user.id);
+
       // Explicitly save session before responding to ensure it persists to the store
       req.session.save((saveErr: any) => {
         if (saveErr) {
           console.error("Session save error after registration:", saveErr);
           return res.status(500).json({ message: "Unable to create a persistent session. Please try again." });
         }
-        res.status(201).json(userResponse);
+        res.status(201).json({ ...userResponse, mobileAccessToken });
       });
     } catch (error: unknown) {
       console.error("Registration error:", error);
@@ -851,13 +880,15 @@ export function setupRoutes(app: Express) {
       // Remove password hash from response
       const { passwordHash, ...userResponse } = user;
 
+      const mobileAccessToken = createMobileAccessToken(user.id);
+
       // Explicitly save session before responding to ensure it persists to the store
       req.session.save((saveErr: any) => {
         if (saveErr) {
           console.error("Session save error after login:", saveErr);
           return res.status(500).json({ message: "Unable to create a persistent session. Please try again." });
         }
-        res.json(userResponse);
+        res.json({ ...userResponse, mobileAccessToken });
       });
     } catch (error: unknown) {
       console.error("Login error:", error);
@@ -998,6 +1029,63 @@ export function setupRoutes(app: Express) {
 
   app.get('/api/auth/user', handleAuthUser);
   app.get('/api/auth/me', handleAuthUser);
+
+  app.post("/api/mobile/push/register", async (req: any, res) => {
+    try {
+      const parsed = mobilePushRegisterSchema.parse(req.body ?? {});
+
+      let userId = getRequestUserId(req);
+      if (process.env.NODE_ENV === "development" && !req.isAuthenticated()) {
+        userId = DEMO_USER_ID;
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      await storage.upsertUserPushDevice({
+        userId,
+        deviceId: parsed.deviceId,
+        token: parsed.token,
+        platform: parsed.platform,
+        appVersion: parsed.appVersion ?? null,
+      });
+
+      return res.status(200).json({ success: true });
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid push registration payload" });
+      }
+
+      console.error("Failed to register mobile push token:", error);
+      return res.status(500).json({ message: "Failed to register push token" });
+    }
+  });
+
+  app.post("/api/mobile/push/unregister", async (req: any, res) => {
+    try {
+      const parsed = mobilePushUnregisterSchema.parse(req.body ?? {});
+
+      let userId = getRequestUserId(req);
+      if (process.env.NODE_ENV === "development" && !req.isAuthenticated()) {
+        userId = DEMO_USER_ID;
+      }
+
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      await storage.unregisterUserPushDevice(userId, parsed.deviceId);
+      return res.status(200).json({ success: true });
+    } catch (error: unknown) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid push unregister payload" });
+      }
+
+      console.error("Failed to unregister mobile push token:", error);
+      return res.status(500).json({ message: "Failed to unregister push token" });
+    }
+  });
 
   // Profile update endpoint
   app.put('/api/profile', async (req: any, res) => {

@@ -22,6 +22,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { buildApiUrl } from "@/lib/api";
+import { isNativeCapacitorApp, setMobileAccessToken } from "@/lib/native";
 import { useLocation, Link } from "wouter";
 import { Plane, User, Lock, Eye, EyeOff } from "lucide-react";
 
@@ -31,6 +33,31 @@ const loginSchema = z.object({
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
+
+async function waitForAuthenticatedUser(maxAttempts = 8, delayMs = 250) {
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const response = await fetch(buildApiUrl("/api/auth/user"), {
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    console.log("Post-login auth probe:", {
+      attempt,
+      status: response.status,
+      url: response.url,
+    });
+
+    if (response.ok) {
+      return response.json();
+    }
+
+    if (attempt < maxAttempts) {
+      await new Promise((resolve) => window.setTimeout(resolve, delayMs));
+    }
+  }
+
+  return null;
+}
 
 export default function Login() {
   const { toast } = useToast();
@@ -43,7 +70,12 @@ export default function Login() {
   );
   const returnToParam = searchParams.get("returnTo");
   const safeReturnTo =
-    returnToParam && returnToParam.startsWith("/") ? returnToParam : null;
+    returnToParam &&
+    returnToParam.startsWith("/") &&
+    !returnToParam.startsWith("/login") &&
+    !returnToParam.startsWith("/register")
+      ? returnToParam
+      : null;
 
   const form = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
@@ -61,13 +93,37 @@ export default function Login() {
       });
       return response.json();
     },
-    onSuccess: (_data) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+    onSuccess: async (data: Record<string, unknown>) => {
+      const mobileAccessToken =
+        typeof data.mobileAccessToken === "string" ? data.mobileAccessToken : null;
+      if (isNativeCapacitorApp()) {
+        setMobileAccessToken(mobileAccessToken);
+      }
+
+      // Keep optimistic state immediately, then verify cookie-backed auth.
+      queryClient.setQueryData(["/api/auth/user"], data);
+      const verifiedUser = await waitForAuthenticatedUser();
+      if (!verifiedUser) {
+        toast({
+          title: "Sign-in session not ready",
+          description: "Please try signing in again. If this persists, refresh the app.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      queryClient.setQueryData(["/api/auth/user"], verifiedUser);
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
       toast({
         title: "Welcome back!",
         description: "You have successfully logged in.",
       });
-      setLocation(safeReturnTo ?? "/"); // ✅ redirect into app
+      const destination = safeReturnTo ?? "/";
+      if (typeof window !== "undefined") {
+        window.location.replace(destination);
+        return;
+      }
+      setLocation(destination);
     },
     onError: (error) => {
       let errorMessage = "Invalid username/email or password.";

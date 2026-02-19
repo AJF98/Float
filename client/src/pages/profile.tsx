@@ -18,6 +18,11 @@ import { Smartphone, Settings, MapPin, Plane, PlayCircle, ArrowLeft, Search, Loa
 import { useState, useEffect, useMemo, type KeyboardEvent } from "react";
 import { Link, useLocation } from "wouter";
 import LocationUtils from "@/lib/locationUtils";
+import {
+  getOrCreateMobileDeviceId,
+  isNativeCapacitorApp,
+  setMobileAccessToken,
+} from "@/lib/native";
 
 type RawLocationResult = Awaited<ReturnType<typeof LocationUtils.searchLocations>> extends Array<infer U> ? U : never;
 
@@ -405,10 +410,21 @@ export default function Profile() {
 
   const handleLogout = async () => {
     try {
+      if (isNativeCapacitorApp()) {
+        const deviceId = getOrCreateMobileDeviceId();
+        await apiRequest("/api/mobile/push/unregister", {
+          method: "POST",
+          body: { deviceId },
+        });
+      }
+
       await apiRequest('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('Failed to log out via API', error);
     } finally {
+      if (isNativeCapacitorApp()) {
+        setMobileAccessToken(null);
+      }
       localStorage.clear();
       sessionStorage.clear();
       queryClient.clear();

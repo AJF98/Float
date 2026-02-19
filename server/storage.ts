@@ -1,6 +1,7 @@
 import { pool, query } from "./db";
 import type { PoolClient } from "pg";
 import { buildCoverPhotoPublicUrlFromStorageKey } from "./coverPhotoShared";
+import { sendPushNotificationToDeviceTokens } from "./pushService";
 import {
   computeSplits,
   minorUnitsToAmount,
@@ -400,6 +401,14 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  upsertUserPushDevice(input: {
+    userId: string;
+    deviceId: string;
+    token: string;
+    platform: "ios";
+    appVersion?: string | null;
+  }): Promise<void>;
+  unregisterUserPushDevice(userId: string, deviceId: string): Promise<void>;
   checkMemberConflicts(
     tripId: number,
     userIds: string[],
@@ -421,6 +430,19 @@ type UserRow = {
   auth_provider: string;
   created_at: Date;
   updated_at: Date;
+};
+
+type UserPushDeviceRow = {
+  id: number;
+  user_id: string;
+  device_id: string;
+  token: string;
+  platform: string;
+  app_version: string | null;
+  enabled: boolean;
+  last_seen_at: Date | null;
+  created_at: Date | null;
+  updated_at: Date | null;
 };
 
 // Mapper: snake_case → camelCase (still useful for upsertUser)
@@ -2370,6 +2392,10 @@ export class DatabaseStorage implements IStorage {
 
   private tripApiSchemaAudited = false;
 
+  private userPushDevicesInitPromise: Promise<void> | null = null;
+
+  private userPushDevicesInitialized = false;
+
   private async ensureUserLegacyPaymentCompatibility(): Promise<void> {
     if (this.userLegacyPaymentCompatInitialized) {
       return;
@@ -2669,6 +2695,53 @@ export class DatabaseStorage implements IStorage {
       await this.packingItemsCreatorCompatInitPromise;
     } finally {
       this.packingItemsCreatorCompatInitPromise = null;
+    }
+  }
+
+  private async ensureUserPushDevicesTable(): Promise<void> {
+    if (this.userPushDevicesInitialized) {
+      return;
+    }
+
+    if (this.userPushDevicesInitPromise) {
+      await this.userPushDevicesInitPromise;
+      return;
+    }
+
+    this.userPushDevicesInitPromise = (async () => {
+      await query(`
+        CREATE TABLE IF NOT EXISTS user_push_devices (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          device_id TEXT NOT NULL,
+          token TEXT NOT NULL,
+          platform TEXT NOT NULL,
+          app_version TEXT,
+          enabled BOOLEAN NOT NULL DEFAULT TRUE,
+          last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+          UNIQUE (user_id, device_id)
+        )
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_user_push_devices_user_enabled
+        ON user_push_devices(user_id, enabled)
+      `);
+
+      await query(`
+        CREATE INDEX IF NOT EXISTS idx_user_push_devices_token
+        ON user_push_devices(token)
+      `);
+
+      this.userPushDevicesInitialized = true;
+    })();
+
+    try {
+      await this.userPushDevicesInitPromise;
+    } finally {
+      this.userPushDevicesInitPromise = null;
     }
   }
 
@@ -3788,6 +3861,61 @@ export class DatabaseStorage implements IStorage {
       ]
     );
     return mapUser(rows[0]);
+  }
+
+  async upsertUserPushDevice(input: {
+    userId: string;
+    deviceId: string;
+    token: string;
+    platform: "ios";
+    appVersion?: string | null;
+  }): Promise<void> {
+    await this.ensureUserPushDevicesTable();
+
+    await query(
+      `
+      INSERT INTO user_push_devices (
+        user_id,
+        device_id,
+        token,
+        platform,
+        app_version,
+        enabled,
+        last_seen_at
+      )
+      VALUES ($1, $2, $3, $4, $5, TRUE, NOW())
+      ON CONFLICT (user_id, device_id) DO UPDATE
+      SET
+        token = EXCLUDED.token,
+        platform = EXCLUDED.platform,
+        app_version = EXCLUDED.app_version,
+        enabled = TRUE,
+        last_seen_at = NOW(),
+        updated_at = NOW()
+      `,
+      [
+        input.userId,
+        input.deviceId,
+        input.token,
+        input.platform,
+        input.appVersion ?? null,
+      ],
+    );
+  }
+
+  async unregisterUserPushDevice(userId: string, deviceId: string): Promise<void> {
+    await this.ensureUserPushDevicesTable();
+
+    await query(
+      `
+      UPDATE user_push_devices
+      SET enabled = FALSE,
+          updated_at = NOW()
+      WHERE user_id = $1
+        AND device_id = $2
+      `,
+      [userId, deviceId],
+    );
   }
 
   // All other methods stubbed
@@ -7056,6 +7184,97 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  private buildNotificationPushPath(notification: Notification): string {
+    if (notification.tripId && notification.tripId > 0) {
+      if (notification.type.includes("proposal")) {
+        return `/trip/${notification.tripId}/proposals`;
+      }
+
+      if (notification.type.includes("activity")) {
+        return `/trip/${notification.tripId}/activities`;
+      }
+
+      if (notification.type.includes("hotel")) {
+        return `/trip/${notification.tripId}/hotels`;
+      }
+
+      if (notification.type.includes("flight")) {
+        return `/trip/${notification.tripId}/flights`;
+      }
+
+      if (notification.type.includes("restaurant")) {
+        return `/trip/${notification.tripId}/restaurants`;
+      }
+
+      return `/trip/${notification.tripId}`;
+    }
+
+    return "/profile";
+  }
+
+  private async dispatchNotificationPush(notification: Notification): Promise<void> {
+    await this.ensureUserPushDevicesTable();
+
+    const { rows } = await query<Pick<UserPushDeviceRow, "token">>(
+      `
+      SELECT token
+      FROM user_push_devices
+      WHERE user_id = $1
+        AND enabled = TRUE
+        AND platform = 'ios'
+      `,
+      [notification.userId],
+    );
+
+    const tokens = rows
+      .map((row) => row.token?.trim())
+      .filter((value): value is string => Boolean(value));
+
+    if (tokens.length === 0) {
+      return;
+    }
+
+    const results = await sendPushNotificationToDeviceTokens(tokens, {
+      title: notification.title,
+      body: notification.message,
+      data: {
+        notificationId: String(notification.id),
+        type: notification.type,
+        path: this.buildNotificationPushPath(notification),
+        tripId: notification.tripId ? String(notification.tripId) : "",
+      },
+    });
+
+    const invalidReasons = new Set([
+      "BadDeviceToken",
+      "DeviceTokenNotForTopic",
+      "Unregistered",
+    ]);
+
+    const tokensToDisable = results
+      .filter(
+        (result) =>
+          !result.ok &&
+          result.reason &&
+          (invalidReasons.has(result.reason) || result.status === 410),
+      )
+      .map((result) => result.token);
+
+    if (tokensToDisable.length === 0) {
+      return;
+    }
+
+    await query(
+      `
+      UPDATE user_push_devices
+      SET enabled = FALSE,
+          updated_at = NOW()
+      WHERE token = ANY($1::text[])
+      `,
+      [tokensToDisable],
+    );
+  }
+
   async createNotification(
     notification: InsertNotification,
     client?: PoolClient,
@@ -7105,7 +7324,19 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Failed to create notification");
     }
 
-    return mapNotification(row);
+    const mapped = mapNotification(row);
+
+    if (!client) {
+      void this.dispatchNotificationPush(mapped).catch((error) => {
+        console.warn("Push dispatch failed", {
+          notificationId: mapped.id,
+          userId: mapped.userId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+
+    return mapped;
   }
 
   async getUserNotifications(
