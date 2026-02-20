@@ -6049,8 +6049,14 @@ function FlightCoordination({
                   }}
                   onLocationSelect={(location: LocationResult) => {
                     setManualDepartureHasSelected(true);
-                    const selectedDepartureCode =
-                      (location.iata ?? location.icao ?? location.code ?? '').toUpperCase();
+                    const selectedDepartureCode = (
+                      location.iata ??
+                      location.icao ??
+                      location.code ??
+                      location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
+                      extractAirportCode(location.displayName ?? location.name ?? undefined) ??
+                      ''
+                    ).toUpperCase();
                     setManualFlightData((prev) => ({
                       ...prev,
                       departureAirport: location.displayName,
@@ -6078,8 +6084,14 @@ function FlightCoordination({
                   }}
                   onLocationSelect={(location: LocationResult) => {
                     setManualArrivalHasSelected(true);
-                    const selectedArrivalCode =
-                      (location.iata ?? location.icao ?? location.code ?? '').toUpperCase();
+                    const selectedArrivalCode = (
+                      location.iata ??
+                      location.icao ??
+                      location.code ??
+                      location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
+                      extractAirportCode(location.displayName ?? location.name ?? undefined) ??
+                      ''
+                    ).toUpperCase();
                     setManualFlightData((prev) => ({
                       ...prev,
                       arrivalAirport: location.displayName,
