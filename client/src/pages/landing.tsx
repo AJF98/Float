@@ -1,210 +1,90 @@
-import { useMemo } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import floatLogo from "@/assets/float-logo.png"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import type { LucideIcon } from "lucide-react"
-import {
-  ArrowRight,
-  CalendarCheck,
-  CircleCheck,
-  Clock,
-  LayoutDashboard,
-  ListChecks,
-  MapPin,
-  MessagesSquare,
-  Plane,
-  Sparkles,
-  Star,
-  Utensils,
-  Vote,
-  Users,
-} from "lucide-react"
-import floatLogo from "@/assets/float-logo.png";
+import { Card, CardContent } from "@/components/ui/card"
+import { CalendarCheck, ClipboardList, Crown, Sparkles, Vote } from "lucide-react"
 
-const heroChecklist = [
-  "Shared itinerary everyone can explore together",
-  "Quick polls turn ideas into clear decisions",
-  "Calendar sync keeps every meetup in one place",
-  "Open workspace where every voice is heard",
-]
-
-const heroItinerary = [
+const howItWorks = [
   {
-    time: "Thu • 9:00 AM",
-    title: "Rooftop breakfast meetup",
-    detail: "Hotel Lumia • confirmed for the whole crew",
-    statusLabel: "Confirmed",
-    statusClass: "border border-emerald-200 bg-emerald-50 text-emerald-600",
-  },
-  {
-    time: "Thu • 1:30 PM",
-    title: "Kayak along the coast",
-    detail: "Praia da Marinha • 6 going, 2 interested",
-    statusLabel: "Voting now",
-    statusClass: "border border-blue-200 bg-blue-50 text-blue-600",
-  },
-  {
-    time: "Thu • 7:00 PM",
-    title: "Group dinner & vote reveal",
-    detail: "Taberna do Mar • calendar invites sent",
-    statusLabel: "Synced",
-    statusClass: "border border-violet-200 bg-violet-50 text-violet-600",
-  },
-]
-
-type Feature = {
-  title: string
-  description: string
-  icon: LucideIcon
-}
-
-const coreFeatures: Feature[] = [
-  {
-    title: "Collaborative trip dashboard",
-    description:
-      "Organize flights, stays, conversations, and files in a single, visual board that keeps everyone oriented.",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Shared group calendar",
-    description:
-      "Auto-sync every confirmed plan to a master calendar so nobody misses the meetup or the morning hike.",
-    icon: CalendarCheck,
-  },
-  {
-    title: "Group votes that stick",
-    description:
-      "Let the crew pick flights, hotels, and activities with fast polls, reactions, and instant tallying.",
-    icon: Vote,
-  },
-  {
-    title: "Planning without the chaos",
-    description:
-      "Skip the endless text threads, spreadsheets, and DMs—Float keeps decisions and receipts in context.",
-    icon: MessagesSquare,
-  },
-  {
-    title: "Shared smart lists",
-    description:
-      "Packing, grocery, and wish lists stay synced across the group, complete with assignments and checkmarks.",
-    icon: ListChecks,
-  },
-  {
-    title: "Meal coordination made easy",
-    description:
-      "Plan group meals, split ingredients, and keep the pantry in sync so dinner nights feel effortless.",
-    icon: Utensils,
-  },
-]
-
-type FlowStep = {
-  title: string
-  description: string
-  icon: LucideIcon
-}
-
-const planningFlow: FlowStep[] = [
-  {
-    title: "Float your ideas",
-    description:
-      "Drop flight deals, stays, and experience ideas into beautiful cards that the whole crew can scan in seconds.",
+    title: "Float ideas",
+    description: "Drop options into one shared board so everyone can see the same plan in real time.",
     icon: Sparkles,
   },
   {
-    title: "Decide together",
-    description:
-      "Built-in voting, comments, and reactions mean the winning option becomes a confirmed plan without juggling apps.",
+    title: "Vote & decide",
+    description: "Quick polls help your group choose the best option without endless back-and-forth.",
     icon: Vote,
   },
   {
-    title: "Sync the itinerary",
-    description:
-      "Float updates the shared calendar and personal agendas the moment something gets approved, complete with reminders.",
+    title: "Sync to calendar",
+    description: "Confirmed plans sync to calendars so nobody misses the moments that matter.",
     icon: CalendarCheck,
-  },
-  {
-    title: "Stay coordinated",
-    description:
-      "Shared lists and ingredient syncing keep packing, grocery runs, and group meals organized long before wheels up.",
-    icon: ListChecks,
   },
 ]
 
-type ScheduleItem = {
-  time: string
-  title: string
-  detail: string
-  icon: LucideIcon
-}
+const benefits = [
+  {
+    title: "Shared itinerary",
+    description: "Keep flights, stays, meals, and activities in one clear timeline.",
+    icon: ClipboardList,
+  },
+  {
+    title: "Fast decisions",
+    description: "Turn group opinions into clear choices in minutes, not days.",
+    icon: Vote,
+  },
+  {
+    title: "Calendar sync",
+    description: "Push confirmed events to calendars so everyone stays aligned.",
+    icon: CalendarCheck,
+  },
+  {
+    title: "Owner control",
+    description: "Trip owners keep structure while collaborators can still contribute.",
+    icon: Crown,
+  },
+]
 
-const sampleSchedule: ScheduleItem[] = [
+const testimonials = [
   {
-    time: "09:00",
-    title: "Rooftop breakfast meetup",
-    detail: "Hotel Lumia • reserved for everyone who RSVP’d",
-    icon: Clock,
+    quote: "Float made our reunion trip feel effortless—everyone knew the plan and actually showed up on time.",
+    name: "Maya R.",
   },
   {
-    time: "13:30",
-    title: "Kayak along the coast",
-    detail: "Praia da Marinha • optional add-on",
-    icon: MapPin,
+    quote: "We stopped debating in chat and started voting in Float. Decisions became instant.",
+    name: "Jordan P.",
   },
   {
-    time: "19:00",
-    title: "Group dinner & vote reveal",
-    detail: "Taberna do Mar • booked after poll closed",
-    icon: Users,
+    quote: "The shared itinerary gave our whole group confidence. No more confusion, no more duplicate plans.",
+    name: "Elena T.",
   },
 ]
 
 export default function Landing() {
-  const year = useMemo(() => new Date().getFullYear(), [])
-
   return (
-    <div className="bg-slate-950 text-white min-h-screen flex flex-col">
-      <nav className="w-full border-b border-white/10 bg-slate-950/80 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center">
-            <img
-              src={floatLogo}
-              alt="Float"
-              className="h-10 sm:h-12 w-auto"
-            />
+    <div className="min-h-screen bg-gradient-to-b from-white via-cyan-50 to-violet-50 text-slate-900">
+      <nav className="sticky top-0 z-20 border-b border-cyan-100/80 bg-white/85 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
+          <div className="flex items-center gap-2">
+            <img src={floatLogo} alt="Float" className="h-9 w-auto" />
           </div>
-          <div className="hidden md:flex items-center space-x-6 text-sm text-white/80">
-            <button
-              className="hover:text-white transition"
-              onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Features
-            </button>
-            <button
-              className="hover:text-white transition"
-              onClick={() => document.getElementById("flow")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              How it works
-            </button>
-            <button
-              className="hover:text-white transition"
-              onClick={() => document.getElementById("social-proof")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Stories
-            </button>
+
+          <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+            <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">Features</button>
+            <button onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">How it works</button>
+            <button onClick={() => document.getElementById("stories")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">Stories</button>
           </div>
+
           <div className="flex items-center gap-3">
             <Button
-              variant="ghost"
-              className="hidden sm:inline-flex text-white hover:bg-white/10"
+              variant="outline"
+              className="hidden rounded-full border-cyan-200 bg-white text-slate-700 hover:bg-cyan-50 sm:inline-flex"
               onClick={() => (window.location.href = "/login")}
             >
               Log in
             </Button>
             <Button
-              size="lg"
               onClick={() => (window.location.href = "/register")}
-              className="sunset-gradient text-white font-semibold text-base px-6 h-auto py-3 hover:shadow-xl hover:-translate-y-0.5 transition"
+              className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-5 text-white shadow-md shadow-teal-200 transition hover:opacity-95"
             >
               Get started
             </Button>
@@ -212,399 +92,115 @@ export default function Landing() {
         </div>
       </nav>
 
-      <main className="flex-1">
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1800&q=80"
-              alt="Friends exploring a coastal city together"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-slate-950/75" />
-          </div>
-          <div className="relative max-w-7xl mx-auto px-4 lg:px-8 py-24 lg:py-36">
-            <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
-              <div>
-                <Badge className="bg-white/15 text-white border border-white/30 uppercase tracking-wide">
-                  Group travel, actually organized
-                </Badge>
-                <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-semibold leading-tight drop-shadow-xl">
-                  Collaborative trip planning without the chaos
-                </h1>
-                <p className="mt-6 text-lg text-white">
-                  No more group chats or messy spreadsheets.
-                </p>
-                <p className="mt-3 text-base text-white/80 max-w-xl">
-                  Float brings every traveler into a shared, visual workspace where plans stay transparent, decisions are easy,
-                  and the full itinerary is always up to date.
-                </p>
-                <ul className="mt-8 space-y-3">
-                  {heroChecklist.map((item) => (
-                    <li key={item} className="flex items-start gap-3">
-                      <span className="mt-1 flex h-7 w-7 items-center justify-center rounded-full bg-white/15">
-                        <CircleCheck className="w-4 h-4 text-emerald-300" />
-                      </span>
-                      <span className="text-base text-white/90 leading-relaxed">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-10 flex flex-wrap items-center gap-4">
-                  <Button
-                    size="lg"
-                    onClick={() => (window.location.href = "/register")}
-                    className="sunset-gradient text-white text-lg font-semibold px-8 h-auto py-4 shadow-2xl hover:shadow-3xl hover:-translate-y-0.5 transition"
-                  >
-                    Start planning together
-                    <ArrowRight className="w-5 h-5" />
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
-                    className="border-white/40 bg-white/10 text-white hover:bg-white/20 h-auto px-8 py-4 text-lg"
-                  >
-                    See how it works
-                  </Button>
-                </div>
-                <div className="mt-12 flex flex-wrap items-center gap-6 text-sm text-white/80">
-                  <div className="flex -space-x-3">
-                    <Avatar className="border-2 border-white bg-white/10">
-                      <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-500 text-white text-sm font-semibold">
-                        AL
-                      </AvatarFallback>
-                    </Avatar>
-                    <Avatar className="border-2 border-white bg-white/10">
-                      <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-cyan-500 text-white text-sm font-semibold">
-                        JP
-                      </AvatarFallback>
-                    </Avatar>
-                    <Avatar className="border-2 border-white bg-white/10">
-                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-pink-500 text-white text-sm font-semibold">
-                        MK
-                      </AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1 text-amber-300">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <Star key={index} className="w-4 h-4" fill="currentColor" strokeWidth={0} />
-                      ))}
-                    </div>
-                    <p className="mt-1 text-white/80">
-                      Loved by crews who launched 500+ trips this year
-                    </p>
-                  </div>
-                </div>
-              </div>
+      <main>
+        <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-16 pt-16 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-20">
+          <div>
+            <p className="inline-flex rounded-full border border-cyan-200 bg-white/80 px-4 py-1 text-sm font-medium text-cyan-700">
+              Group travel made simple
+            </p>
+            <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">
+              Plan trips together—without the chaos.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg text-slate-600">
+              Float keeps plans, RSVPs, and decisions in one shared itinerary everyone can trust.
+            </p>
 
-              <div className="relative flex flex-col gap-6 lg:items-end">
-                <div className="absolute -top-24 -left-16 h-64 w-64 rounded-full bg-blue-500/20 blur-3xl" />
-                <div className="absolute -bottom-16 -right-10 h-56 w-56 rounded-full bg-emerald-400/20 blur-3xl" />
-                <Card className="relative border-none bg-white text-slate-900 shadow-2xl">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg text-slate-900">
-                      <LayoutDashboard className="w-5 h-5 text-blue-600" />
-                      Shared itinerary view
-                    </CardTitle>
-                    <p className="text-sm text-slate-500">
-                      See the day's plans, who's joining, and what's already locked in at a glance.
-                    </p>
-                  </CardHeader>
-                  <CardContent className="pt-0 space-y-3">
-                    {heroItinerary.map(({ time, title, detail, statusLabel, statusClass }) => (
-                      <div key={title} className="rounded-2xl border border-slate-200 bg-white/90 p-4 shadow-sm">
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">{time}</p>
-                            <p className="mt-2 text-base font-semibold text-slate-900">{title}</p>
-                            <p className="mt-1 text-sm text-slate-500">{detail}</p>
-                          </div>
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${statusClass}`}
-                          >
-                            <CircleCheck className="h-3.5 w-3.5" />
-                            {statusLabel}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-                <div className="grid w-full max-w-sm gap-4 lg:self-end">
-                  <Card className="border-none bg-slate-900 text-white/90 shadow-xl">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base text-white">
-                        <Vote className="w-5 h-5 text-emerald-300" />
-                        Float voting
-                      </CardTitle>
-                      <p className="text-xs text-white/70">Collect quick decisions without leaving the workspace.</p>
-                    </CardHeader>
-                    <CardContent className="pt-1 space-y-3 text-sm">
-                      <div className="rounded-2xl border border-white/10 bg-white/5 p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-white">Algarve beach villa</span>
-                          <Badge className="rounded-full border-0 bg-emerald-400/25 px-3 py-1 text-[11px] font-medium text-emerald-100">
-                            Leading
-                          </Badge>
-                        </div>
-                        <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-                          <div className="h-2 w-4/5 rounded-full bg-emerald-300" />
-                        </div>
-                        <p className="mt-2 text-xs text-white/60">8 of 10 votes in • closes in 1h</p>
-                      </div>
-                      <div className="rounded-2xl border border-white/5 bg-white/5 p-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-white/90">Historic city lofts</span>
-                          <span className="text-xs text-white/60">Trailing</span>
-                        </div>
-                        <div className="mt-3 h-2 w-full rounded-full bg-white/10">
-                          <div className="h-2 w-1/2 rounded-full bg-violet-300/80" />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="border-none bg-white text-slate-900 shadow-xl">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2 text-base text-slate-900">
-                        <CalendarCheck className="w-5 h-5 text-indigo-500" />
-                        Calendar sync
-                      </CardTitle>
-                      <p className="text-xs text-slate-500">Instant updates keep everyone aligned before takeoff.</p>
-                    </CardHeader>
-                    <CardContent className="space-y-3 text-sm">
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="font-semibold text-slate-900">Kayak along the coast</p>
-                          <p className="text-xs text-slate-500">Added to shared itinerary</p>
-                        </div>
-                        <Badge className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-medium text-emerald-600">
-                          Synced
-                        </Badge>
-                      </div>
-                      <div className="flex items-start justify-between gap-4">
-                        <div>
-                          <p className="font-semibold text-slate-900">Dinner at Taberna do Mar</p>
-                          <p className="text-xs text-slate-500">Calendar invite sent to everyone</p>
-                        </div>
-                        <Badge className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-[11px] font-medium text-blue-600">
-                          Updated
-                        </Badge>
-                      </div>
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs text-slate-500">
-                        Reminders scheduled 24 hours before each meetup.
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="bg-white text-slate-900 py-24">
-          <div className="max-w-7xl mx-auto px-4 lg:px-8">
-            <div className="max-w-3xl">
-              <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight">
-                The toolkit for planning trips together—without the headache
-              </h2>
-              <p className="mt-4 text-lg text-slate-600">
-                Share a clear dashboard, sync the calendar, collect votes, and manage every list in one friendly workspace that keeps
-                momentum high and decisions easy.
-              </p>
-            </div>
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {coreFeatures.map(({ title, description, icon: Icon }) => (
-                <Card key={title} className="h-full border-slate-100 shadow-lg">
-                  <CardHeader className="space-y-4 pb-0">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <CardTitle className="text-xl text-slate-900">{title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-slate-600 leading-relaxed">
-                    {description}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="mt-14 flex flex-col items-center gap-3 text-center">
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Button
-                size="lg"
                 onClick={() => (window.location.href = "/register")}
-                className="sunset-gradient text-white text-lg font-semibold px-10 h-auto py-4 shadow-xl hover:shadow-2xl"
+                className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-6 text-white shadow-md shadow-teal-200"
               >
-                Get started free
+                Start a trip
               </Button>
-              <p className="text-sm text-slate-500">Invite your crew in minutes. No credit card required.</p>
+              <Button
+                variant="outline"
+                className="rounded-full border-cyan-200 bg-white text-slate-700 hover:bg-cyan-50"
+                onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                See how it works
+              </Button>
             </div>
           </div>
+
+          <Card className="rounded-3xl border-cyan-100 bg-white/95 p-2 shadow-xl shadow-cyan-100">
+            <CardContent className="space-y-4 rounded-2xl bg-gradient-to-br from-white to-cyan-50 p-5">
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Thursday · 1:30 PM</p>
+                <p className="mt-2 font-semibold">Kayak along the coast</p>
+                <p className="mt-1 text-sm text-slate-500">6 going · 2 maybe · calendar synced</p>
+              </div>
+              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">Friday · 9:00 AM</p>
+                <p className="mt-2 font-semibold">Local breakfast meetup</p>
+                <p className="mt-1 text-sm text-slate-500">RSVPs finalized · reminder set</p>
+              </div>
+              <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4 text-sm text-teal-700">
+                Product preview: one clean, shared itinerary view for the whole group.
+              </div>
+            </CardContent>
+          </Card>
         </section>
 
-        <section id="flow" className="relative overflow-hidden bg-slate-900 py-24 text-white">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.2),_transparent_50%)]" />
-          <div className="relative max-w-7xl mx-auto px-4 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-[1.05fr,0.95fr]">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-semibold">
-                  Plan, vote, and lock the itinerary without leaving Float
-                </h2>
-                <p className="mt-4 text-lg text-white/80 max-w-2xl">
-                  Float ideas to your group, collect instant feedback, auto-sync the group calendar, and keep shared lists aligned so
-                  your crew always knows what’s next.
-                </p>
-                <div className="mt-10 space-y-6">
-                  {planningFlow.map(({ title, description, icon: Icon }, index) => (
-                    <div key={title} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
-                      <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full bg-white/10 text-cyan-300">
-                        <Icon className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.2em] text-white/60">Step {index + 1}</p>
-                        <h3 className="mt-1 text-xl font-semibold text-white">{title}</h3>
-                        <p className="mt-2 text-sm text-white/80 leading-relaxed">{description}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <Card className="border-none bg-white text-slate-900 shadow-2xl">
-                  <CardHeader className="pb-4">
-                    <CardTitle className="text-lg font-semibold text-slate-900">
-                      Personal schedule view
-                    </CardTitle>
-                    <p className="text-sm text-slate-500">
-                      Every traveler sees what they signed up for and where to be—automatically synced with the group calendar.
-                    </p>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {sampleSchedule.map(({ time, title, detail, icon: Icon }) => (
-                      <div key={title} className="flex items-start gap-4 rounded-2xl border border-slate-200 bg-white/80 p-4">
-                        <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                          <Icon className="w-5 h-5" />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">{time}</p>
-                          <p className="text-base font-semibold text-slate-900">{title}</p>
-                          <p className="text-sm text-slate-500">{detail}</p>
-                        </div>
-                      </div>
-                    ))}
-                    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                      Calendar sync on • RSVP reminders scheduled 24 hours ahead
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="social-proof" className="bg-white py-24 text-slate-900">
-          <div className="max-w-6xl mx-auto px-4 lg:px-8">
-            <div className="grid gap-12 lg:grid-cols-[1fr,0.9fr] items-center">
-              <div>
-                <h2 className="text-3xl sm:text-4xl font-semibold">
-                  Groups love planning with Float
-                </h2>
-                <p className="mt-4 text-lg text-slate-600">
-                  Families, wedding parties, and remote teams use Float to make decisions faster and keep the vibe high. That’s why we
-                  see a 4.9/5 satisfaction rating across thousands of travelers.
-                </p>
-                <div className="mt-8 grid gap-6 sm:grid-cols-2">
-                  <div className="rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <p className="text-3xl font-semibold text-slate-900">500+</p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      Trips planned collaboratively on Float so far this year.
-                    </p>
+        <section id="how-it-works" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+          <h2 className="text-3xl font-bold">How it works</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {howItWorks.map(({ title, description, icon: Icon }) => (
+              <Card key={title} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <div className="mb-4 inline-flex rounded-xl bg-cyan-50 p-3 text-cyan-700">
+                    <Icon className="h-5 w-5" />
                   </div>
-                  <div className="rounded-3xl border border-slate-200 p-6 shadow-sm">
-                    <div className="flex items-center gap-1 text-amber-500">
-                      {Array.from({ length: 5 }).map((_, index) => (
-                        <Star key={index} className="w-4 h-4" fill="currentColor" strokeWidth={0} />
-                      ))}
-                    </div>
-                    <p className="mt-3 text-3xl font-semibold text-slate-900">4.9/5</p>
-                    <p className="text-sm text-slate-500">Average rating from planning crews worldwide.</p>
-                  </div>
-                </div>
-              </div>
-              <Card className="border-none bg-slate-900 text-white shadow-2xl">
-                <CardHeader>
-                  <CardTitle className="text-2xl leading-snug text-white">
-                    “Float turned 11 opinions into one itinerary we all loved.”
-                  </CardTitle>
-                  <p className="text-sm text-white/70">Janelle, Annual Friendsgiving Trip Organizer</p>
-                </CardHeader>
-                <CardContent className="space-y-4 text-white/80">
-                  <p>
-                    “Before Float we had three spreadsheets, four flights, and zero decisions. Now everyone drops ideas into the board,
-                    votes on their favorites, and our weekend plans stay perfectly in sync. It actually made planning fun.”
-                  </p>
-                  <div className="rounded-2xl border border-white/15 bg-white/5 p-4 text-sm text-white/70">
-                    Used by travel crews in {year} across retreats, reunions, and milestone celebrations.
-                  </div>
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{description}</p>
                 </CardContent>
               </Card>
-            </div>
+            ))}
           </div>
         </section>
 
-        <section className="relative overflow-hidden py-24 text-center">
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1530785602389-07594beb8b75?auto=format&fit=crop&w=1600&q=80"
-              alt="Travelers celebrating sunset together"
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-slate-950/80" />
+        <section id="features" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+          <h2 className="text-3xl font-bold">Why groups choose Float</h2>
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {benefits.map(({ title, description, icon: Icon }) => (
+              <Card key={title} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <div className="mb-4 inline-flex rounded-xl bg-violet-50 p-3 text-violet-700">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-lg font-semibold">{title}</h3>
+                  <p className="mt-2 text-sm text-slate-600">{description}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-          <div className="relative max-w-3xl mx-auto px-4">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-white">
-              Create your first Float board today
-            </h2>
-            <p className="mt-4 text-lg text-white/80">
-              Bring your people together, capture every idea, and turn planning chaos into a shared countdown with synced
-              calendars, smart lists, and effortless votes.
-            </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
-              <Button
-                size="lg"
-                onClick={() => (window.location.href = "/register")}
-                className="sunset-gradient text-white text-lg font-semibold px-10 h-auto py-4 shadow-2xl hover:shadow-3xl"
-              >
-                Get started
-                <ArrowRight className="w-5 h-5" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                onClick={() => (window.location.href = "/login")}
-                className="border-white/50 bg-white/10 text-white hover:bg-white/20 h-auto px-8 py-4 text-lg"
-              >
-                Explore my dashboard
-              </Button>
-            </div>
-            <p className="mt-4 text-sm text-white/70">
-              Invite unlimited collaborators and cancel anytime.
-            </p>
+        </section>
+
+        <section id="stories" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+          <h2 className="text-3xl font-bold">What travelers say</h2>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {testimonials.map((item) => (
+              <Card key={item.name} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
+                <CardContent className="p-6">
+                  <p className="text-slate-700">“{item.quote}”</p>
+                  <p className="mt-4 text-sm font-semibold text-slate-500">{item.name}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto w-full max-w-6xl px-4 pb-20 pt-8 lg:px-8">
+          <div className="rounded-[28px] border border-cyan-100 bg-gradient-to-r from-cyan-100/70 via-white to-violet-100/70 px-6 py-12 text-center shadow-sm">
+            <h2 className="text-3xl font-bold">Ready to plan your next group trip?</h2>
+            <Button
+              onClick={() => (window.location.href = "/register")}
+              className="mt-6 rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-8 text-white shadow-md shadow-teal-200"
+            >
+              Get started
+            </Button>
           </div>
         </section>
       </main>
-
-      <footer className="bg-slate-950 border-t border-white/10 py-10 text-white/70">
-        <div className="max-w-6xl mx-auto px-4 lg:px-8 flex flex-col items-center space-y-3 text-center">
-          <div className="flex items-center space-x-3 text-white">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/10">
-              <Plane className="w-4 h-4" />
-            </div>
-            <span className="text-lg font-semibold text-white">Float</span>
-          </div>
-          <p className="text-sm text-white/70">
-            The simple, collaborative way to plan unforgettable group adventures.
-          </p>
-        </div>
-      </footer>
     </div>
   )
 }
