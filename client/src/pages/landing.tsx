@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react"
 import floatLogo from "@/assets/float-logo.png"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -59,16 +60,33 @@ const testimonials = [
   },
 ]
 
+const baseCardClass =
+  "rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-white to-cyan-50/50 shadow-sm"
+
 export default function Landing() {
+  const [isScrolled, setIsScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 12)
+    onScroll()
+    window.addEventListener("scroll", onScroll)
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white via-cyan-50 to-violet-50 text-slate-900">
-      <nav className="sticky top-0 z-20 border-b border-cyan-100/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
-          <div className="flex items-center gap-2">
-            <img src={floatLogo} alt="Float" className="h-9 w-auto" />
+    <div className="min-h-screen bg-white text-slate-900">
+      <nav
+        className={`sticky top-0 z-20 border-b transition-all duration-300 ${
+          isScrolled ? "border-slate-200 bg-white/90 backdrop-blur-md" : "border-transparent bg-white/70"
+        }`}
+      >
+        <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
+          <div className="flex items-center gap-3">
+            <img src={floatLogo} alt="Float" className="h-11 w-auto" />
+            <span className="text-2xl font-bold tracking-tight text-slate-900">Float</span>
           </div>
 
-          <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+          <div className="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
             <button onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">Features</button>
             <button onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">How it works</button>
             <button onClick={() => document.getElementById("stories")?.scrollIntoView({ behavior: "smooth" })} className="transition hover:text-slate-900">Stories</button>
@@ -77,14 +95,14 @@ export default function Landing() {
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className="hidden rounded-full border-cyan-200 bg-white text-slate-700 hover:bg-cyan-50 sm:inline-flex"
+              className="hidden rounded-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50 sm:inline-flex"
               onClick={() => (window.location.href = "/login")}
             >
               Log in
             </Button>
             <Button
               onClick={() => (window.location.href = "/register")}
-              className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-5 text-white shadow-md shadow-teal-200 transition hover:opacity-95"
+              className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-5 text-white"
             >
               Get started
             </Button>
@@ -93,111 +111,125 @@ export default function Landing() {
       </nav>
 
       <main>
-        <section className="mx-auto grid w-full max-w-6xl gap-10 px-4 pb-16 pt-16 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pt-20">
-          <div>
-            <p className="inline-flex rounded-full border border-cyan-200 bg-white/80 px-4 py-1 text-sm font-medium text-cyan-700">
-              Group travel made simple
-            </p>
-            <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-tight sm:text-5xl">
-              Plan trips together—without the chaos.
-            </h1>
-            <p className="mt-5 max-w-xl text-lg text-slate-600">
-              Float keeps plans, RSVPs, and decisions in one shared itinerary everyone can trust.
-            </p>
+        <section
+          className="relative overflow-hidden bg-cover bg-center"
+          style={{ backgroundImage: "url('/landing/beach-hero.svg')" }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/90 via-[60%] to-white/10" />
+          <div className="relative mx-auto grid w-full max-w-6xl gap-8 px-4 pb-16 pt-16 lg:grid-cols-[1.05fr,0.95fr] lg:items-center lg:px-8 lg:pb-20 lg:pt-24">
+            <div>
+              <p className="inline-flex rounded-full border border-slate-200 bg-white/90 px-4 py-1 text-sm font-medium text-cyan-700">
+                Group travel made simple
+              </p>
+              <h1 className="mt-6 max-w-2xl text-4xl font-bold leading-tight text-slate-900 sm:text-5xl">
+                Plan trips together—without the chaos.
+              </h1>
+              <p className="mt-5 max-w-xl text-lg text-slate-700">
+                Float keeps plans, RSVPs, and decisions in one shared itinerary everyone can trust.
+              </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              <Button
-                onClick={() => (window.location.href = "/register")}
-                className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-6 text-white shadow-md shadow-teal-200"
-              >
-                Start a trip
-              </Button>
-              <Button
-                variant="outline"
-                className="rounded-full border-cyan-200 bg-white text-slate-700 hover:bg-cyan-50"
-                onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
-              >
-                See how it works
-              </Button>
+              <div className="mt-8 flex flex-wrap items-center gap-3">
+                <Button
+                  onClick={() => (window.location.href = "/register")}
+                  className="rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-6 text-white"
+                >
+                  Start a trip
+                </Button>
+                <Button
+                  variant="outline"
+                  className="rounded-full border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                  onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
+                >
+                  See how it works
+                </Button>
+              </div>
+            </div>
+
+            <Card className={`${baseCardClass} p-2`}>
+              <CardContent className="space-y-4 rounded-2xl bg-white/95 p-5">
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Thursday · 1:30 PM</p>
+                  <p className="mt-2 font-semibold text-slate-900">Kayak along the coast</p>
+                  <p className="mt-1 text-sm text-slate-600">6 going · 2 maybe · calendar synced</p>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">Friday · 9:00 AM</p>
+                  <p className="mt-2 font-semibold text-slate-900">Local breakfast meetup</p>
+                  <p className="mt-1 text-sm text-slate-600">RSVPs finalized · reminder set</p>
+                </div>
+                <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4 text-sm text-teal-800">
+                  Product preview: one clean, shared itinerary view for the whole group.
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        <section id="how-it-works" className="bg-gradient-to-b from-cyan-50/60 to-white">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+            <h2 className="text-3xl font-bold text-slate-900">How it works</h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {howItWorks.map(({ title, description, icon: Icon }) => (
+                <Card key={title} className={baseCardClass}>
+                  <CardContent className="p-6">
+                    <div className="mb-4 inline-flex rounded-xl bg-cyan-100 p-3 text-cyan-800">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                    <p className="mt-2 text-sm text-slate-600">{description}</p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
-
-          <Card className="rounded-3xl border-cyan-100 bg-white/95 p-2 shadow-xl shadow-cyan-100">
-            <CardContent className="space-y-4 rounded-2xl bg-gradient-to-br from-white to-cyan-50 p-5">
-              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-700">Thursday · 1:30 PM</p>
-                <p className="mt-2 font-semibold">Kayak along the coast</p>
-                <p className="mt-1 text-sm text-slate-500">6 going · 2 maybe · calendar synced</p>
-              </div>
-              <div className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-violet-700">Friday · 9:00 AM</p>
-                <p className="mt-2 font-semibold">Local breakfast meetup</p>
-                <p className="mt-1 text-sm text-slate-500">RSVPs finalized · reminder set</p>
-              </div>
-              <div className="rounded-2xl border border-teal-100 bg-teal-50 p-4 text-sm text-teal-700">
-                Product preview: one clean, shared itinerary view for the whole group.
-              </div>
-            </CardContent>
-          </Card>
         </section>
 
-        <section id="how-it-works" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-          <h2 className="text-3xl font-bold">How it works</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {howItWorks.map(({ title, description, icon: Icon }) => (
-              <Card key={title} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
-                <CardContent className="p-6">
-                  <div className="mb-4 inline-flex rounded-xl bg-cyan-50 p-3 text-cyan-700">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{description}</p>
-                </CardContent>
-              </Card>
-            ))}
+        <section id="features" className="bg-gradient-to-b from-white to-violet-50/50">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+            <h2 className="text-3xl font-bold text-slate-900">Why groups choose Float</h2>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {benefits.map(({ title, description, icon: Icon }) => (
+                <Card key={title} className={baseCardClass}>
+                  <CardContent className="p-6">
+                    <div className="mb-4 inline-flex rounded-xl bg-violet-100 p-3 text-violet-800">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                    <p className="mt-2 text-sm text-slate-600">{description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section id="features" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-          <h2 className="text-3xl font-bold">Why groups choose Float</h2>
-          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {benefits.map(({ title, description, icon: Icon }) => (
-              <Card key={title} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
-                <CardContent className="p-6">
-                  <div className="mb-4 inline-flex rounded-xl bg-violet-50 p-3 text-violet-700">
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                  <p className="mt-2 text-sm text-slate-600">{description}</p>
-                </CardContent>
-              </Card>
-            ))}
+        <section id="stories" className="bg-gradient-to-b from-cyan-50/50 to-white">
+          <div className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
+            <h2 className="text-3xl font-bold text-slate-900">What travelers say</h2>
+            <div className="mt-8 grid gap-6 md:grid-cols-3">
+              {testimonials.map((item) => (
+                <Card key={item.name} className={baseCardClass}>
+                  <CardContent className="p-6">
+                    <p className="text-[15px] leading-relaxed text-slate-700">“{item.quote}”</p>
+                    <p className="mt-4 text-sm font-semibold text-slate-500">{item.name}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section id="stories" className="mx-auto w-full max-w-6xl px-4 py-12 lg:px-8 lg:py-16">
-          <h2 className="text-3xl font-bold">What travelers say</h2>
-          <div className="mt-8 grid gap-6 md:grid-cols-3">
-            {testimonials.map((item) => (
-              <Card key={item.name} className="rounded-3xl border-cyan-100 bg-white shadow-sm">
-                <CardContent className="p-6">
-                  <p className="text-slate-700">“{item.quote}”</p>
-                  <p className="mt-4 text-sm font-semibold text-slate-500">{item.name}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section className="mx-auto w-full max-w-6xl px-4 pb-20 pt-8 lg:px-8">
-          <div className="rounded-[28px] border border-cyan-100 bg-gradient-to-r from-cyan-100/70 via-white to-violet-100/70 px-6 py-12 text-center shadow-sm">
-            <h2 className="text-3xl font-bold">Ready to plan your next group trip?</h2>
-            <Button
-              onClick={() => (window.location.href = "/register")}
-              className="mt-6 rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-8 text-white shadow-md shadow-teal-200"
-            >
-              Get started
-            </Button>
+        <section className="bg-gradient-to-b from-white to-violet-50/60">
+          <div className="mx-auto w-full max-w-6xl px-4 pb-20 pt-8 lg:px-8">
+            <div className="rounded-[28px] border border-slate-200 bg-gradient-to-r from-cyan-50 via-white to-violet-50 px-6 py-12 text-center shadow-sm">
+              <h2 className="text-3xl font-bold text-slate-900">Ready to plan your next group trip?</h2>
+              <Button
+                onClick={() => (window.location.href = "/register")}
+                className="mt-6 rounded-full bg-gradient-to-r from-teal-500 to-violet-500 px-8 text-white"
+              >
+                Get started
+              </Button>
+            </div>
           </div>
         </section>
       </main>
