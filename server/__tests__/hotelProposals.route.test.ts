@@ -268,3 +268,80 @@ describe("POST /api/trips/:tripId/proposals/hotels", () => {
     });
   });
 });
+
+
+describe("POST /api/hotel-proposals/:id/convert", () => {
+  let app: express.Express;
+  let httpServer: import("http").Server;
+  let handler: RouteHandler;
+  let updateHotelProposalStatusMock: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    app = express();
+    app.use(express.json());
+    httpServer = setupRoutes(app);
+    handler = findRouteHandler(app, "/api/hotel-proposals/:id/convert", "post");
+    updateHotelProposalStatusMock = jest.spyOn(storageModule.storage, "updateHotelProposalStatus");
+  });
+
+  afterEach(async () => {
+    updateHotelProposalStatusMock.mockRestore();
+
+    await new Promise<void>((resolve) => {
+      httpServer.close(() => resolve());
+    });
+  });
+
+  it("accepts confirmed status when converting a hotel proposal", async () => {
+    updateHotelProposalStatusMock.mockResolvedValueOnce({
+      id: 55,
+      tripId: 10,
+      status: "confirmed",
+    });
+
+    const req: any = {
+      params: { id: "55" },
+      body: { status: "confirmed" },
+      session: { userId: "test-user" },
+      user: { id: "test-user" },
+      headers: {},
+      get: jest.fn(),
+      header: jest.fn(),
+    };
+
+    const res = createMockResponse();
+
+    await handler(req, res);
+
+    expect(updateHotelProposalStatusMock).toHaveBeenCalledWith(55, "confirmed", "test-user");
+    expect(res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: 55,
+        status: "confirmed",
+      }),
+    );
+  });
+
+  it("rejects unsupported conversion status values", async () => {
+    const req: any = {
+      params: { id: "55" },
+      body: { status: "active" },
+      session: { userId: "test-user" },
+      user: { id: "test-user" },
+      headers: {},
+      get: jest.fn(),
+      header: jest.fn(),
+    };
+
+    const res = createMockResponse();
+
+    await handler(req, res);
+
+    expect(updateHotelProposalStatusMock).not.toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({
+      message: "status must be either 'scheduled' or 'confirmed'",
+    });
+  });
+});

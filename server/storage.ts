@@ -12708,7 +12708,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         totalPrice: proposal.price || null,
         pricePerNight: proposal.pricePerNight || null,
         currency: proposal.currency || 'USD',
-        status: 'scheduled',
+        status,
         amenities: proposal.amenities || null,
         bookingUrl: proposal.bookingUrl || null,
         bookingPlatform: proposal.platform || null,
