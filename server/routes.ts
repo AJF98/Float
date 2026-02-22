@@ -5149,11 +5149,17 @@ export function setupRoutes(app: Express) {
         return res.status(401).json({ message: "User ID not found" });
       }
 
-      const proposal = await storage.updateHotelProposalStatus(proposalId, "scheduled", userId);
+      const requestedStatus =
+        typeof req.body?.status === "string" ? req.body.status.trim().toLowerCase() : "scheduled";
+      if (requestedStatus !== "scheduled" && requestedStatus !== "confirmed") {
+        return res.status(400).json({ message: "status must be either 'scheduled' or 'confirmed'" });
+      }
+
+      const proposal = await storage.updateHotelProposalStatus(proposalId, requestedStatus, userId);
       res.json(proposal);
 
       broadcastToTrip(proposal.tripId, {
-        type: "hotel_proposal_scheduled",
+        type: requestedStatus === "confirmed" ? "hotel_proposal_confirmed" : "hotel_proposal_scheduled",
         tripId: proposal.tripId,
         proposalId: proposal.id,
         triggeredBy: userId,

@@ -96,4 +96,71 @@ describe("DatabaseStorage.updateHotelProposalStatus", () => {
       [77, 900, 12],
     );
   });
+
+  it("propagates confirmed status to saved lodging records", async () => {
+    const now = new Date("2024-01-01T00:00:00.000Z");
+
+    const proposal = {
+      id: 88,
+      tripId: 12,
+      proposedBy: "owner@example.com",
+      hotelName: "Harbor Hotel",
+      location: "Austin, TX, USA",
+      price: "420.00",
+      pricePerNight: "210.00",
+      currency: "USD",
+      rating: "4.8",
+      amenities: ["wifi"],
+      platform: "Booking",
+      bookingUrl: "https://example.com/hotel",
+      status: "proposed",
+      checkInDate: now,
+      checkOutDate: now,
+    };
+
+    const createHotelSpy = jest.spyOn(storage, "createHotel").mockResolvedValue({ id: 901 } as any);
+    jest.spyOn(storage, "getHotelProposalById").mockResolvedValue(proposal as any);
+    jest.spyOn(storage, "createHotelRsvpsForTripMembers").mockResolvedValue(undefined);
+    jest.spyOn(storage as any, "fetchHotelProposals").mockResolvedValue([
+      {
+        id: 88,
+        tripId: 12,
+        hotelName: "Harbor Hotel",
+        status: "confirmed",
+      },
+    ]);
+
+    queryMock
+      .mockResolvedValueOnce({
+        rows: [
+          {
+            id: 88,
+            trip_id: 12,
+            proposed_by: "owner@example.com",
+            hotel_name: "Harbor Hotel",
+            location: "Austin, TX, USA",
+            price: "420.00",
+            price_per_night: "210.00",
+            rating: "4.8",
+            amenities: ["wifi"],
+            platform: "Booking",
+            booking_url: "https://example.com/hotel",
+            status: "confirmed",
+            average_ranking: null,
+            created_at: now,
+            updated_at: now,
+          },
+        ],
+      })
+      .mockResolvedValueOnce({ rows: [] })
+      .mockResolvedValueOnce({ rows: [] });
+
+    await storage.updateHotelProposalStatus(88, "confirmed", "owner@example.com");
+
+    expect(createHotelSpy).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "confirmed" }),
+      "owner@example.com",
+    );
+  });
+
 });
