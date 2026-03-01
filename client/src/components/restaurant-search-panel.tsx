@@ -20,6 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SearchFormCard } from "@/components/search/SearchFormCard";
 import { FormGrid, FormRow, FormActions } from "@/components/search/FormGrid";
@@ -39,6 +40,8 @@ import { markExternalRedirect, RESTAURANT_REDIRECT_STORAGE_KEY } from "@/lib/ext
 
 import type { TripWithDetails } from "@shared/schema";
 import type { RestaurantPlatform } from "@/types/restaurants";
+
+type RestaurantPlanningMode = "SCHEDULED" | "PROPOSE";
 
 export interface RestaurantSearchPanelProps {
   tripId?: string | number;
@@ -91,6 +94,7 @@ export const RestaurantSearchPanel = forwardRef<HTMLDivElement, RestaurantSearch
     const [searchDate, setSearchDate] = useState<Date | undefined>(initialSearchDate ?? new Date());
     const [searchTime, setSearchTime] = useState(initialSearchTime ?? "7:00 PM");
     const [searchPartySize, setSearchPartySize] = useState(initialPartySize ?? 2);
+    const [planningMode, setPlanningMode] = useState<RestaurantPlanningMode>("SCHEDULED");
     const [hasSearched, setHasSearched] = useState(false);
     const lastSelectedLocationRef = useRef<string | null>(null);
 
@@ -501,12 +505,17 @@ export const RestaurantSearchPanel = forwardRef<HTMLDivElement, RestaurantSearch
         return;
       }
 
-      if (!searchTime) {
+      if (planningMode === "SCHEDULED" && !searchTime) {
         toast({
           title: "Select a Time",
           description: "Choose a reservation time before adding the restaurant.",
           variant: "destructive",
         });
+        return;
+      }
+
+      if (planningMode === "PROPOSE") {
+        onProposeRestaurant?.(restaurant);
         return;
       }
 
@@ -610,6 +619,23 @@ export const RestaurantSearchPanel = forwardRef<HTMLDivElement, RestaurantSearch
               </FormGrid>
 
               <FormGrid columns={3}>
+                <FormRow>
+                  <FieldLabel htmlFor="planningMode">Save as</FieldLabel>
+                  <ToggleGroup
+                    type="single"
+                    value={planningMode}
+                    onValueChange={(nextValue) => {
+                      if (nextValue === "SCHEDULED" || nextValue === "PROPOSE") {
+                        setPlanningMode(nextValue);
+                      }
+                    }}
+                    className="grid w-full grid-cols-2"
+                  >
+                    <ToggleGroupItem value="SCHEDULED" className="w-full">Schedule</ToggleGroupItem>
+                    <ToggleGroupItem value="PROPOSE" className="w-full">Propose</ToggleGroupItem>
+                  </ToggleGroup>
+                </FormRow>
+
                 <FormRow>
                   <FieldLabel htmlFor="cuisine">Cuisine</FieldLabel>
                   <Select value={searchCuisine} onValueChange={setSearchCuisine}>
@@ -784,10 +810,14 @@ export const RestaurantSearchPanel = forwardRef<HTMLDivElement, RestaurantSearch
                         size="sm"
                         className="w-full"
                         data-testid={`button-add-restaurant-${restaurant.id}`}
-                        disabled={addRestaurantFromSearchMutation.isPending}
+                        disabled={addRestaurantFromSearchMutation.isPending || (planningMode === "PROPOSE" && !onProposeRestaurant)}
                       >
                         <Users className="h-4 w-4 mr-2" />
-                        {addRestaurantFromSearchMutation.isPending ? "Adding..." : "Add & Float to Group"}
+                        {planningMode === "PROPOSE"
+                          ? "Float to Group"
+                          : addRestaurantFromSearchMutation.isPending
+                            ? "Adding..."
+                            : "Add to Itinerary"}
                       </Button>
                     </div>
                   </CardContent>
@@ -802,4 +832,3 @@ export const RestaurantSearchPanel = forwardRef<HTMLDivElement, RestaurantSearch
 );
 
 RestaurantSearchPanel.displayName = "RestaurantSearchPanel";
-
