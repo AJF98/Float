@@ -7769,6 +7769,7 @@ function RestaurantBooking({
         tripId={tripId}
         trip={trip}
         user={user ?? undefined}
+        onProposeRestaurant={handleProposeRestaurant}
         onBookingLinkClick={handleBookingLinkClick}
         onLogRestaurantManually={() => setManualDialogOpen(true)}
         onExternalSearch={handleExternalRestaurantSearch}
