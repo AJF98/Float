@@ -132,6 +132,39 @@ const extractApiErrorMessage = (error: unknown): string | null => {
   return null;
 };
 
+const extractApiErrorDetails = (error: unknown): string[] => {
+  const parsed = parseApiErrorResponse(error);
+  const data = parsed?.data;
+  if (!data || typeof data !== "object") {
+    return [];
+  }
+
+  const issues = (data as { errors?: unknown }).errors;
+  if (!Array.isArray(issues)) {
+    return [];
+  }
+
+  return issues
+    .map((issue) => {
+      if (!issue || typeof issue !== "object") {
+        return null;
+      }
+
+      const typedIssue = issue as { message?: unknown; path?: unknown };
+      const message = typeof typedIssue.message === "string" ? typedIssue.message.trim() : "";
+      if (!message) {
+        return null;
+      }
+
+      const path = Array.isArray(typedIssue.path)
+        ? typedIssue.path.filter((part) => typeof part === "string" || typeof part === "number").join(".")
+        : "";
+
+      return path ? `${path}: ${message}` : message;
+    })
+    .filter((item): item is string => Boolean(item));
+};
+
 
 // Helper function to get flight status color
 function getFlightStatusColor(status: string): string {
@@ -159,6 +192,40 @@ const extractAirportCode = (value?: string | null): string | null => {
   const match = trimmed.match(/\(([A-Z]{3})\)/i);
   if (match) {
     return match[1].toUpperCase();
+  }
+
+  return null;
+};
+
+const resolveAirportCode = (flight: Record<string, unknown>, type: "departure" | "arrival"): string | null => {
+  const keyPrefix = type === "departure" ? "departure" : "arrival";
+  const directKeys = [
+    `${keyPrefix}Code`,
+    `${keyPrefix}AirportCode`,
+    type === "departure" ? "origin" : "destination",
+    type === "departure" ? "originCode" : "destinationCode",
+    type === "departure" ? "from" : "to",
+    type === "departure" ? "fromCode" : "toCode",
+  ];
+
+  for (const key of directKeys) {
+    const value = flight[key];
+    if (typeof value === "string") {
+      const parsed = extractAirportCode(value) ?? (/^[A-Za-z]{3}$/.test(value.trim()) ? value.trim().toUpperCase() : null);
+      if (parsed) {
+        return parsed;
+      }
+    }
+  }
+
+  const nestedKey = type === "departure" ? "originDetails" : "destinationDetails";
+  const nested = flight[nestedKey];
+  if (nested && typeof nested === "object") {
+    const maybeCode = (nested as { code?: unknown; iataCode?: unknown }).code ??
+      (nested as { code?: unknown; iataCode?: unknown }).iataCode;
+    if (typeof maybeCode === "string" && /^[A-Za-z]{3}$/.test(maybeCode.trim())) {
+      return maybeCode.trim().toUpperCase();
+    }
   }
 
   return null;
@@ -2832,14 +2899,8 @@ export default function FlightsPage() {
         extractAirlineCode(flightData.airline) ||
         extractAirlineCode((flightData as Partial<{ airlineFlight: string }>).airlineFlight) ||
         'UN';
-      const departureCode =
-        flightData.departureCode ||
-        extractAirportCode(flightData.departureAirport) ||
-        '';
-      const arrivalCode =
-        flightData.arrivalCode ||
-        extractAirportCode(flightData.arrivalAirport) ||
-        '';
+      const departureCode = flightData.departureCode || extractAirportCode(flightData.departureAirport) || '';
+      const arrivalCode = flightData.arrivalCode || extractAirportCode(flightData.arrivalAirport) || '';
       const platform = (flightData as Partial<{ platform: string }>).platform || 'Manual';
       const bookingUrl = (flightData as Partial<{ bookingUrl: string }>).bookingUrl || '';
       const proposalPayload = {
@@ -2896,7 +2957,13 @@ export default function FlightsPage() {
       }
       toast({
         title: "Error",
-        description: realMessage ?? "Failed to propose flight",
+        description: (() => {
+          const details = extractApiErrorDetails(error);
+          if (details.length > 0) {
+            return details.join(" | ");
+          }
+          return realMessage ?? "Failed to propose flight";
+        })(),
         variant: "destructive",
       });
     },
@@ -3113,6 +3180,13 @@ export default function FlightsPage() {
         parseNumericAmount(flight.price ?? flight.totalPrice) ??
         (typeof flight.price === "number" ? flight.price : 0);
 
+      const departureCode = resolveAirportCode(flight as Record<string, unknown>, "departure");
+      const arrivalCode = resolveAirportCode(flight as Record<string, unknown>, "arrival");
+      const airlineCode =
+        (typeof flight.airlineCode === "string" && flight.airlineCode.trim().length > 0
+          ? flight.airlineCode.trim().toUpperCase()
+          : extractAirlineCode(typeof flight.airline === "string" ? flight.airline : null)) ?? "UN";
+
       const proposalData = {
         tripId: Number(tripId),
         airline:
@@ -3122,15 +3196,23 @@ export default function FlightsPage() {
           getFlightAirlineName(flight) ||
           "Various Airlines",
         flightNumber: flight.flightNumber || flight.number || `Flight-${Date.now()}`,
+        airlineCode,
         departureAirport: departureAirportName,
+        departureCode: departureCode ?? extractAirportCode(departureAirportName) ?? "",
         departureTime: departureTimeValue,
         arrivalAirport: arrivalAirportName,
+        arrivalCode: arrivalCode ?? extractAirportCode(arrivalAirportName) ?? "",
         arrivalTime: arrivalTimeValue,
+        flightType: "outbound",
+        status: "proposed",
+        currency: "USD",
         duration: durationValue,
         stops: stopsValue,
         aircraft: aircraftValue || "Unknown Aircraft",
         price: priceValue,
         bookingClass: bookingClassValue,
+        bookingSource: flight.provider || flight.source || flight.bookingSource || "Trip",
+        purchaseUrl: bookingUrlValue,
         platform: flight.provider || flight.source || flight.bookingSource || "Trip",
         bookingUrl: bookingUrlValue,
       };
@@ -3167,9 +3249,10 @@ export default function FlightsPage() {
       }
       console.error("Error proposing flight:", error);
       const description =
-        error instanceof Error
+        extractApiErrorDetails(error).join(" | ") ||
+        (error instanceof Error
           ? error.message
-          : "Failed to propose flight to group. Please try again.";
+          : "Failed to propose flight to group. Please try again.");
       toast({
         title: "Error",
         description,
