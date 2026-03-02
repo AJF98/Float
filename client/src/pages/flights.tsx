@@ -2801,14 +2801,14 @@ export default function FlightsPage() {
     mutationFn: async (flightData: ManualFlightPayload & { votingDeadline?: string }) => {
       const proposalPayload = {
         tripId: Number(tripId),
-        airline: flightData.airlineCode || flightData.airline || 'Unknown',
+        airline: flightData.airline || flightData.airlineCode || 'Unknown',
         flightNumber: flightData.flightNumber || '',
-        departureAirport: flightData.departureCode || flightData.departureCity || '',
-        arrivalAirport: flightData.arrivalCode || flightData.arrivalCity || '',
-        departureTime: flightData.departureTime || flightData.departureDate || '',
+        departureAirport: flightData.departureAirport || flightData.departureCode || '',
+        arrivalAirport: flightData.arrivalAirport || flightData.arrivalCode || '',
+        departureTime: flightData.departureTime || '',
         arrivalTime: flightData.arrivalTime || null,
         price: flightData.price?.toString() || '0',
-        cabinClass: flightData.cabinClass || 'ECONOMY',
+        currency: 'USD',
         platform: 'Manual',
         bookingUrl: '',
         votingDeadline: flightData.votingDeadline || null,
@@ -2820,6 +2820,8 @@ export default function FlightsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/flight-proposals`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/proposals/flights`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/proposals/flights?mineOnly=true`] });
       setIsAddFlightOpen(false);
       setEditingFlight(null);
       setFlightMode('SAVE');
@@ -3064,9 +3066,9 @@ export default function FlightsPage() {
           getFlightAirlineName(flight) ||
           "Various Airlines",
         flightNumber: flight.flightNumber || flight.number || `Flight-${Date.now()}`,
-        departure: departureAirportName,
+        departureAirport: departureAirportName,
         departureTime: departureTimeValue,
-        arrival: arrivalAirportName,
+        arrivalAirport: arrivalAirportName,
         arrivalTime: arrivalTimeValue,
         duration: durationValue,
         stops: stopsValue,
