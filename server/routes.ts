@@ -3803,16 +3803,32 @@ export function setupRoutes(app: Express) {
   });
 
   app.post('/api/trips/:id/restaurants', isAuthenticated, async (req: any, res) => {
+    const requestUrl = req.originalUrl ?? req.url;
+    let userId: string | undefined;
+    const tripId = Number.parseInt(req.params.id, 10);
     try {
-      const tripId = Number.parseInt(req.params.id, 10);
+      console.info('[restaurants.create] request received', {
+        url: requestUrl,
+        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
+        payloadKeys: Object.keys(req.body ?? {}),
+      });
+
       if (Number.isNaN(tripId)) {
         return res.status(400).json({ message: "Invalid trip id" });
       }
 
-      const userId = getRequestUserId(req);
+      userId = getRequestUserId(req);
+      console.info('[restaurants.create] auth resolved', {
+        url: requestUrl,
+        tripId,
+        userId: userId ?? null,
+      });
+
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
+
+      await ensureRequestUserExists(req, userId);
 
       const trip = await storage.getTripById(tripId);
       if (!trip) {
@@ -3868,14 +3884,28 @@ export function setupRoutes(app: Express) {
 
       res.status(201).json(restaurant);
     } catch (error: unknown) {
-      console.error("Error adding restaurant:", error);
+      const safeErrorMessage = getErrorMessage(error);
+      console.error('[restaurants.create] failed', {
+        url: requestUrl,
+        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
+        userId: userId ?? null,
+        payloadKeys: Object.keys(req.body ?? {}),
+        message: safeErrorMessage,
+        dbConstraint: isPostgresConstraintViolation(error) ? error.constraint ?? null : null,
+        dbColumn: isPostgresConstraintViolation(error) ? error.column ?? null : null,
+        stack: error instanceof Error ? error.stack : error,
+      });
       if (error instanceof z.ZodError) {
         res.status(400).json({ message: "Invalid restaurant data", errors: error.errors });
         return;
       }
 
       if (isPostgresConstraintViolation(error)) {
-        res.status(400).json({ message: getErrorMessage(error) });
+        res.status(400).json({
+          message: getErrorMessage(error),
+          constraint: error.constraint ?? null,
+          column: error.column ?? null,
+        });
         return;
       }
 
@@ -5610,18 +5640,48 @@ export function setupRoutes(app: Express) {
   });
 
   app.post('/api/trips/:id/restaurant-proposals', isAuthenticated, async (req: any, res) => {
+    const requestUrl = req.originalUrl ?? req.url;
+    let userId: string | undefined;
+    const tripId = Number.parseInt(req.params.id, 10);
     try {
-      const tripId = Number.parseInt(req.params.id, 10);
+      console.info('[restaurantProposals.create] request received', {
+        url: requestUrl,
+        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
+        payloadKeys: Object.keys(req.body ?? {}),
+      });
+
       if (Number.isNaN(tripId)) {
         return res.status(400).json({ message: "Invalid trip id" });
       }
 
-      const userId = getRequestUserId(req);
+      userId = getRequestUserId(req);
+      console.info('[restaurantProposals.create] auth resolved', {
+        url: requestUrl,
+        tripId,
+        userId: userId ?? null,
+      });
 
       if (!userId) {
         return res.status(401).json({ message: "User ID not found" });
       }
+
+      await ensureRequestUserExists(req, userId);
       
+      if (req.body?.tripId !== undefined && Number(req.body.tripId) !== tripId) {
+        return res.status(400).json({ message: "Trip id in body must match route parameter" });
+      }
+
+      const trip = await storage.getTripById(tripId);
+      if (!trip) {
+        return res.status(404).json({ message: "Trip not found" });
+      }
+
+      const tripMembers = Array.isArray(trip.members) ? trip.members : [];
+      const isMember = trip.createdBy === userId || tripMembers.some((member) => member.userId === userId);
+      if (!isMember) {
+        return res.status(403).json({ message: "You are no longer a member of this trip" });
+      }
+
       // Get preferredDates from request body (may be empty for quick-propose flows)
       const preferredDates = req.body.preferredDates;
       
@@ -5643,18 +5703,39 @@ export function setupRoutes(app: Express) {
         preferredMealTime: req.body.preferredMealTime || 'dinner',
         preferredDates: preferredDates || [],
         features: req.body.features || [],
-        status: 'active'
+        status: 'active',
+        votingDeadline: req.body.votingDeadline ?? null,
       });
       
       const proposal = await storage.createRestaurantProposal(validatedData, userId);
-      res.json(proposal);
+      res.status(201).json(proposal);
     } catch (error: unknown) {
-      console.error("Error creating restaurant proposal:", error);
-      if (error instanceof Error && 'name' in error && error.name === 'ZodError' && 'errors' in error) {
-        res.status(400).json({ message: "Invalid restaurant proposal data", errors: (error as any).errors });
-      } else {
-        res.status(500).json({ message: "Failed to create restaurant proposal" });
+      console.error('[restaurantProposals.create] failed', {
+        url: requestUrl,
+        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
+        userId: userId ?? null,
+        payloadKeys: Object.keys(req.body ?? {}),
+        message: getErrorMessage(error),
+        dbConstraint: isPostgresConstraintViolation(error) ? error.constraint ?? null : null,
+        dbColumn: isPostgresConstraintViolation(error) ? error.column ?? null : null,
+        stack: error instanceof Error ? error.stack : error,
+      });
+
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid restaurant proposal data", errors: error.errors });
+        return;
       }
+
+      if (isPostgresConstraintViolation(error)) {
+        res.status(400).json({
+          message: getErrorMessage(error),
+          constraint: error.constraint ?? null,
+          column: error.column ?? null,
+        });
+        return;
+      }
+
+      res.status(500).json({ message: "Failed to create restaurant proposal" });
     }
   });
 
