@@ -13284,7 +13284,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       )
       VALUES (
         $1, $2, $2, $5, $8, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, COALESCE($18, 'active')
+        $11, $12, $13, $14, $15, $16, $17, COALESCE($18, 'proposed')
       )
       RETURNING
         id,
@@ -13328,7 +13328,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         proposal.currency,
         proposal.bookingUrl,
         proposal.platform,
-        proposal.status ?? "active",
+        proposal.status ?? "proposed",
       ],
     );
 

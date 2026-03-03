@@ -4706,7 +4706,7 @@ export function setupRoutes(app: Express) {
           currency: parsedFlight.data.currency || 'USD',
           bookingUrl: req.body.bookingUrl || parsedFlight.data.purchaseUrl || null,
           platform: parsedFlight.data.bookingSource || 'Manual',
-          status: 'active',
+          status: 'proposed',
         };
 
         const proposal = await storage.createFlightProposal(proposalData, userId);
@@ -5408,7 +5408,7 @@ export function setupRoutes(app: Express) {
         currency: req.body.currency || 'USD',
         bookingUrl: req.body.bookingUrl || 'https://example.com',
         platform: req.body.platform || 'Amadeus',
-        status: 'active',
+        status: 'proposed',
         departureTerminal: req.body.departureTerminal || null,
         arrivalTerminal: req.body.arrivalTerminal || null,
       };
