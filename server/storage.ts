@@ -9898,6 +9898,21 @@ ${selectUserColumns("participant_user", "participant_user_")}
         }
 
         if (recipientIds.size > 0) {
+          const { rows: validRecipientRows } = await client.query<{ id: string }>(
+            `
+            SELECT id
+            FROM users
+            WHERE id = ANY($1::text[])
+            `,
+            [Array.from(recipientIds)],
+          );
+
+          const validRecipientIds = new Set(
+            validRecipientRows
+              .map((row) => (typeof row.id === 'string' ? row.id.trim() : ''))
+              .filter((id): id is string => id.length > 0),
+          );
+
           const { rows: proposerRows } = await client.query<{
             first_name: string | null;
             last_name: string | null;
@@ -9955,7 +9970,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
               : `${proposerName} shared ${stayLabel}.`;
 
           await Promise.all(
-            Array.from(recipientIds).map((userId) =>
+            Array.from(validRecipientIds).map((userId) =>
               this.createNotification(
                 {
                   userId,
@@ -10358,6 +10373,21 @@ ${selectUserColumns("participant_user", "participant_user_")}
         }
 
         if (recipientIds.size > 0) {
+          const { rows: validRecipientRows } = await client.query<{ id: string }>(
+            `
+            SELECT id
+            FROM users
+            WHERE id = ANY($1::text[])
+            `,
+            [Array.from(recipientIds)],
+          );
+
+          const validRecipientIds = new Set(
+            validRecipientRows
+              .map((row) => (typeof row.id === 'string' ? row.id.trim() : ''))
+              .filter((id): id is string => id.length > 0),
+          );
+
           const { rows: proposerRows } = await client.query<{
             first_name: string | null;
             last_name: string | null;
@@ -10419,20 +10449,22 @@ ${selectUserColumns("participant_user", "participant_user_")}
             ? `${proposerName} shared a flight (${routeLabel}) departing ${departureTimeLabel}.`
             : `${proposerName} shared a flight (${routeLabel}).`;
 
-          await Promise.all(
-            Array.from(recipientIds).map((userId) =>
-              this.createNotification(
-                {
-                  userId,
-                  type: "proposal-flight-created",
-                  title,
-                  message,
-                  tripId,
-                },
-                client,
+          if (validRecipientIds.size > 0) {
+            await Promise.all(
+              Array.from(validRecipientIds).map((userId) =>
+                this.createNotification(
+                  {
+                    userId,
+                    type: "proposal-flight-created",
+                    title,
+                    message,
+                    tripId,
+                  },
+                  client,
+                ),
               ),
-            ),
-          );
+            );
+          }
         }
       }
 
