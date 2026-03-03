@@ -11482,7 +11482,15 @@ ${selectUserColumns("participant_user", "participant_user_")}
       throw new Error("Failed to create restaurant");
     }
 
-    await this.syncRestaurantProposalFromRestaurantRow(row);
+    try {
+      await this.syncRestaurantProposalFromRestaurantRow(row);
+    } catch (syncError) {
+      console.error("Failed to sync restaurant proposal after create:", {
+        restaurantId: row.id,
+        tripId: row.trip_id,
+        error: syncError,
+      });
+    }
 
     return mapRestaurant(row);
   }
