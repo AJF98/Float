@@ -4620,16 +4620,21 @@ export function setupRoutes(app: Express) {
     '/api/trips/:tripId/proposals/flights',
     isAuthenticated,
     async (req: any, res) => {
+      const requestId = getCorrelationIdFromRequest(req);
+      res.setHeader("x-correlation-id", requestId);
+      let userId: string | undefined;
       try {
         const tripId = Number.parseInt(req.params.tripId, 10);
         if (Number.isNaN(tripId)) {
-          return res.status(400).json({ message: "Invalid trip id" });
+          return res.status(400).json({ message: "Invalid trip id", requestId });
         }
 
-        const userId = getRequestUserId(req);
+        userId = getRequestUserId(req);
         if (!userId) {
-          return res.status(401).json({ message: "User ID not found" });
+          return res.status(401).json({ message: "User ID not found", requestId });
         }
+
+        await ensureRequestUserExists(req, userId);
 
         const rawFlightId = req.body?.id ?? req.body?.flightId;
         const flightId =
@@ -4664,13 +4669,13 @@ export function setupRoutes(app: Express) {
         if (!parsedFlight.success) {
           return res
             .status(400)
-            .json({ message: "Invalid flight data", errors: parsedFlight.error.issues });
+            .json({ message: "Invalid flight data", errors: parsedFlight.error.issues, requestId });
         }
 
         if (parsedFlight.data.tripId !== tripId) {
           return res
             .status(400)
-            .json({ message: "Trip ID mismatch between path and payload" });
+            .json({ message: "Trip ID mismatch between path and payload", requestId });
         }
 
         const toStopsCount = (value: unknown): number => {
@@ -4749,23 +4754,47 @@ export function setupRoutes(app: Express) {
           triggeredBy: userId,
         });
       } catch (error: unknown) {
-        console.error("Error proposing flight to group:", error);
+        const postgresError = error as PostgresError & {
+          constraint?: string;
+          table?: string;
+        };
+        console.error("Error proposing flight to group", {
+          endpoint: "POST /api/trips/:tripId/proposals/flights",
+          requestId,
+          tripId: req.params.tripId,
+          userId: userId ?? null,
+          message: error instanceof Error ? error.message : "Unknown error",
+          db: {
+            code: postgresError?.code ?? null,
+            detail: postgresError?.detail ?? null,
+            constraint: postgresError?.constraint ?? null,
+            table: postgresError?.table ?? null,
+          },
+          stack: error instanceof Error ? error.stack : undefined,
+        });
         if (error instanceof z.ZodError) {
-          return res.status(400).json({ message: "Invalid flight data", errors: error.issues });
+          return res.status(400).json({ message: "Invalid flight data", errors: error.issues, requestId });
         }
         if (error instanceof Error) {
           if (error.message.includes('Flight not found')) {
-            return res.status(404).json({ message: error.message });
+            return res.status(404).json({ message: error.message, requestId });
           }
           if (error.message.includes('does not belong to this trip')) {
-            return res.status(400).json({ message: error.message });
+            return res.status(400).json({ message: error.message, requestId });
           }
           if (error.message.includes('Only the flight creator') || error.message.includes('must be a member of this trip')) {
-            return res.status(403).json({ message: error.message });
+            return res.status(403).json({ message: error.message, requestId });
           }
         }
 
-        res.status(500).json({ message: "Failed to propose flight" });
+        if (isPostgresConstraintViolation(error)) {
+          return res.status(400).json({
+            message: "Flight proposal data failed validation",
+            requestId,
+          });
+        }
+
+        res.status(500).json({ message: "Failed to propose flight", requestId });
       }
     },
   );
