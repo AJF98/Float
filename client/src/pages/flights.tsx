@@ -853,6 +853,10 @@ type ManualFlightPayload = InsertFlight & {
   selectedMemberIds?: string[];
 };
 
+type ProposeFlightInput =
+  | { flightId: number; votingDeadline?: string; selectedMemberIds?: string[] }
+  | (Partial<ManualFlightPayload> & { votingDeadline?: string; flightId?: number; selectedMemberIds?: string[] });
+
 interface ManualFlightFormState {
   airlineFlight: string;
   from: string;
@@ -2892,38 +2896,36 @@ export default function FlightsPage() {
   });
 
   const proposeFlightMutation = useMutation({
-    mutationFn: async (flightData: ManualFlightPayload & { votingDeadline?: string }) => {
-      const fallbackDepartureTime = flightData.departureTime || new Date().toISOString();
-      const airlineCode =
-        flightData.airlineCode ||
-        extractAirlineCode(flightData.airline) ||
-        extractAirlineCode((flightData as Partial<{ airlineFlight: string }>).airlineFlight) ||
-        'UN';
-      const departureCode = flightData.departureCode || extractAirportCode(flightData.departureAirport) || '';
-      const arrivalCode = flightData.arrivalCode || extractAirportCode(flightData.arrivalAirport) || '';
-      const platform = (flightData as Partial<{ platform: string }>).platform || 'Manual';
-      const bookingUrl = (flightData as Partial<{ bookingUrl: string }>).bookingUrl || '';
-      const proposalPayload = {
-        tripId: Number(tripId),
-        airline: flightData.airline || flightData.airlineCode || 'Unknown',
-        airlineCode,
-        flightNumber: flightData.flightNumber || '',
-        departureAirport: flightData.departureAirport || flightData.departureCode || '',
-        departureCode,
-        arrivalAirport: flightData.arrivalAirport || flightData.arrivalCode || '',
-        arrivalCode,
-        departureTime: fallbackDepartureTime,
-        arrivalTime: flightData.arrivalTime || fallbackDepartureTime,
-        price: flightData.price?.toString() || '0',
-        bookingSource: platform,
-        purchaseUrl: bookingUrl,
-        platform,
-        bookingUrl,
-        votingDeadline: flightData.votingDeadline || null,
-      };
+    mutationFn: async (flightData: ProposeFlightInput) => {
+      const asExisting = flightData as { flightId?: number; votingDeadline?: string; selectedMemberIds?: string[] };
+
+      let savedFlightId =
+        typeof asExisting.flightId === 'number' && Number.isFinite(asExisting.flightId)
+          ? asExisting.flightId
+          : null;
+
+      if (!savedFlightId) {
+        const createRes = await apiRequest(`/api/trips/${tripId}/flights`, {
+          method: "POST",
+          body: {
+            ...(flightData as ManualFlightPayload),
+            status: 'proposed',
+          },
+        });
+        const createdFlight = (await createRes.json()) as { id?: number };
+        if (!createdFlight?.id || !Number.isFinite(createdFlight.id)) {
+          throw new Error("Flight was saved but did not return a valid id for proposal");
+        }
+        savedFlightId = createdFlight.id;
+      }
+
       return await apiRequest(`/api/trips/${tripId}/proposals/flights`, {
         method: "POST",
-        body: proposalPayload,
+        body: {
+          flightId: savedFlightId,
+          votingDeadline: asExisting.votingDeadline ?? null,
+          selectedMemberIds: asExisting.selectedMemberIds,
+        },
       });
     },
     onSuccess: () => {
@@ -3187,7 +3189,7 @@ export default function FlightsPage() {
           ? flight.airlineCode.trim().toUpperCase()
           : extractAirlineCode(typeof flight.airline === "string" ? flight.airline : null)) ?? "UN";
 
-      const proposalData = {
+      const flightPayload = {
         tripId: Number(tripId),
         airline:
           flight.airline ||
@@ -3217,24 +3219,22 @@ export default function FlightsPage() {
         bookingUrl: bookingUrlValue,
       };
 
-      await apiRequest(`/api/trips/${tripId}/proposals/flights`, {
-        method: "POST",
-        body: proposalData,
-      });
+      const savedFlightId =
+        typeof flight.id === "number" && Number.isFinite(flight.id)
+          ? flight.id
+          : null;
 
-      // Invalidate flight proposals cache to refresh the list
-      if (tripId) {
-        queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/proposals/flights`] });
-        queryClient.invalidateQueries({
-          queryKey: [`/api/trips/${tripId}/proposals/flights?mineOnly=true`],
-        });
+      if (savedFlightId) {
+        await proposeFlightMutation.mutateAsync({ flightId: savedFlightId });
+      } else {
+        await proposeFlightMutation.mutateAsync(flightPayload);
       }
-      
-      toast({
-        title: "Flight Proposed to Group!",
-        description: `${proposalData.airline} flight ${proposalData.flightNumber} has been proposed to your group for ranking and voting.`,
-      });
-      
+
+      if (tripId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/flights`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/trips/${tripId}/calendar`] });
+      }
+
     } catch (error) {
       if (error instanceof Error && isUnauthorizedError(error)) {
         toast({
