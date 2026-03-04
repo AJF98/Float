@@ -2905,7 +2905,7 @@ export default function FlightsPage() {
       const bookingUrl = (flightData as Partial<{ bookingUrl: string }>).bookingUrl || '';
       const proposalPayload = {
         tripId: Number(tripId),
-        airline: flightData.airlineCode || flightData.airline || 'Unknown',
+        airline: flightData.airline || flightData.airlineCode || 'Unknown',
         airlineCode,
         flightNumber: flightData.flightNumber || '',
         departureAirport: flightData.departureAirport || flightData.departureCode || '',
