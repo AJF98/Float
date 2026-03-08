@@ -10270,6 +10270,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
     tripId: number;
     currentUserId: string;
   }): Promise<{ proposal: FlightProposalWithDetails; wasCreated: boolean; flightId: number }> {
+    await this.ensureTripMembersCompatibility();
+
     const { flightId, tripId, currentUserId } = options;
 
     const client = await pool.connect();
