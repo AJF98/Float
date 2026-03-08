@@ -4785,6 +4785,9 @@ export function setupRoutes(app: Express) {
           if (error.message.includes('Only the flight creator') || error.message.includes('must be a member of this trip')) {
             return res.status(403).json({ message: error.message, requestId });
           }
+          if (error.message.includes('Failed to load flight proposal') || error.message.includes('Failed to create flight proposal')) {
+            return res.status(500).json({ message: "Flight was proposed but could not be loaded. Please refresh and try again.", requestId });
+          }
         }
 
         if (isPostgresConstraintViolation(error)) {
