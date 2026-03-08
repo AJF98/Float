@@ -10008,6 +10008,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
   ): Promise<{ proposalId: number; wasCreated: boolean }> {
     const { client } = options;
     await this.ensureProposalLinkStructures();
+    await this.ensureProposalCreatorCompatibility();
 
     const runQuery = <T>(sql: string, params: unknown[] = []) =>
       client ? client.query<T>(sql, params) : query<T>(sql, params);
@@ -10117,6 +10118,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         SET
           trip_id = $1,
           proposed_by = $2,
+          created_by = COALESCE(created_by, $2),
           airline = $3,
           flight_number = $4,
           departure_airport = $5,
@@ -12362,7 +12364,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
        AND psl.proposal_id = fp.id
        AND psl.scheduled_table = 'flights'
       LEFT JOIN flights f ON f.id = psl.scheduled_id
-      JOIN users u ON u.id = fp.created_by
+      LEFT JOIN users u ON u.id = COALESCE(fp.created_by, fp.proposed_by)
       ${whereClause}
       ORDER BY fp.created_at DESC NULLS LAST, fp.id DESC
       `,
