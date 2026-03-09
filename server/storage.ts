@@ -10046,22 +10046,34 @@ ${selectUserColumns("participant_user", "participant_user_")}
     const departureTime =
       flight.departure_time instanceof Date
         ? flight.departure_time
-        : new Date(flight.departure_time);
+        : flight.departure_time
+          ? new Date(flight.departure_time)
+          : null;
     const arrivalTime =
-      flight.arrival_time instanceof Date ? flight.arrival_time : new Date(flight.arrival_time);
+      flight.arrival_time instanceof Date
+        ? flight.arrival_time
+        : flight.arrival_time
+          ? new Date(flight.arrival_time)
+          : null;
 
-    const diffMs = arrivalTime.getTime() - departureTime.getTime();
+    if (!departureTime || Number.isNaN(departureTime.getTime())) {
+      throw new Error("Flight is missing a valid departure time and cannot be proposed");
+    }
+
     let durationLabel = "Duration TBD";
-    if (Number.isFinite(diffMs) && diffMs > 0) {
-      const totalMinutes = Math.round(diffMs / 60000);
-      const hours = Math.floor(totalMinutes / 60);
-      const minutes = totalMinutes % 60;
-      const parts: string[] = [];
-      if (hours > 0) {
-        parts.push(`${hours}h`);
+    if (arrivalTime && !Number.isNaN(arrivalTime.getTime())) {
+      const diffMs = arrivalTime.getTime() - departureTime.getTime();
+      if (Number.isFinite(diffMs) && diffMs > 0) {
+        const totalMinutes = Math.round(diffMs / 60000);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        const parts: string[] = [];
+        if (hours > 0) {
+          parts.push(`${hours}h`);
+        }
+        parts.push(`${minutes}m`);
+        durationLabel = parts.join(" ").trim();
       }
-      parts.push(`${minutes}m`);
-      durationLabel = parts.join(" ").trim();
     }
 
     const parseStops = (value: unknown): number => {
@@ -10113,7 +10125,9 @@ ${selectUserColumns("participant_user", "participant_user_")}
     }
 
     const departureIso = departureTime.toISOString();
-    const arrivalIso = arrivalTime.toISOString();
+    const arrivalIso = arrivalTime && !Number.isNaN(arrivalTime.getTime())
+      ? arrivalTime.toISOString()
+      : null;
 
     if (existingLinks.length > 0) {
       const link = existingLinks[0];

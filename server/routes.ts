@@ -4798,7 +4798,7 @@ export function setupRoutes(app: Express) {
           if (error.message.includes('Flight not found')) {
             return res.status(404).json({ message: error.message, requestId });
           }
-          if (error.message.includes('does not belong to this trip')) {
+          if (error.message.includes('does not belong to this trip') || error.message.includes('missing a valid departure time')) {
             return res.status(400).json({ message: error.message, requestId });
           }
           if (error.message.includes('Only the flight creator') || error.message.includes('must be a member of this trip')) {
@@ -4816,7 +4816,11 @@ export function setupRoutes(app: Express) {
           });
         }
 
-        res.status(500).json({ message: "Failed to propose flight", requestId });
+        const fallbackMessage =
+          error instanceof Error && error.message
+            ? `Failed to propose flight: ${error.message}`
+            : "Failed to propose flight";
+        res.status(500).json({ message: fallbackMessage, requestId });
       }
     },
   );
