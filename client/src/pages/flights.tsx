@@ -3909,7 +3909,7 @@ export default function FlightsPage() {
                             Edit
                           </Button>
                         )}
-                        {!['scheduled', 'confirmed', 'booked'].includes(statusValue) && (
+                        {!['proposed', 'booked'].includes(statusValue) && (
                           <Button
                             variant="outline"
                             size="sm"
