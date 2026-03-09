@@ -4586,45 +4586,42 @@ export function setupRoutes(app: Express) {
     }
   });
 
-  app.get(
-    '/api/trips/:tripId/proposals/flights',
-    isAuthenticated,
-    async (req: any, res) => {
-      try {
-        const tripId = Number.parseInt(req.params.tripId, 10);
-        if (Number.isNaN(tripId)) {
-          return res.status(400).json({ message: "Invalid trip id" });
-        }
-
-        const userId = getRequestUserId(req);
-        if (!userId) {
-          return res.status(401).json({ message: "User ID not found" });
-        }
-
-        const mineOnly = parseBooleanQueryParam(req.query?.mineOnly);
-        const proposals = await storage.getTripFlightProposals(
-          tripId,
-          userId,
-          mineOnly ? { proposedBy: userId } : undefined,
-        );
-
-        res.json(proposals);
-      } catch (error: unknown) {
-        console.error("Error fetching flight proposals:", error);
-        res.status(500).json({ message: "Failed to fetch flight proposals" });
+  const handleGetTripFlightProposals = async (req: any, res: any) => {
+    try {
+      const tripIdParam =
+        typeof req.params.tripId === 'string' ? req.params.tripId : (req.params.id as string | undefined);
+      const tripId = Number.parseInt(String(tripIdParam ?? ''), 10);
+      if (Number.isNaN(tripId)) {
+        return res.status(400).json({ message: "Invalid trip id" });
       }
-    },
-  );
 
-  app.post(
-    '/api/trips/:tripId/proposals/flights',
-    isAuthenticated,
-    async (req: any, res) => {
+      const userId = getRequestUserId(req);
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
+
+      const mineOnly = parseBooleanQueryParam(req.query?.mineOnly);
+      const proposals = await storage.getTripFlightProposals(
+        tripId,
+        userId,
+        mineOnly ? { proposedBy: userId } : undefined,
+      );
+
+      res.json(proposals);
+    } catch (error: unknown) {
+      console.error("Error fetching flight proposals:", error);
+      res.status(500).json({ message: "Failed to fetch flight proposals" });
+    }
+  };
+
+  const handleCreateTripFlightProposal = async (req: any, res: any) => {
       const requestId = getCorrelationIdFromRequest(req);
       res.setHeader("x-correlation-id", requestId);
       let userId: string | undefined;
       try {
-        const tripId = Number.parseInt(req.params.tripId, 10);
+        const tripIdParam =
+          typeof req.params.tripId === 'string' ? req.params.tripId : (req.params.id as string | undefined);
+        const tripId = Number.parseInt(String(tripIdParam ?? ''), 10);
         if (Number.isNaN(tripId)) {
           return res.status(400).json({ message: "Invalid trip id", requestId });
         }
@@ -4759,9 +4756,9 @@ export function setupRoutes(app: Express) {
           table?: string;
         };
         console.error("Error proposing flight to group", {
-          endpoint: "POST /api/trips/:tripId/proposals/flights",
+          endpoint: req.originalUrl,
           requestId,
-          tripId: req.params.tripId,
+          tripId: req.params.tripId ?? req.params.id,
           userId: userId ?? null,
           payload: {
             id: req.body?.id ?? null,
@@ -4811,8 +4808,10 @@ export function setupRoutes(app: Express) {
 
         res.status(500).json({ message: "Failed to propose flight", requestId });
       }
-    },
-  );
+  };
+
+  app.get('/api/trips/:tripId/proposals/flights', isAuthenticated, handleGetTripFlightProposals);
+  app.post('/api/trips/:tripId/proposals/flights', isAuthenticated, handleCreateTripFlightProposal);
 
   const handleGetTripHotelProposals = async (req: any, res: any) => {
     try {
@@ -5392,133 +5391,8 @@ export function setupRoutes(app: Express) {
   });
 
   // Flight proposal routes
-  app.get('/api/trips/:id/flight-proposals', isAuthenticated, async (req: any, res) => {
-    try {
-      const tripId = Number.parseInt(req.params.id, 10);
-      if (Number.isNaN(tripId)) {
-        return res.status(400).json({ message: "Invalid trip id" });
-      }
-
-      const userId = getRequestUserId(req);
-      if (!userId) {
-        return res.status(401).json({ message: "User ID not found" });
-      }
-
-      const trip = await storage.getTripById(tripId);
-      if (!trip) {
-        return res.status(404).json({ message: "Trip not found" });
-      }
-
-      const tripMembers = Array.isArray(trip.members) ? trip.members : [];
-      const isMember = trip.createdBy === userId || tripMembers.some((member) => member.userId === userId);
-      if (!isMember) {
-        return res.status(403).json({ message: "You are no longer a member of this trip" });
-      }
-
-      const proposals = await storage.getTripFlightProposals(tripId, userId);
-      res.json(proposals);
-    } catch (error: unknown) {
-      const userId = getRequestUserId(req) ?? null;
-      const tripId = Number.parseInt(req.params.id, 10);
-      const safeMessage = error instanceof Error ? error.message : "Unknown error";
-      console.error("Error fetching flight proposals", {
-        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
-        userId,
-        stack: error instanceof Error ? error.stack : error,
-      });
-      res.status(500).json({
-        error: "flight-proposals failed",
-        details: safeMessage,
-      });
-    }
-  });
-
-  app.post('/api/trips/:id/flight-proposals', isAuthenticated, async (req: any, res) => {
-    let userId: string | undefined;
-    const tripId = Number.parseInt(req.params.id, 10);
-    try {
-      if (Number.isNaN(tripId)) {
-        return res.status(400).json({ message: "Invalid trip id" });
-      }
-
-      userId = getRequestUserId(req);
-      if (!userId) {
-        return res.status(401).json({ message: "User ID not found" });
-      }
-
-      await ensureRequestUserExists(req, userId);
-
-      const trip = await storage.getTripById(tripId);
-      if (!trip) {
-        return res.status(404).json({ message: "Trip not found" });
-      }
-
-      const tripMembers = Array.isArray(trip.members) ? trip.members : [];
-      const isMember = trip.createdBy === userId || tripMembers.some((member) => member.userId === userId);
-      if (!isMember) {
-        return res.status(403).json({ message: "You are no longer a member of this trip" });
-      }
-
-      // Validate that departure and arrival times are provided
-      if (!req.body.departureTime) {
-        return res.status(400).json({ message: "Departure time is required for flight proposals" });
-      }
-      if (!req.body.arrivalTime) {
-        return res.status(400).json({ message: "Arrival time is required for flight proposals" });
-      }
-
-      const proposalData = {
-        tripId,
-        airline: req.body.airline || 'Unknown Airline',
-        flightNumber: req.body.flightNumber || 'Unknown',
-        departureAirport: req.body.departureAirport || 'ATL',
-        departureTime: req.body.departureTime,
-        arrivalAirport: req.body.arrivalAirport || 'CLT',
-        arrivalTime: req.body.arrivalTime,
-        duration: req.body.duration || '2h 0m',
-        stops: Number.isFinite(Number(req.body.stops)) ? Number(req.body.stops) : 0,
-        aircraft: req.body.aircraft || null,
-        price: typeof req.body.price === 'number' ? req.body.price.toFixed(2) : (req.body.price?.toString() || '0'),
-        currency: req.body.currency || 'USD',
-        bookingUrl: req.body.bookingUrl || 'https://example.com',
-        platform: req.body.platform || 'Amadeus',
-        status: 'proposed',
-        departureTerminal: req.body.departureTerminal || null,
-        arrivalTerminal: req.body.arrivalTerminal || null,
-      };
-
-      const proposal = await storage.createFlightProposal(proposalData, userId);
-      res.status(201).json(proposal);
-
-      broadcastToTrip(tripId, {
-        type: "flight_proposal_created",
-        tripId,
-        proposalId: proposal.id,
-        flightId: proposal.flightId ?? null,
-        triggeredBy: userId,
-      });
-    } catch (error: unknown) {
-      const postgresError = error as PostgresError & {
-        constraint?: string;
-        table?: string;
-        column?: string;
-      };
-      console.error("Error creating flight proposal", {
-        endpoint: "POST /api/trips/:id/flight-proposals",
-        tripId: Number.isFinite(tripId) ? tripId : req.params.id,
-        userId: userId ?? null,
-        message: error instanceof Error ? error.message : "Unknown error",
-        db: {
-          code: postgresError?.code ?? null,
-          detail: postgresError?.detail ?? null,
-          constraint: postgresError?.constraint ?? null,
-          table: postgresError?.table ?? null,
-          column: postgresError?.column ?? null,
-        },
-      });
-      res.status(500).json({ message: "Failed to create flight proposal" });
-    }
-  });
+  app.get('/api/trips/:id/flight-proposals', isAuthenticated, handleGetTripFlightProposals);
+  app.post('/api/trips/:id/flight-proposals', isAuthenticated, handleCreateTripFlightProposal);
 
   app.post('/api/flight-proposals/:id/rank', isAuthenticated, async (req: any, res) => {
     try {
