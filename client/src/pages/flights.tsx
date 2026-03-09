@@ -3098,9 +3098,14 @@ export default function FlightsPage() {
         return;
       }
 
+      // Extract data from UnifiedFlightOffer segments when top-level fields are missing
+      const firstSegment = Array.isArray(flight.segments) && flight.segments.length > 0 ? flight.segments[0] : null;
+      const lastSegment = Array.isArray(flight.segments) && flight.segments.length > 0 ? flight.segments[flight.segments.length - 1] : null;
+
       const departureAirportName =
         flight.departure?.airport ||
         flight.departureAirport ||
+        firstSegment?.departure?.airport ||
         extractAirportName(searchFormData.departure) ||
         searchFormData.departure ||
         "Departure TBD";
@@ -3108,6 +3113,7 @@ export default function FlightsPage() {
       const arrivalAirportName =
         flight.arrival?.airport ||
         flight.arrivalAirport ||
+        lastSegment?.arrival?.airport ||
         extractAirportName(searchFormData.arrival) ||
         searchFormData.arrival ||
         "Arrival TBD";
@@ -3115,12 +3121,14 @@ export default function FlightsPage() {
       const departureTimeValue =
         flight.departure?.time ||
         flight.departureTime ||
+        firstSegment?.departure?.time ||
         (typeof flight.departure_time === "string" ? flight.departure_time : undefined) ||
         new Date().toISOString();
 
       const arrivalTimeValue =
         flight.arrival?.time ||
         flight.arrivalTime ||
+        lastSegment?.arrival?.time ||
         (typeof flight.arrival_time === "string" ? flight.arrival_time : undefined) ||
         new Date().toISOString();
 
@@ -3182,12 +3190,23 @@ export default function FlightsPage() {
         parseNumericAmount(flight.price ?? flight.totalPrice) ??
         (typeof flight.price === "number" ? flight.price : 0);
 
-      const departureCode = resolveAirportCode(flight as Record<string, unknown>, "departure");
-      const arrivalCode = resolveAirportCode(flight as Record<string, unknown>, "arrival");
+      const departureCode =
+        resolveAirportCode(flight as Record<string, unknown>, "departure") ??
+        extractAirportCode(firstSegment?.departure?.airport) ??
+        extractAirportCode(departureAirportName);
+      const arrivalCode =
+        resolveAirportCode(flight as Record<string, unknown>, "arrival") ??
+        extractAirportCode(lastSegment?.arrival?.airport) ??
+        extractAirportCode(arrivalAirportName);
       const airlineCode =
         (typeof flight.airlineCode === "string" && flight.airlineCode.trim().length > 0
           ? flight.airlineCode.trim().toUpperCase()
-          : extractAirlineCode(typeof flight.airline === "string" ? flight.airline : null)) ?? "UN";
+          : extractAirlineCode(typeof flight.airline === "string" ? flight.airline : null)) ??
+        (firstSegment?.airline ? firstSegment.airline.toUpperCase() : null) ??
+        "UN";
+
+      const segmentFlightNumber =
+        firstSegment?.flightNumber || firstSegment?.number || null;
 
       const flightPayload = {
         tripId: Number(tripId),
@@ -3197,13 +3216,13 @@ export default function FlightsPage() {
           (typeof flight.airlineCode === "string" ? getAirlineName(flight.airlineCode) : undefined) ||
           getFlightAirlineName(flight) ||
           "Various Airlines",
-        flightNumber: flight.flightNumber || flight.number || `Flight-${Date.now()}`,
+        flightNumber: flight.flightNumber || flight.number || segmentFlightNumber || `Flight-${Date.now()}`,
         airlineCode,
         departureAirport: departureAirportName,
-        departureCode: departureCode ?? extractAirportCode(departureAirportName) ?? "",
+        departureCode: departureCode ?? departureAirportName.slice(0, 3).toUpperCase(),
         departureTime: departureTimeValue,
         arrivalAirport: arrivalAirportName,
-        arrivalCode: arrivalCode ?? extractAirportCode(arrivalAirportName) ?? "",
+        arrivalCode: arrivalCode ?? arrivalAirportName.slice(0, 3).toUpperCase(),
         arrivalTime: arrivalTimeValue,
         flightType: "outbound",
         status: "proposed",

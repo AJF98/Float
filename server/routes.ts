@@ -4721,6 +4721,12 @@ export function setupRoutes(app: Express) {
               ? `${Math.max(0, Math.trunc(durationSource))}m`
               : null;
 
+        const rawVotingDeadline = req.body?.votingDeadline ?? null;
+        const votingDeadline =
+          typeof rawVotingDeadline === 'string' && rawVotingDeadline.trim().length > 0
+            ? rawVotingDeadline.trim()
+            : null;
+
         const proposalData = {
           tripId,
           proposedBy: userId,
@@ -4742,6 +4748,7 @@ export function setupRoutes(app: Express) {
           bookingUrl: req.body.bookingUrl || parsedFlight.data.purchaseUrl || '#',
           platform: parsedFlight.data.bookingSource || 'Manual',
           status: 'proposed',
+          votingDeadline,
         };
 
         const proposal = await storage.createFlightProposal(proposalData, userId);
@@ -5467,13 +5474,21 @@ export function setupRoutes(app: Express) {
         return res.status(400).json({ message: "Arrival time is required for flight proposals" });
       }
 
+      const rawVotingDeadline = req.body?.votingDeadline ?? null;
+      const legacyVotingDeadline =
+        typeof rawVotingDeadline === 'string' && rawVotingDeadline.trim().length > 0
+          ? rawVotingDeadline.trim()
+          : null;
+
       const proposalData = {
         tripId,
         airline: req.body.airline || 'Unknown Airline',
         flightNumber: req.body.flightNumber || 'Unknown',
         departureAirport: req.body.departureAirport || 'ATL',
+        departureCode: req.body.departureCode || null,
         departureTime: req.body.departureTime,
         arrivalAirport: req.body.arrivalAirport || 'CLT',
+        arrivalCode: req.body.arrivalCode || null,
         arrivalTime: req.body.arrivalTime,
         duration: req.body.duration || '2h 0m',
         stops: Number.isFinite(Number(req.body.stops)) ? Number(req.body.stops) : 0,
@@ -5485,6 +5500,7 @@ export function setupRoutes(app: Express) {
         status: 'proposed',
         departureTerminal: req.body.departureTerminal || null,
         arrivalTerminal: req.body.arrivalTerminal || null,
+        votingDeadline: legacyVotingDeadline,
       };
 
       const proposal = await storage.createFlightProposal(proposalData, userId);

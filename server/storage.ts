@@ -1430,6 +1430,12 @@ const mapHotelProposalWithDetails = (
 
 const mapFlightProposal = (row: FlightProposalRow): FlightProposal => {
   const linkedFlightId = (row as { linked_flight_id?: number | null }).linked_flight_id ?? null;
+  const proposalDepartureCode = toOptionalString(
+    (row as { proposal_departure_code?: string | null }).proposal_departure_code,
+  );
+  const proposalArrivalCode = toOptionalString(
+    (row as { proposal_arrival_code?: string | null }).proposal_arrival_code,
+  );
   const linkedDepartureCode = toOptionalString(
     (row as { linked_departure_code?: string | null }).linked_departure_code,
   );
@@ -1462,12 +1468,12 @@ const mapFlightProposal = (row: FlightProposalRow): FlightProposal => {
     airline: row.airline,
     flightNumber: row.flight_number,
     departureAirport: row.departure_airport,
-    departureCode: linkedDepartureCode ?? undefined,
+    departureCode: linkedDepartureCode ?? proposalDepartureCode ?? undefined,
     departureTime: toIsoString(row.departure_time),
     departureTerminal: row.departure_terminal,
     departureGate: linkedDepartureGate ?? undefined,
     arrivalAirport: row.arrival_airport,
-    arrivalCode: linkedArrivalCode ?? undefined,
+    arrivalCode: linkedArrivalCode ?? proposalArrivalCode ?? undefined,
     arrivalTime: toIsoString(row.arrival_time),
     arrivalTerminal: row.arrival_terminal,
     arrivalGate: linkedArrivalGate ?? undefined,
@@ -12348,8 +12354,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         COALESCE(fp.platform, (fp.data->>'platform')::text) AS platform,
         fp.status,
         fp.average_ranking,
+        fp.voting_deadline,
         fp.created_at,
         fp.updated_at,
+        fp.departure_code AS proposal_departure_code,
+        fp.arrival_code AS proposal_arrival_code,
         psl.scheduled_id AS linked_flight_id,
         f.departure_code AS linked_departure_code,
         f.arrival_code AS linked_arrival_code,
@@ -13301,6 +13310,12 @@ ${selectUserColumns("participant_user", "participant_user_")}
   ): Promise<FlightProposalWithDetails> {
     await this.ensureProposalCreatorCompatibility();
 
+    const proposalRecord = proposal as InsertFlightProposal & {
+      departureCode?: string | null;
+      arrivalCode?: string | null;
+      votingDeadline?: string | Date | null;
+    };
+
     const { rows } = await query<FlightProposalRow>(
       `
       INSERT INTO flight_proposals (
@@ -13312,9 +13327,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         airline,
         flight_number,
         departure_airport,
+        departure_code,
         departure_time,
         departure_terminal,
         arrival_airport,
+        arrival_code,
         arrival_time,
         arrival_terminal,
         duration,
@@ -13324,11 +13341,12 @@ ${selectUserColumns("participant_user", "participant_user_")}
         currency,
         booking_url,
         platform,
-        status
+        status,
+        voting_deadline
       )
       VALUES (
-        $1, $2, $2, $5, $8, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, COALESCE($18, 'proposed')
+        $1, $2, $2, $5, $9, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
+        $13, $14, $15, $16, $17, $18, $19, COALESCE($20, 'proposed'), $21
       )
       RETURNING
         id,
@@ -13337,9 +13355,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         airline,
         flight_number,
         departure_airport,
+        departure_code,
         departure_time,
         departure_terminal,
         arrival_airport,
+        arrival_code,
         arrival_time,
         arrival_terminal,
         duration,
@@ -13351,6 +13371,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         platform,
         status,
         average_ranking,
+        voting_deadline,
         created_at,
         updated_at
       `,
@@ -13360,9 +13381,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         proposal.airline,
         proposal.flightNumber,
         proposal.departureAirport,
+        proposalRecord.departureCode ?? null,
         proposal.departureTime,
         proposal.departureTerminal ?? null,
         proposal.arrivalAirport,
+        proposalRecord.arrivalCode ?? null,
         proposal.arrivalTime,
         proposal.arrivalTerminal ?? null,
         proposal.duration,
@@ -13373,6 +13396,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         proposal.bookingUrl,
         proposal.platform,
         proposal.status ?? "proposed",
+        proposalRecord.votingDeadline ?? null,
       ],
     );
 
