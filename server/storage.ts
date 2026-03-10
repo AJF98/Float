@@ -3356,6 +3356,18 @@ export class DatabaseStorage implements IStorage {
             await query(`ALTER TABLE flight_proposals ADD COLUMN IF NOT EXISTS average_ranking NUMERIC(5,2)`);
           }
 
+          if (!columnNames.has("departure_code")) {
+            await query(`ALTER TABLE flight_proposals ADD COLUMN IF NOT EXISTS departure_code TEXT`);
+          }
+
+          if (!columnNames.has("arrival_code")) {
+            await query(`ALTER TABLE flight_proposals ADD COLUMN IF NOT EXISTS arrival_code TEXT`);
+          }
+
+          if (!columnNames.has("voting_deadline")) {
+            await query(`ALTER TABLE flight_proposals ADD COLUMN IF NOT EXISTS voting_deadline TIMESTAMPTZ`);
+          }
+
           // Sync origin/destination with departure_airport/arrival_airport for legacy rows
           if (hasDepartureAirport) {
             await query(`
