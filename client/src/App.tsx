@@ -57,8 +57,6 @@ function Router() {
         <Route path="/register" component={Register} />
         <Route path="/join/:shareCode" component={Join} />
         <Route path="/api/logout" component={Logout} />
-        <Route path="/amadeus-test" component={AmadeusTest} />
-        <Route path="/location-database" component={LocationDatabase} />
         <Route path="/how-it-works" component={HowItWorks} />
         <Route path="/" component={Landing} />
         <Route path="*" component={Landing} />
@@ -98,8 +96,8 @@ function Router() {
         <Route path="/profile" component={Profile} />
         <Route path="/currency-converter" component={CurrencyConverter} />
         <Route path="/how-it-works" component={HowItWorks} />
-        <Route path="/amadeus-test" component={AmadeusTest} />
-        <Route path="/location-database" component={LocationDatabase} />
+        {isDevelopment && <Route path="/amadeus-test" component={AmadeusTest} />}
+        {isDevelopment && <Route path="/location-database" component={LocationDatabase} />}
         <Route path="/api/logout" component={Logout} />
         <Route path="*" component={NotFound} />
       </Switch>

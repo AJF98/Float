@@ -434,33 +434,6 @@ CREATE TABLE IF NOT EXISTS restaurant_rankings (
 
 CREATE INDEX IF NOT EXISTS idx_restaurant_rankings_proposal ON restaurant_rankings(proposal_id);
 
--- Travel tips table
-CREATE TABLE IF NOT EXISTS travel_tips (
-  id SERIAL PRIMARY KEY,
-  trip_id INTEGER REFERENCES trip_calendars(id) ON DELETE CASCADE,
-  category TEXT NOT NULL,
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  source TEXT,
-  priority TEXT DEFAULT 'medium',
-  data JSONB,
-  created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_travel_tips_trip ON travel_tips(trip_id);
-CREATE INDEX IF NOT EXISTS idx_travel_tips_category ON travel_tips(category);
-
--- User tip preferences table
-CREATE TABLE IF NOT EXISTS user_tip_preferences (
-  id SERIAL PRIMARY KEY,
-  user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  categories TEXT[] DEFAULT '{}',
-  enabled BOOLEAN DEFAULT TRUE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW(),
-  UNIQUE(user_id)
-);
 
 -- Session table (for express-session with connect-pg-simple)
 CREATE TABLE IF NOT EXISTS session (

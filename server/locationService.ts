@@ -3,8 +3,6 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { query } from './db';
-import { geonamesService } from './geonamesService';
-import { apiNinjasService } from './apiNinjasService';
 
 interface AmadeusLocation {
   type: 'location';
@@ -1877,17 +1875,6 @@ class LocationService {
         const localAirports = await this.queryAirportsByQuery(query, limit);
         if (localAirports.length > 0) {
           results.push(...localAirports);
-        } else if (apiNinjasService.isConfigured()) {
-          console.debug('Local airport DB returned no results, trying API Ninjas for:', query);
-          try {
-            const ninjaAirports = await apiNinjasService.searchAirports(query, limit);
-            if (ninjaAirports.length > 0) {
-              console.debug('API Ninjas returned', ninjaAirports.length, 'airports for:', query);
-              results.push(...ninjaAirports.map(a => this.normalizeResultShape(a)));
-            }
-          } catch (err) {
-            console.error('API Ninjas fallback failed:', err);
-          }
         }
       }
 
@@ -1926,22 +1913,6 @@ class LocationService {
 
       if (limitedResults.length > 0) {
         return limitedResults.map(r => this.normalizeResultShape(r));
-      }
-
-      if (geonamesService.isConfigured()) {
-        console.debug('Local database returned no results, trying GeoNames API for:', query);
-        try {
-          const geonamesResults = normalizedTypes.includes('CITY') || normalizedTypes.length === 0
-            ? await geonamesService.searchCities(query, limit)
-            : await geonamesService.searchAll(query, limit);
-          
-          if (geonamesResults.length > 0) {
-            console.debug('GeoNames returned', geonamesResults.length, 'results for:', query);
-            return geonamesResults.map(r => this.normalizeResultShape(r));
-          }
-        } catch (geoErr) {
-          console.error('GeoNames fallback failed:', geoErr);
-        }
       }
 
       return [];
