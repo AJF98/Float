@@ -992,6 +992,7 @@ type FlightProposalRow = {
   platform: string;
   status: string;
   average_ranking: string | number | null;
+  voting_deadline?: Date | string | null;
   created_at: Date | null;
   updated_at: Date | null;
 };
@@ -1444,6 +1445,7 @@ const mapFlightProposal = (row: FlightProposalRow): FlightProposal => {
     platform: row.platform,
     status: row.status,
     averageRanking: parseAverageRanking(row.average_ranking),
+    votingDeadline: row.voting_deadline ? toIsoString(row.voting_deadline) : null,
     createdAt: row.created_at,
     flightId: linkedFlightId,
     seatClass: linkedSeatClass ?? undefined,
@@ -9928,9 +9930,10 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
   private async syncFlightProposalFromFlightRow(
     flight: FlightRow,
-    options: { client?: PoolClient } = {},
+    options: { client?: PoolClient; proposedBy?: string } = {},
   ): Promise<{ proposalId: number; wasCreated: boolean }> {
     const { client } = options;
+    const effectiveProposedBy = options.proposedBy ?? flight.user_id;
     await this.ensureProposalLinkStructures();
     await this.ensureProposalCreatorCompatibility();
 
@@ -10059,12 +10062,14 @@ ${selectUserColumns("participant_user", "participant_user_")}
           booking_url = $16,
           platform = $17,
           status = $18,
+          departure_code = $20,
+          arrival_code = $21,
           updated_at = NOW()
         WHERE id = $19
         `,
         [
           flight.trip_id,
-          flight.user_id,
+          effectiveProposedBy,
           flight.airline,
           flight.flight_number,
           departureLabel,
@@ -10082,6 +10087,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
           platform,
           proposalStatus,
           proposalId,
+          toOptionalString(flight.departure_code),
+          toOptionalString(flight.arrival_code),
         ],
       );
       await runQuery(
@@ -10114,11 +10121,14 @@ ${selectUserColumns("participant_user", "participant_user_")}
         currency,
         booking_url,
         platform,
-        status
+        status,
+        departure_code,
+        arrival_code
       )
       VALUES (
         $1, $2, $2, $5, $8, $3, $4, $5, $6, $7, $8, $9, $10,
-        $11, $12, $13, $14, $15, $16, $17, COALESCE($18, 'proposed')
+        $11, $12, $13, $14, $15, $16, $17, COALESCE($18, 'proposed'),
+        $19, $20
       )
       RETURNING
         id,
@@ -10146,7 +10156,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
       `,
       [
         flight.trip_id,
-        flight.user_id,
+        effectiveProposedBy,
         flight.airline,
         flight.flight_number,
         departureLabel,
@@ -10163,6 +10173,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
         bookingUrl,
         platform,
         proposalStatus,
+        toOptionalString(flight.departure_code),
+        toOptionalString(flight.arrival_code),
       ],
     );
 
@@ -10259,15 +10271,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         throw new Error("You must be a member of this trip to share flights with the group");
       }
 
-      if (
-        normalizedFlightCreatorId !== normalizedRequesterId &&
-        !isTripOwner &&
-        !isTripEditor
-      ) {
-        throw new Error("Only the flight creator or a trip editor can propose this flight");
-      }
-
-      const syncResult = await this.syncFlightProposalFromFlightRow(flight, { client });
+      const syncResult = await this.syncFlightProposalFromFlightRow(flight, { client, proposedBy: currentUserId });
       if (!syncResult) {
         throw new Error("Failed to load flight proposal");
       }
