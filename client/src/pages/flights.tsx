@@ -2899,32 +2899,31 @@ export default function FlightsPage() {
     mutationFn: async (flightData: ProposeFlightInput) => {
       const asExisting = flightData as { flightId?: number; votingDeadline?: string; selectedMemberIds?: string[] };
 
-      let savedFlightId =
+      const savedFlightId =
         typeof asExisting.flightId === 'number' && Number.isFinite(asExisting.flightId)
           ? asExisting.flightId
           : null;
 
-      if (!savedFlightId) {
-        const createRes = await apiRequest(`/api/trips/${tripId}/flights`, {
+      if (savedFlightId) {
+        // Proposing an already-saved flight — use the flightId path
+        return await apiRequest(`/api/trips/${tripId}/proposals/flights`, {
           method: "POST",
           body: {
-            ...(flightData as ManualFlightPayload),
-            status: 'proposed',
+            flightId: savedFlightId,
+            votingDeadline: asExisting.votingDeadline ?? null,
           },
         });
-        const createdFlight = (await createRes.json()) as { id?: number };
-        if (!createdFlight?.id || !Number.isFinite(createdFlight.id)) {
-          throw new Error("Flight was saved but did not return a valid id for proposal");
-        }
-        savedFlightId = createdFlight.id;
       }
 
+      // New manual proposal — send flight data directly to the proposals endpoint
+      // which calls createFlightProposal and avoids the two-step create+propose flow
       return await apiRequest(`/api/trips/${tripId}/proposals/flights`, {
         method: "POST",
         body: {
-          flightId: savedFlightId,
+          ...(flightData as ManualFlightPayload),
+          tripId: Number.parseInt(tripId!, 10),
+          status: 'proposed',
           votingDeadline: asExisting.votingDeadline ?? null,
-          selectedMemberIds: asExisting.selectedMemberIds,
         },
       });
     },
