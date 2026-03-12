@@ -4816,7 +4816,15 @@ export function setupRoutes(app: Express) {
           });
         }
 
-        res.status(500).json({ message: "Failed to propose flight", requestId });
+        const pgErr = error as PostgresError & { detail?: string; constraint?: string; column?: string };
+        res.status(500).json({
+          message: error instanceof Error ? error.message : "Failed to propose flight",
+          error: error instanceof Error ? error.message : String(error),
+          detail: pgErr.detail ?? null,
+          constraint: pgErr.constraint ?? null,
+          column: pgErr.column ?? null,
+          requestId,
+        });
       }
     },
   );

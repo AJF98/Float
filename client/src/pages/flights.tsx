@@ -2947,6 +2947,7 @@ export default function FlightsPage() {
       });
 
       const realMessage = extractApiErrorMessage(error);
+      const parsedErr = parseApiErrorResponse(error);
 
       if (isUnauthorizedError(error as Error)) {
         toast({
@@ -2957,13 +2958,16 @@ export default function FlightsPage() {
         return;
       }
       toast({
-        title: "Error",
+        title: `Error proposing flight${parsedErr?.status ? ` [${parsedErr.status}]` : ''}`,
         description: (() => {
           const details = extractApiErrorDetails(error);
+          const data = parsedErr?.data as Record<string, unknown> | null | undefined;
+          const dbDetail = typeof data?.detail === 'string' ? ` • DB: ${data.detail}` : '';
+          const dbConstraint = typeof data?.constraint === 'string' ? ` (${data.constraint})` : '';
           if (details.length > 0) {
-            return details.join(" | ");
+            return `${details.join(" | ")}${dbDetail}${dbConstraint}`;
           }
-          return realMessage ?? "Failed to propose flight";
+          return `${realMessage ?? "Failed to propose flight"}${dbDetail}${dbConstraint}`;
         })(),
         variant: "destructive",
       });
