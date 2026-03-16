@@ -13267,8 +13267,8 @@ ${selectUserColumns("participant_user", "participant_user_")}
         voting_deadline
       )
       VALUES (
-        $1, $2, $2, $5, $9, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,
-        $13, $14, $15, $16, $17, $18, $19, COALESCE($20, 'proposed'), $21
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+        $16, $17, $18, $19, $20, $21, $22, COALESCE($23, 'proposed'), $24
       )
       RETURNING
         id,
@@ -13298,27 +13298,30 @@ ${selectUserColumns("participant_user", "participant_user_")}
         updated_at
       `,
       [
-        proposal.tripId,
-        userId,
-        proposal.airline,
-        proposal.flightNumber,
-        proposal.departureAirport,
-        proposalRecord.departureCode ?? null,
-        proposal.departureTime,
-        proposal.departureTerminal ?? null,
-        proposal.arrivalAirport,
-        proposalRecord.arrivalCode ?? null,
-        proposal.arrivalTime,
-        proposal.arrivalTerminal ?? null,
-        proposal.duration,
-        proposal.stops,
-        proposal.aircraft ?? null,
-        proposal.price,
-        proposal.currency,
-        proposal.bookingUrl,
-        proposal.platform,
-        proposal.status ?? "proposed",
-        proposalRecord.votingDeadline ?? null,
+        proposal.tripId,              // $1
+        userId,                        // $2  proposed_by
+        userId,                        // $3  created_by
+        proposal.departureAirport,     // $4  origin
+        proposal.arrivalAirport,       // $5  destination
+        proposal.airline,              // $6
+        proposal.flightNumber,         // $7
+        proposal.departureAirport,     // $8  departure_airport
+        proposalRecord.departureCode ?? null,  // $9
+        proposal.departureTime,        // $10
+        proposal.departureTerminal ?? null,    // $11
+        proposal.arrivalAirport,       // $12 arrival_airport
+        proposalRecord.arrivalCode ?? null,    // $13
+        proposal.arrivalTime,          // $14
+        proposal.arrivalTerminal ?? null,      // $15
+        proposal.duration,             // $16
+        proposal.stops,                // $17
+        proposal.aircraft ?? null,     // $18
+        proposal.price,                // $19
+        proposal.currency,             // $20
+        proposal.bookingUrl,           // $21
+        proposal.platform,             // $22
+        proposal.status ?? "proposed", // $23
+        proposalRecord.votingDeadline ?? null, // $24
       ],
     );
 
