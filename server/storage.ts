@@ -13327,14 +13327,19 @@ ${selectUserColumns("participant_user", "participant_user_")}
       throw new Error("Failed to create flight proposal");
     }
 
-    const proposals = await this.fetchFlightProposals({
-      proposalIds: [inserted.id],
-      currentUserId: userId,
-    });
+    let proposals: FlightProposalWithDetails[] = [];
+    try {
+      proposals = await this.fetchFlightProposals({
+        proposalIds: [inserted.id],
+        currentUserId: userId,
+      });
+    } catch (fetchErr) {
+      console.error('[createFlightProposal] fetchFlightProposals failed', fetchErr);
+    }
 
     const created = proposals[0];
     if (!created) {
-      throw new Error("Failed to load created flight proposal");
+      throw new Error("Failed to load flight proposal");
     }
 
     return created;

@@ -4804,14 +4804,34 @@ export function setupRoutes(app: Express) {
           if (error.message.includes('Only the flight creator') || error.message.includes('must be a member of this trip')) {
             return res.status(403).json({ message: error.message, requestId });
           }
-          if (error.message.includes('Failed to load flight proposal') || error.message.includes('Failed to create flight proposal')) {
-            return res.status(500).json({ message: "Flight was proposed but could not be loaded. Please refresh and try again.", requestId });
+          if (error.message.includes('Failed to load flight proposal')) {
+            // INSERT succeeded but the full proposal couldn't be loaded — return 201
+            // so the frontend invalidates its query and picks up the new proposal.
+            const recoveredTripId = Number.parseInt(req.params.tripId, 10);
+            res.status(201).json({ message: "Flight proposed successfully", requestId });
+            if (Number.isFinite(recoveredTripId)) {
+              broadcastToTrip(recoveredTripId, {
+                type: "flight_proposal_created",
+                tripId: recoveredTripId,
+                triggeredBy: userId,
+              });
+            }
+            return;
+          }
+          if (error.message.includes('Failed to create flight proposal')) {
+            return res.status(500).json({ message: "Failed to create flight proposal", requestId });
           }
         }
 
         if (isPostgresConstraintViolation(error)) {
+          const pgCvErr = error as PostgresError & { detail?: string; constraint?: string; column?: string; table?: string };
           return res.status(400).json({
             message: "Flight proposal data failed validation",
+            detail: pgCvErr.detail ?? null,
+            constraint: pgCvErr.constraint ?? null,
+            column: pgCvErr.column ?? null,
+            table: pgCvErr.table ?? null,
+            code: pgCvErr.code ?? null,
             requestId,
           });
         }
