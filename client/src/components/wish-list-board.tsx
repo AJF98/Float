@@ -478,7 +478,7 @@ export function WishListBoard({ tripId, shareCode }: WishListBoardProps) {
     },
   });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const trimmedTitle = title.trim();
@@ -506,31 +506,7 @@ export function WishListBoard({ tripId, shareCode }: WishListBoardProps) {
       metadata: null,
     };
 
-    try {
-      await createIdeaMutation.mutateAsync(payload);
-    } catch (mutationError) {
-      if (mutationError instanceof ApiError) {
-        if (mutationError.status === 401) {
-          handleUnauthorized();
-          return;
-        }
-        toast({
-          title: "Failed to add idea",
-          description: mutationError.message || "Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      toast({
-        title: "Failed to add idea",
-        description:
-          mutationError instanceof Error
-            ? mutationError.message
-            : "Please try again.",
-        variant: "destructive",
-      });
-    }
+    createIdeaMutation.mutate(payload);
   };
 
   const handleToggleSave = (ideaId: number) => {
