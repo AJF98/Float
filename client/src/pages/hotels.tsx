@@ -35,6 +35,7 @@ import {
   CalendarCheck,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { HotelRsvpSection } from "@/components/hotel-rsvp-section";
 import {
   buildHotelProposalPayload,
@@ -748,119 +749,119 @@ export default function HotelsPage() {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        <HotelSearchPanel
-        ref={searchPanelRef}
-        tripId={tripId}
-        trip={trip}
-        onLogHotelManually={openCreateDialog}
-        onShareHotelWithGroup={shareHotelWithGroup}
-        storeBookingIntent={storeBookingIntent}
-        hotelProposalsCount={hotelProposals.length}
-        toast={toast}
-        onResultsChange={handleSearchResultsChange}
-      />
+        {FEATURE_FLAGS.HOTEL_SEARCH && (
+          <HotelSearchPanel
+            ref={searchPanelRef}
+            tripId={tripId}
+            trip={trip}
+            onLogHotelManually={openCreateDialog}
+            onShareHotelWithGroup={shareHotelWithGroup}
+            storeBookingIntent={storeBookingIntent}
+            hotelProposalsCount={hotelProposals.length}
+            toast={toast}
+            onResultsChange={handleSearchResultsChange}
+          />
+        )}
 
-      {/* Tabs for Search vs Group Voting vs Currency Converter */}
-      <Tabs defaultValue="search" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="search">Search & Float Hotels</TabsTrigger>
-          <TabsTrigger value="voting" className="relative">
-            Group Voting
-            {hotelProposals.length > 0 && (
-              <Badge variant="secondary" className="ml-2 text-xs">
-                {hotelProposals.length}
-              </Badge>
+        {/* Add Hotel Dialog — rendered outside tabs so it works regardless of active tab */}
+        <Dialog
+          open={isDialogOpen}
+          onOpenChange={(open) => {
+            if (open) {
+              setIsDialogOpen(true);
+            } else {
+              handleDialogClose();
+            }
+          }}
+        >
+          <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>
+                {editingHotel ? "Edit Hotel" : hotelMode === 'PROPOSE' ? "Propose Hotel to Group" : "Add Hotel"}
+              </DialogTitle>
+              <DialogDescription>
+                {hotelMode === 'PROPOSE'
+                  ? "Share this hotel with your group for voting. They can rank it against other options."
+                  : "Provide the hotel details exactly as defined in the booking schema. Fields marked with an asterisk (*) are required."}
+              </DialogDescription>
+            </DialogHeader>
+
+            {!editingHotel && (
+              <SaveProposeToggle
+                mode={hotelMode}
+                onModeChange={setHotelMode}
+                saveLabel="Schedule & Invite"
+                proposeLabel="Float to Group"
+                className="mb-4"
+              />
             )}
-          </TabsTrigger>
-          <TabsTrigger value="currency">Currency Converter</TabsTrigger>
-        </TabsList>
 
-        <TabsContent value="search" className="space-y-6 mt-6">
-          {/* Add Hotel Dialog */}
-          <Dialog
-            open={isDialogOpen}
-            onOpenChange={(open) => {
-              if (open) {
-                setIsDialogOpen(true);
-              } else {
-                handleDialogClose();
-              }
-            }}
-          >
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>
-                  {editingHotel ? "Edit Hotel" : hotelMode === 'PROPOSE' ? "Propose Hotel to Group" : "Add Hotel"}
-                </DialogTitle>
-                <DialogDescription>
-                  {hotelMode === 'PROPOSE' 
-                    ? "Share this hotel with your group for voting. They can rank it against other options."
-                    : "Provide the hotel details exactly as defined in the booking schema. Fields marked with an asterisk (*) are required."}
-                </DialogDescription>
-              </DialogHeader>
-              
-              {!editingHotel && (
-                <SaveProposeToggle
-                  mode={hotelMode}
-                  onModeChange={setHotelMode}
-                  saveLabel="Schedule & Invite"
-                  proposeLabel="Float to Group"
-                  className="mb-4"
-                />
-              )}
-              
-              {hotelMode === 'PROPOSE' && !editingHotel && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-900">Voting Options</span>
-                  </div>
-                  <div>
-                    <Label htmlFor="hotel-voting-deadline" className="text-sm text-blue-800">
-                      Voting Deadline (optional)
-                    </Label>
-                    <p className="text-xs text-blue-600 mb-2">
-                      Set a deadline for group members to vote on this hotel option.
-                    </p>
-                    <Input
-                      id="hotel-voting-deadline"
-                      type="datetime-local"
-                      value={votingDeadline}
-                      min={new Date().toISOString().slice(0, 16)}
-                      onChange={(e) => setVotingDeadline(e.target.value)}
-                      className="bg-white"
-                    />
-                  </div>
+            {hotelMode === 'PROPOSE' && !editingHotel && (
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3 mb-4">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">Voting Options</span>
                 </div>
-              )}
-              
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                  <HotelFormFields
-                    form={form}
-                    isSubmitting={createHotelMutation.isPending || updateHotelMutation.isPending || proposeHotelMutation.isPending}
-                    submitLabel={editingHotel ? "Save Changes" : hotelMode === 'PROPOSE' ? "Float to Group" : "Add Hotel"}
-                    onCancel={handleDialogClose}
-                    showCancelButton
-                  >
-                    {hotelMode === 'SAVE' && !editingHotel && (
-                      <MemberSelector
-                        members={memberOptions}
-                        selectedMemberIds={selectedMemberIds}
-                        onToggleMember={handleToggleMember}
-                        onSelectAll={handleSelectAllMembers}
-                        onClear={handleClearMembers}
-                        currentUserId={currentUserId ?? undefined}
-                      />
-                    )}
-                  </HotelFormFields>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
+                <div>
+                  <Label htmlFor="hotel-voting-deadline" className="text-sm text-blue-800">
+                    Voting Deadline (optional)
+                  </Label>
+                  <p className="text-xs text-blue-600 mb-2">
+                    Set a deadline for group members to vote on this hotel option.
+                  </p>
+                  <Input
+                    id="hotel-voting-deadline"
+                    type="datetime-local"
+                    value={votingDeadline}
+                    min={new Date().toISOString().slice(0, 16)}
+                    onChange={(e) => setVotingDeadline(e.target.value)}
+                    className="bg-white"
+                  />
+                </div>
+              </div>
+            )}
 
-          {/* Search tab intentionally has no snapshot card to keep the focus on the search form */}
-        </TabsContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <HotelFormFields
+                  form={form}
+                  isSubmitting={createHotelMutation.isPending || updateHotelMutation.isPending || proposeHotelMutation.isPending}
+                  submitLabel={editingHotel ? "Save Changes" : hotelMode === 'PROPOSE' ? "Float to Group" : "Add Hotel"}
+                  onCancel={handleDialogClose}
+                  showCancelButton
+                >
+                  {hotelMode === 'SAVE' && !editingHotel && (
+                    <MemberSelector
+                      members={memberOptions}
+                      selectedMemberIds={selectedMemberIds}
+                      onToggleMember={handleToggleMember}
+                      onSelectAll={handleSelectAllMembers}
+                      onClear={handleClearMembers}
+                      currentUserId={currentUserId ?? undefined}
+                    />
+                  )}
+                </HotelFormFields>
+              </form>
+            </Form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Tabs for Group Voting and Currency Converter; Search tab shown only when HOTEL_SEARCH is enabled */}
+        <Tabs defaultValue={FEATURE_FLAGS.HOTEL_SEARCH ? "search" : "voting"} className="w-full">
+          <TabsList className={`grid w-full ${FEATURE_FLAGS.HOTEL_SEARCH ? "grid-cols-3" : "grid-cols-2"}`}>
+            {FEATURE_FLAGS.HOTEL_SEARCH && (
+              <TabsTrigger value="search">Search & Float Hotels</TabsTrigger>
+            )}
+            <TabsTrigger value="voting" className="relative">
+              Group Voting
+              {hotelProposals.length > 0 && (
+                <Badge variant="secondary" className="ml-2 text-xs">
+                  {hotelProposals.length}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger value="currency">Currency Converter</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="voting" className="space-y-6 mt-6">
           {/* Group Hotel Floats */}
@@ -1161,11 +1162,11 @@ export default function HotelsPage() {
         <EmptyState
           icon={Bed}
           title="No saved hotels yet"
-          description="Already booked a hotel? Add it here to keep your group in sync. You can also search and propose options above."
+          description="Already booked a hotel? Add it here to keep your group in sync."
           actionLabel="Add Hotel Manually"
           onAction={() => setIsDialogOpen(true)}
-          secondaryActionLabel="Search Hotels"
-          onSecondaryAction={focusSearchPanel}
+          secondaryActionLabel={FEATURE_FLAGS.HOTEL_SEARCH ? "Search Hotels" : undefined}
+          onSecondaryAction={FEATURE_FLAGS.HOTEL_SEARCH ? focusSearchPanel : undefined}
         />
       ) : hotels.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

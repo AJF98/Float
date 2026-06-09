@@ -28,6 +28,7 @@ import { EmptyState } from "@/components/empty-state";
 import { SaveProposeToggle, type SaveProposeMode } from "@/components/save-propose-toggle";
 import { TravelLoading } from "@/components/LoadingSpinners";
 import { FlightRsvpSection } from "@/components/flight-rsvp-section";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { MemberSelector, type MemberOption } from "@/components/member-selector";
 import { AttributionLabel } from "@/components/attribution-label";
 import LocationSearch, { type LocationResult } from "@/components/LocationSearch";
@@ -3661,27 +3662,29 @@ export default function FlightsPage() {
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
-        <FlightSearchPanel
-          searchFormData={searchFormData}
-          setSearchFormData={setSearchFormData}
-          onSearch={handleFlightSearch}
-          isSearching={isSearching}
-          activeFilter={activeFilter}
-          filterLoading={filterLoading}
-          filterResultCounts={filterResultCounts}
-          filterResults={filterResults}
-          searchResults={searchResults}
-          onFilterChange={handleFilterChange}
-          cachedSearchParams={cachedSearchParams}
-          onShareFlight={shareFlightWithGroup}
-          onQuickAddFlight={handleQuickAddFlight}
-          user={user}
-          trip={trip as TripWithDetails | null}
-          autoSearch={autoSearchRequested}
-          isAddingFlight={addingFlightKey !== null}
-          addingFlightKey={addingFlightKey}
-          tripFlights={sortedFlights}
-        />
+        {FEATURE_FLAGS.FLIGHT_SEARCH && (
+          <FlightSearchPanel
+            searchFormData={searchFormData}
+            setSearchFormData={setSearchFormData}
+            onSearch={handleFlightSearch}
+            isSearching={isSearching}
+            activeFilter={activeFilter}
+            filterLoading={filterLoading}
+            filterResultCounts={filterResultCounts}
+            filterResults={filterResults}
+            searchResults={searchResults}
+            onFilterChange={handleFilterChange}
+            cachedSearchParams={cachedSearchParams}
+            onShareFlight={shareFlightWithGroup}
+            onQuickAddFlight={handleQuickAddFlight}
+            user={user}
+            trip={trip as TripWithDetails | null}
+            autoSearch={autoSearchRequested}
+            isAddingFlight={addingFlightKey !== null}
+            addingFlightKey={addingFlightKey}
+            tripFlights={sortedFlights}
+          />
+        )}
 
         <section className="space-y-4">
           <div>
