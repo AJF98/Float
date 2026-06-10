@@ -106,6 +106,7 @@ import { TripCreatorActions } from "@/components/trip-creator-actions";
 import { TravelLoading } from "@/components/LoadingSpinners";
 import ActivitySearch from "@/components/activity-search";
 import { WishListBoard } from "@/components/wish-list-board";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import Proposals from "@/pages/proposals";
 import { ActivityDetailsDialog } from "@/components/activity-details-dialog";
 import { normalizeActivityTypeInput } from "@shared/activityValidation";
@@ -3389,7 +3390,7 @@ export default function Trip() {
                   </div>
                 )}
 
-                {activeTab === "activities" && (
+                {activeTab === "activities" && FEATURE_FLAGS.ACTIVITY_SEARCH && (
                   <div className="trip-themed-section p-6">
                     <ActivitySearch
                       tripId={numericTripId}
@@ -5456,7 +5457,7 @@ function FlightCoordination({
         {/* Top-right Manual Entry button removed per requirements */}
       </div>
 
-      <Card>
+      {FEATURE_FLAGS.FLIGHT_SEARCH && <Card>
         <CardContent className="space-y-6 p-6">
           <form
             className="space-y-6"
@@ -5777,7 +5778,7 @@ function FlightCoordination({
             </div>
           ) : null}
       </CardContent>
-    </Card>
+    </Card>}
 
     <div className="space-y-4">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -7164,10 +7165,12 @@ function HotelBooking({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={focusSearchPanel}>
-                <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                Search lodging
-              </DropdownMenuItem>
+              {FEATURE_FLAGS.HOTEL_SEARCH && (
+                <DropdownMenuItem onClick={focusSearchPanel}>
+                  <Search className="mr-2 h-4 w-4 text-muted-foreground" />
+                  Search lodging
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={openManualForm}>
                 <Building className="mr-2 h-4 w-4 text-muted-foreground" />
                 Add manually
@@ -7176,7 +7179,7 @@ function HotelBooking({
           </DropdownMenu>
         </div>
 
-        <HotelSearchPanel
+        {FEATURE_FLAGS.HOTEL_SEARCH && <HotelSearchPanel
           ref={searchPanelRef}
           tripId={tripId}
           trip={
@@ -7198,7 +7201,7 @@ function HotelBooking({
           storeBookingIntent={storeBookingIntent}
           hotelProposalsCount={hotelProposals.length}
           toast={toast}
-        />
+        />}
 
         <div className="border-t border-border/60" />
 
