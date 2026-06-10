@@ -37,6 +37,7 @@ import {
   X
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/lib/api";
 import { ACTIVITY_CATEGORY_VALUES } from "@shared/activityValidation";
@@ -434,30 +435,33 @@ export default function Activities() {
       </div>
 
       {/* Discover panel trigger */}
-      <div className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4">
-        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <h2 className="text-lg font-semibold text-neutral-900">Discover activities</h2>
-            <p className="text-sm text-neutral-600">
-              Use filters to search for experiences without leaving the activities hub.
-            </p>
+      {FEATURE_FLAGS.ACTIVITY_SEARCH && (
+        <div className="bg-white border-b border-gray-200 px-4 lg:px-8 py-4">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-900">Discover activities</h2>
+              <p className="text-sm text-neutral-600">
+                Use filters to search for experiences without leaving the activities hub.
+              </p>
+            </div>
+            {!isSearchPanelOpen && (
+              <Button
+                ref={triggerButtonRef}
+                onClick={handleOpenPanel}
+                variant="outline"
+                className="flex items-center"
+              >
+                <Search className="mr-2 h-4 w-4" />
+                Discover activities
+              </Button>
+            )}
           </div>
-          {!isSearchPanelOpen && (
-            <Button
-              ref={triggerButtonRef}
-              onClick={handleOpenPanel}
-              variant="outline"
-              className="flex items-center"
-            >
-              <Search className="mr-2 h-4 w-4" />
-              Discover activities
-            </Button>
-          )}
         </div>
-      </div>
+      )}
 
       <div className="px-4 lg:px-8 py-4">
         <div className="max-w-7xl mx-auto">
+          {FEATURE_FLAGS.ACTIVITY_SEARCH && (
           <Collapsible open={isSearchPanelOpen} onOpenChange={setIsSearchPanelOpen}>
             {isSearchPanelOpen && (
               <SearchFormCard
@@ -817,6 +821,7 @@ export default function Activities() {
               </div>
             )}
           </Collapsible>
+          )}
         </div>
       </div>
 
