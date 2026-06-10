@@ -46,7 +46,6 @@ import {
   CheckCircle2,
   Globe2,
   Plane,
-  Sparkles,
   UserRound,
   MapPin,
   X,
@@ -995,43 +994,6 @@ export default function Home() {
       )}`
     : null;
 
-  const heroCoverPhoto = resolveCoverPhotoUrl(
-    primaryTrip?.coverPhotoUrl ??
-      primaryTrip?.coverPhotoOriginalUrl ??
-      primaryTrip?.coverImageUrl ??
-      null,
-  );
-  const heroImageSrcSet = primaryTrip
-    ? buildCoverPhotoSrcSet({
-        full:
-          primaryTrip.coverPhotoUrl ??
-          primaryTrip.coverPhotoOriginalUrl ??
-          primaryTrip.coverImageUrl ??
-          null,
-        card:
-          primaryTrip.coverPhotoCardUrl ??
-          primaryTrip.coverPhotoOriginalUrl ??
-          null,
-        thumb:
-          primaryTrip.coverPhotoThumbUrl ??
-          primaryTrip.coverPhotoCardUrl ??
-          primaryTrip.coverPhotoOriginalUrl ??
-          null,
-      })
-    : undefined;
-  const heroAltText = primaryTrip
-    ? buildCoverPhotoAltText(primaryTrip.name || primaryTrip.destination)
-    : "Trip cover photo";
-  const heroObjectPosition = getCoverPhotoObjectPosition(
-    primaryTrip?.coverPhotoFocalX,
-    primaryTrip?.coverPhotoFocalY,
-  );
-  const {
-    showImage: showHeroCover,
-    isLoaded: heroCoverLoaded,
-    handleLoad: handleHeroCoverLoad,
-    handleError: handleHeroCoverError,
-  } = useCoverPhotoImage(heroCoverPhoto);
 
   const handlePlanTrip = useCallback(() => {
     setLocation("/trips/new");
@@ -1564,8 +1526,8 @@ export default function Home() {
           )}
         </div>
       </header>
-      <main className="mx-auto w-full max-w-[1240px] px-6 pb-20 pt-24 lg:pt-28">
-        <div className="flex flex-col gap-8">
+      <main className="mx-auto w-full max-w-[1240px] px-6 pb-20 pt-6 lg:pt-8">
+        <div className="flex flex-col gap-6">
 
           {isDesktop ? (
             <Dialog open={isHowItWorksOpen} onOpenChange={handleHowItWorksOpenChange}>
@@ -1632,64 +1594,27 @@ export default function Home() {
             </Sheet>
           )}
 
-          <section
-            aria-labelledby="dashboard-hero"
-            className="relative overflow-hidden rounded-[36px] border border-white/12 bg-slate-900/95 p-8 text-white shadow-[0_45px_90px_-40px_rgba(15,23,42,0.85)] backdrop-blur-xl sm:p-12"
-          >
-            <div
-              className="pointer-events-none absolute inset-0"
-              style={{ backgroundImage: TRIP_COVER_GRADIENT }}
-              aria-hidden="true"
-            />
-            {showHeroCover ? (
-              <img
-                src={heroCoverPhoto ?? undefined}
-                srcSet={heroImageSrcSet}
-                sizes="(max-width: 1024px) 100vw, 960px"
-                alt={heroAltText}
-                className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${
-                  heroCoverLoaded ? "opacity-100" : "opacity-0"
-                }`}
-                onLoad={handleHeroCoverLoad}
-                onError={handleHeroCoverError}
-                loading="eager"
-                decoding="async"
-                style={{ objectPosition: heroObjectPosition }}
-              />
-            ) : null}
-            <div className="relative flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-              <div className="max-w-3xl space-y-5">
-                <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  <span>Your travel hub</span>
-                </div>
-                <div className="space-y-3">
-                  <h1
-                    id="dashboard-hero"
-                    className="text-4xl font-bold tracking-tight text-white drop-shadow-sm sm:text-5xl"
-                  >
-                    Dashboard
-                  </h1>
-                  <p className="max-w-2xl text-sm text-white/80 sm:text-base">
-                    Plan new trips and see what’s next—all in one place.
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
-                <Button
-                  onClick={handlePlanTrip}
-                  className="h-auto rounded-full px-6 py-3 text-base font-semibold shadow-xl transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-2xl"
-                >
-                  Plan a New Trip
-                </Button>
-                {nextTripChip ? (
-                  <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-white/90">
-                    {nextTripChip}
-                  </span>
-                ) : null}
-              </div>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1
+                id="dashboard-hero"
+                className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl"
+              >
+                {user?.firstName ? `Hey, ${user.firstName} ✈️` : "Your trips"}
+              </h1>
+              {nextTripChip ? (
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{nextTripChip}</p>
+              ) : (
+                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Plan your next adventure</p>
+              )}
             </div>
-          </section>
+            <Button
+              onClick={handlePlanTrip}
+              className="h-auto self-start rounded-full px-6 py-2.5 text-sm font-semibold shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg sm:self-auto"
+            >
+              Plan a New Trip
+            </Button>
+          </div>
 
           <section aria-labelledby="upcoming-trips-heading" className="space-y-6">
             <h2
