@@ -1602,8 +1602,29 @@ export default function Home() {
               >
                 {user?.firstName ? `Hey, ${user.firstName} ✈️` : "Your trips"}
               </h1>
-              {nextTripChip ? (
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{nextTripChip}</p>
+              {nextTrip ? (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <CalendarDays className="h-3.5 w-3.5" />
+                    {daysToNextTrip === 0 ? "Today!" : `${daysToNextTrip} days to go`}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <UserRound className="h-3.5 w-3.5" />
+                    {nextTrip.memberCount ?? nextTrip.members.length} {(nextTrip.memberCount ?? nextTrip.members.length) === 1 ? "traveler" : "travelers"}
+                  </span>
+                  {upcomingSummaries[0] && (
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
+                      upcomingSummaries[0].progressPercent >= 50
+                        ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                        : upcomingSummaries[0].progressPercent > 0
+                          ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                    }`}>
+                      <Globe2 className="h-3.5 w-3.5" />
+                      Planning {upcomingSummaries[0].progressPercent}%
+                    </span>
+                  )}
+                </div>
               ) : (
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Plan your next adventure</p>
               )}
@@ -1615,6 +1636,51 @@ export default function Home() {
               Plan a New Trip
             </Button>
           </div>
+
+          {upcomingSummaries.length > 1 && (
+            <section aria-labelledby="needs-attention-heading" className="space-y-3">
+              <h2 id="needs-attention-heading" className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Your trips at a glance
+              </h2>
+              <div className="divide-y divide-slate-100 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                {upcomingSummaries.map((trip) => {
+                  const daysLeft = differenceInCalendarDays(
+                    parseISO(trip.startDate),
+                    startOfDay(new Date()),
+                  );
+                  const isUrgent = daysLeft <= 30 && trip.progressPercent < 40;
+                  return (
+                    <Link
+                      key={`glance-${trip.id}`}
+                      href={`/trip/${trip.id}`}
+                      className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900/60 px-4 py-3 text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        {isUrgent && (
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" aria-label="Needs attention" />
+                        )}
+                        <span className="font-medium text-slate-900 dark:text-white truncate">{trip.name}</span>
+                        <span className="hidden sm:inline text-slate-400 dark:text-slate-500 shrink-0">{trip.destination}</span>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0 text-slate-500 dark:text-slate-400">
+                        <span className={daysLeft <= 14 ? "font-semibold text-amber-600 dark:text-amber-400" : ""}>
+                          {daysLeft === 0 ? "Today" : daysLeft < 0 ? "In progress" : `${daysLeft}d`}
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          trip.progressPercent >= 50
+                            ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                        }`}>
+                          {trip.progressPercent}%
+                        </span>
+                        <Plane className="h-3.5 w-3.5" />
+                      </div>
+                    </Link>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           <section aria-labelledby="upcoming-trips-heading" className="space-y-6">
             <h2
