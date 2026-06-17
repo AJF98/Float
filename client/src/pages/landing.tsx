@@ -89,7 +89,6 @@ export default function Landing() {
             aria-label="Float home"
           >
             <img src={floatLogo} alt="Float" className="h-12 w-auto drop-shadow-sm sm:h-14" />
-            <span className="text-3xl font-semibold tracking-tight text-slate-900">Float</span>
           </button>
 
           <div className="flex items-center gap-3">
