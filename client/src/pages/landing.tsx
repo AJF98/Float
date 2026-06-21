@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
-import floatLogo from "@/assets/float-logo.png"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import FloatLogo from "@/components/FloatLogo"
 import {
   ArrowRight,
   CalendarRange,
@@ -102,35 +102,35 @@ export default function Landing() {
 
       {/* NAV */}
       <nav
-        className={`sticky top-0 z-30 border-b transition-all duration-300 ${isScrolled ? "shadow-sm backdrop-blur-2xl" : "border-transparent bg-transparent"}`}
-        style={isScrolled ? { borderColor: 'rgba(12,8,5,0.08)', backgroundColor: 'rgba(253,246,238,0.95)' } : {}}
+        className={`sticky top-0 z-30 transition-all duration-300 ${
+          isScrolled ? "shadow-sm backdrop-blur-2xl" : "border-transparent bg-transparent"
+        }`}
+        style={isScrolled
+          ? { borderBottom: '1px solid rgba(12,8,5,0.08)', backgroundColor: 'rgba(12,8,5,0.97)' }
+          : {}}
       >
         <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-3"
+            className="flex items-center"
             aria-label="Float home"
           >
-            <img src={floatLogo} alt="Float" className="h-12 w-auto drop-shadow-sm sm:h-14" />
+            <FloatLogo height={36} variant="light" />
           </button>
 
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className={`rounded-sm px-5 transition-colors ${
-                isScrolled
-                  ? "border-[rgba(12,8,5,0.15)] bg-transparent text-[#0C0805] hover:bg-[rgba(12,8,5,0.04)]"
-                  : "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
-              }`}
-              style={{ ...MONO, fontSize: '13px' }}
+              className="rounded-sm px-5 border-white/25 bg-white/8 text-white backdrop-blur-sm hover:bg-white/15 transition-colors"
+              style={{ ...MONO, fontSize: '13px', borderColor: 'rgba(255,255,255,0.22)', background: 'transparent' }}
               onClick={() => (window.location.href = "/login")}
             >
               Log in
             </Button>
             <Button
               onClick={() => (window.location.href = "/register")}
-              className="rounded-sm px-6"
-              style={{ ...MONO, fontSize: '13px', background: TANG, color: DARK, boxShadow: '0 8px 20px -8px rgba(255,107,43,0.55)' }}
+              className="rounded-sm px-6 transition-transform hover:-translate-y-px"
+              style={{ ...MONO, fontSize: '13px', background: TANG, color: DARK, boxShadow: '0 8px 20px -8px rgba(255,107,43,0.6)' }}
             >
               Get started
             </Button>
