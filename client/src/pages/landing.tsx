@@ -144,73 +144,100 @@ export default function Landing() {
 
       <main>
         {/* HERO */}
-        <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-slate-900">
+        <section className="relative flex min-h-[100svh] items-center overflow-hidden" style={{ backgroundColor: '#0C0805' }}>
           <img
             src="/landing/beach-group-1.jpg"
             alt=""
             role="presentation"
-            className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
+            className="absolute inset-0 h-full w-full object-cover object-[center_35%] opacity-40"
             loading="eager"
             onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
           />
-          {/* Left-to-right scrim */}
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-950/60 to-slate-950/10" />
-          {/* Bottom vignette */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent" />
+          {/* Warm scrim */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to right, rgba(12,8,5,0.96) 0%, rgba(12,8,5,0.72) 55%, rgba(12,8,5,0.18) 100%)' }} />
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(to top, rgba(12,8,5,0.85) 0%, transparent 45%)' }} />
+
+          {/* Decorative concentric rings */}
+          <div className="pointer-events-none absolute right-[-220px] top-1/2 h-[720px] w-[720px] -translate-y-1/2 rounded-full" style={{ border: '1px solid rgba(255,107,43,0.08)' }} />
+          <div className="pointer-events-none absolute right-[-100px] top-1/2 h-[520px] w-[520px] -translate-y-1/2 rounded-full" style={{ border: '1px solid rgba(255,107,43,0.12)' }} />
+          <div className="pointer-events-none absolute right-[40px] top-1/2 h-[320px] w-[320px] -translate-y-1/2 rounded-full" style={{ border: '1px solid rgba(255,107,43,0.18)' }} />
 
           <div className="relative z-10 mx-auto w-full max-w-6xl px-4 py-28 lg:px-8 lg:py-36">
-            <div className="max-w-2xl">
-              <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm">
-                <Sparkles className="h-3.5 w-3.5 text-cyan-300" />
+            <div style={{ maxWidth: '680px' }}>
+
+              {/* Badge */}
+              <p
+                className="inline-flex items-center gap-2 rounded-sm px-3 py-1 text-xs uppercase tracking-widest"
+                style={{ fontFamily: "'DM Mono', monospace", color: '#FF6B2B', background: 'rgba(255,107,43,0.10)', border: '1px solid rgba(255,107,43,0.28)' }}
+              >
+                <Sparkles className="h-3 w-3" />
                 Plan together. Arrive happy.
               </p>
 
-              <h1 className="mt-6 text-5xl font-bold leading-[1.08] text-white sm:text-6xl lg:text-7xl">
-                Group trips that actually{" "}
-                <span className="bg-gradient-to-r from-cyan-300 to-violet-300 bg-clip-text text-transparent">
-                  come together
-                </span>
+              {/* Headline */}
+              <h1
+                className="mt-10 text-[64px] text-white sm:text-[80px] lg:text-[96px]"
+                style={{ fontFamily: "'Fraunces', serif", fontWeight: 900, letterSpacing: '-0.025em', lineHeight: 1.0 }}
+              >
+                Group trips that{" "}
+                <br className="hidden sm:block" />
+                actually{" "}
+                <span style={{ color: '#FF6B2B' }}>come together</span>
               </h1>
 
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-200 sm:text-xl">
+              {/* Body */}
+              <p
+                className="mt-10 max-w-xl text-xl leading-relaxed lg:text-2xl"
+                style={{ fontFamily: "'Fraunces', serif", fontWeight: 300, color: 'rgba(245,230,200,0.78)' }}
+              >
                 Float gives everyone in your crew one shared space to float ideas, vote on favorites, and lock down a
                 real itinerary — no chasing responses, no lost messages, no last-minute chaos.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3">
+              {/* CTAs */}
+              <div className="mt-10 flex flex-wrap gap-4">
                 <Button
                   onClick={() => (window.location.href = "/register")}
-                  className="h-12 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 px-8 text-base text-white shadow-[0_16px_40px_-12px_rgba(6,182,212,0.55)] transition-transform hover:-translate-y-0.5"
+                  className="h-14 rounded-sm px-10 text-base font-semibold transition-transform hover:-translate-y-0.5"
+                  style={{ fontFamily: "'DM Mono', monospace", letterSpacing: '0.02em', background: '#FF6B2B', color: '#0C0805', boxShadow: '0 20px 40px -12px rgba(255,107,43,0.45)' }}
                 >
                   Plan your trip — it's free
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" })}
-                  className="h-12 rounded-full border-white/30 bg-white/10 px-8 text-base text-white backdrop-blur-sm hover:bg-white/20"
+                  className="h-14 rounded-sm px-10 text-base text-white transition-colors hover:bg-white/10"
+                  style={{ fontFamily: "'DM Mono', monospace", letterSpacing: '0.02em', borderColor: 'rgba(255,255,255,0.22)', background: 'transparent' }}
                 >
                   See how it works
-                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
 
-              <div className="mt-8 flex items-center gap-4">
+              {/* Social proof */}
+              <div className="mt-10 flex items-center gap-4">
                 <div className="flex -space-x-2">
                   {(["A", "M", "J", "S", "R"] as const).map((letter, i) => (
-                    <Avatar key={letter} className="h-8 w-8 border-2 border-white/20">
+                    <Avatar key={letter} className="h-9 w-9 border-2" style={{ borderColor: '#0C0805' }}>
                       <AvatarFallback
-                        className={`text-xs font-semibold text-white ${["bg-cyan-500", "bg-violet-500", "bg-pink-500", "bg-sky-500", "bg-indigo-500"][i]}`}
+                        className={`text-xs font-semibold text-white ${["bg-orange-500", "bg-amber-500", "bg-orange-400", "bg-red-500", "bg-rose-500"][i]}`}
                       >
                         {letter}
                       </AvatarFallback>
                     </Avatar>
                   ))}
                 </div>
-                <Separator orientation="vertical" className="h-5 bg-white/20" />
-                <p className="text-sm text-slate-300">
-                  Joined by <span className="font-semibold text-white">4,200+</span> group travelers
+                <div className="h-5 w-px" style={{ background: 'rgba(255,255,255,0.2)' }} />
+                <p
+                  className="text-xs tracking-wide"
+                  style={{ fontFamily: "'DM Mono', monospace", color: 'rgba(245,230,200,0.55)' }}
+                >
+                  Joined by{" "}
+                  <span style={{ color: 'rgba(245,230,200,0.9)', fontWeight: 500 }}>4,200+</span>{" "}
+                  group travelers
                 </p>
               </div>
+
             </div>
           </div>
         </section>
