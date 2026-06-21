@@ -19,7 +19,6 @@ import Join from "@/pages/join";
 import Profile from "@/pages/profile";
 import Flights from "@/pages/flights";
 import Hotels from "@/pages/hotels";
-import Activities from "@/pages/activities";
 import Restaurants from "@/pages/restaurants";
 import Proposals, { ProposalsRoute } from "@/pages/proposals";
 import AmadeusTest from "@/pages/amadeus-test";
@@ -83,8 +82,6 @@ function Router() {
         <Route path="/trips/:tripId/flights" component={Flights} />
         <Route path="/trip/:tripId/hotels" component={Hotels} />
         <Route path="/trips/:tripId/hotels" component={Hotels} />
-        <Route path="/trip/:tripId/activities" component={Activities} />
-        <Route path="/trips/:tripId/activities" component={Activities} />
         <Route path="/trip/:tripId/restaurants" component={Restaurants} />
         <Route path="/trips/:tripId/restaurants" component={Restaurants} />
         <Route path="/trip/:tripId/proposals" component={ProposalsRoute} />

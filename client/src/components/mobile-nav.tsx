@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Calendar, Plus, Menu, Users, Clock, Home, Package, DollarSign, MapPin, Lightbulb } from "lucide-react";
+import { Calendar, Plus, Menu, Users, Clock, Home, Package, DollarSign, Lightbulb } from "lucide-react";
 import { Link } from "wouter";
 import { NotificationIcon } from "./notification-icon";
 import type { TripWithDetails, User } from "@shared/schema";
@@ -51,10 +51,6 @@ export function MobileNav({ trip, user }: MobileNavProps) {
                   <Link href={`/trip/${trip.id}/members`} className="flex items-center px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-200">
                     <Users className="w-4 h-4 mr-3" />
                     Member Schedules
-                  </Link>
-                  <Link href={`/trip/${trip.id}/activities`} className="flex items-center px-3 py-2.5 text-sm font-medium text-slate-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 rounded-xl transition-all duration-200">
-                    <MapPin className="w-4 h-4 mr-3" />
-                    Activities
                   </Link>
                 </nav>
 

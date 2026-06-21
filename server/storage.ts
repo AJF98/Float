@@ -7330,7 +7330,7 @@ export class DatabaseStorage implements IStorage {
       }
 
       if (notification.type.includes("activity")) {
-        return `/trip/${notification.tripId}/activities`;
+        return `/trip/${notification.tripId}`;
       }
 
       if (notification.type.includes("hotel")) {

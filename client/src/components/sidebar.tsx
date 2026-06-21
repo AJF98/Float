@@ -8,7 +8,6 @@ import {
   Package,
   DollarSign,
   ShoppingCart,
-  MapPin,
   Plane,
   Hotel,
   Utensils,
@@ -124,18 +123,7 @@ export function Sidebar({ trip, user, activeTab, onTabChange }: SidebarProps) {
             <Hotel className="w-4 h-4 mr-3 text-current" />
             Lodging
           </button>
-          {/* 7. Discover Activities */}
-          <button
-            onClick={() => onTabChange("activities")}
-            className={cn(
-              baseNavItemClasses,
-              activeTab === "activities" ? activeNavItemClasses : inactiveNavItemClasses,
-            )}
-          >
-            <MapPin className="w-4 h-4 mr-3 text-current" />
-            Discover Activities
-          </button>
-          {/* 8. Restaurants */}
+          {/* 7. Restaurants */}
           <button
             onClick={() => onTabChange("restaurants")}
             className={cn(

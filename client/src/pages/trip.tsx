@@ -104,7 +104,6 @@ import { NotificationIcon } from "@/components/notification-icon";
 import { LeaveTripButton } from "@/components/leave-trip-button";
 import { TripCreatorActions } from "@/components/trip-creator-actions";
 import { TravelLoading } from "@/components/LoadingSpinners";
-import ActivitySearch from "@/components/activity-search";
 import { WishListBoard } from "@/components/wish-list-board";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import Proposals from "@/pages/proposals";
@@ -183,7 +182,6 @@ import {
   markExternalRedirect,
   FLIGHT_REDIRECT_STORAGE_KEY,
   HOTEL_REDIRECT_STORAGE_KEY,
-  ACTIVITY_REDIRECT_STORAGE_KEY,
   RESTAURANT_REDIRECT_STORAGE_KEY,
 } from "@/lib/externalRedirects";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -195,7 +193,6 @@ const TRIP_TAB_KEYS = [
   "packing",
   "flights",
   "hotels",
-  "activities",
   "restaurants",
   "groceries",
   "expenses",
@@ -335,7 +332,6 @@ const MOBILE_TAB_ITEMS: { key: TripTab; label: string; icon: LucideIcon }[] = [
   { key: "hotels", label: "Lodging", icon: Hotel },
   { key: "proposals", label: "Floaters", icon: CheckCircle },
   { key: "wish-list", label: "Wish List", icon: Sparkles },
-  { key: "activities", label: "Discover", icon: MapPin },
   { key: "restaurants", label: "Dining", icon: Utensils },
   { key: "groceries", label: "Groceries", icon: ShoppingCart },
 ];
@@ -1255,13 +1251,11 @@ export default function Trip() {
   const debouncedCalendarFilters = useDebouncedValue(calendarFilters, 250);
   const [shouldShowFlightReturnPrompt, setShouldShowFlightReturnPrompt] = useState(false);
   const [shouldShowHotelReturnPrompt, setShouldShowHotelReturnPrompt] = useState(false);
-  const [shouldShowActivityReturnPrompt, setShouldShowActivityReturnPrompt] = useState(false);
   const [shouldShowRestaurantReturnPrompt, setShouldShowRestaurantReturnPrompt] = useState(false);
-  const [activeRedirectModal, setActiveRedirectModal] = useState<"flight" | "hotel" | "activity" | "restaurant" | null>(null);
+  const [activeRedirectModal, setActiveRedirectModal] = useState<"flight" | "hotel" | "restaurant" | null>(null);
   const [restaurantManualOpenSignal, setRestaurantManualOpenSignal] = useState(0);
   const [flightManualOpenSignal, setFlightManualOpenSignal] = useState(0);
   const [hotelManualOpenSignal, setHotelManualOpenSignal] = useState(0);
-  const [activityManualOpenSignal, setActivityManualOpenSignal] = useState(0);
   const [dayDetailsState, setDayDetailsState] = useState<DayDetailsState | null>(null);
   const [isDayDetailsOpen, setIsDayDetailsOpen] = useState(false);
   const dayDetailsContentRef = useRef<HTMLDivElement>(null);
@@ -1292,7 +1286,6 @@ export default function Trip() {
       setFlightManualOpenSignal(0);
       setShouldShowFlightReturnPrompt(true);
       setShouldShowHotelReturnPrompt(false);
-      setShouldShowActivityReturnPrompt(false);
       setShouldShowRestaurantReturnPrompt(false);
       return;
     }
@@ -1301,16 +1294,6 @@ export default function Trip() {
       clearExternalRedirect(HOTEL_REDIRECT_STORAGE_KEY);
       setShouldShowHotelReturnPrompt(true);
       setShouldShowFlightReturnPrompt(false);
-      setShouldShowActivityReturnPrompt(false);
-      setShouldShowRestaurantReturnPrompt(false);
-      return;
-    }
-
-    if (hasExternalRedirect(ACTIVITY_REDIRECT_STORAGE_KEY)) {
-      clearExternalRedirect(ACTIVITY_REDIRECT_STORAGE_KEY);
-      setShouldShowActivityReturnPrompt(true);
-      setShouldShowFlightReturnPrompt(false);
-      setShouldShowHotelReturnPrompt(false);
       setShouldShowRestaurantReturnPrompt(false);
       return;
     }
@@ -1321,13 +1304,11 @@ export default function Trip() {
       setShouldShowRestaurantReturnPrompt(true);
       setShouldShowFlightReturnPrompt(false);
       setShouldShowHotelReturnPrompt(false);
-      setShouldShowActivityReturnPrompt(false);
       return;
     }
 
     setShouldShowFlightReturnPrompt(false);
     setShouldShowHotelReturnPrompt(false);
-    setShouldShowActivityReturnPrompt(false);
     setShouldShowRestaurantReturnPrompt(false);
   }, []);
 
@@ -1372,18 +1353,13 @@ export default function Trip() {
       return;
     }
 
-    if (shouldShowActivityReturnPrompt) {
-      setActiveRedirectModal("activity");
-      return;
-    }
-
     if (shouldShowRestaurantReturnPrompt) {
       setActiveRedirectModal("restaurant");
       return;
     }
 
     setActiveRedirectModal(null);
-  }, [shouldShowFlightReturnPrompt, shouldShowHotelReturnPrompt, shouldShowActivityReturnPrompt, shouldShowRestaurantReturnPrompt]);
+  }, [shouldShowFlightReturnPrompt, shouldShowHotelReturnPrompt, shouldShowRestaurantReturnPrompt]);
 
   const handleFlightReturnNo = useCallback(() => {
     clearExternalRedirect(FLIGHT_REDIRECT_STORAGE_KEY);
@@ -1413,20 +1389,7 @@ export default function Trip() {
 
   const flightDialogOpen = activeRedirectModal === "flight";
   const hotelDialogOpen = activeRedirectModal === "hotel";
-  const activityDialogOpen = activeRedirectModal === "activity";
   const restaurantDialogOpen = activeRedirectModal === "restaurant";
-
-  const handleActivityReturnNo = useCallback(() => {
-    clearExternalRedirect(ACTIVITY_REDIRECT_STORAGE_KEY);
-    setShouldShowActivityReturnPrompt(false);
-  }, []);
-
-  const handleActivityReturnYes = useCallback(() => {
-    clearExternalRedirect(ACTIVITY_REDIRECT_STORAGE_KEY);
-    setShouldShowActivityReturnPrompt(false);
-    setActiveTab("activities");
-    setActivityManualOpenSignal((value) => value + 1);
-  }, []);
 
   const handleRestaurantReturnNo = useCallback(() => {
     clearExternalRedirect(RESTAURANT_REDIRECT_STORAGE_KEY);
@@ -2801,19 +2764,7 @@ export default function Trip() {
                     <Hotel className="w-5 h-5 mr-3 text-current" />
                     Lodging
                   </button>
-                  {/* 7. Discover Activities */}
-                  <button
-                    onClick={() => setActiveTab("activities")}
-                    className={cn(
-                      navButtonBaseClasses,
-                      activeTab === "activities" ? navButtonActiveClasses : navButtonInactiveClasses,
-                    )}
-                    data-tutorial="activities-tab"
-                  >
-                    <MapPin className="w-5 h-5 mr-3 text-current" />
-                    Discover Activities
-                  </button>
-                  {/* 8. Restaurants */}
+                  {/* 7. Restaurants */}
                   <button
                     onClick={() => setActiveTab("restaurants")}
                     className={cn(
@@ -3390,17 +3341,6 @@ export default function Trip() {
                   </div>
                 )}
 
-                {activeTab === "activities" && FEATURE_FLAGS.ACTIVITY_SEARCH && (
-                  <div className="trip-themed-section p-6">
-                    <ActivitySearch
-                      tripId={numericTripId}
-                      trip={trip}
-                      user={user ?? undefined}
-                      manualFormOpenSignal={activityManualOpenSignal}
-                    />
-                  </div>
-                )}
-
                 {activeTab === "groceries" && (
                   <div className="trip-themed-section p-6">
                     <GroceryList
@@ -3911,39 +3851,6 @@ export default function Trip() {
                 variant="outline"
                 className="sm:flex-1 border border-neutral-200 bg-white text-neutral-700 hover:border-primary hover:text-primary"
                 onClick={handleHotelReturnNo}
-              >
-                No
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog
-          open={activityDialogOpen}
-          onOpenChange={(open) => {
-            if (!open && activityDialogOpen && shouldShowActivityReturnPrompt) {
-              handleActivityReturnNo();
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Didn't find what you were looking for?</DialogTitle>
-              <DialogDescription>
-                Add the activity details manually so everyone stays in sync.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter className="gap-2 sm:flex-row">
-              <Button
-                className="sm:flex-1 bg-gradient-to-r from-primary via-rose-500 to-orange-500 text-white shadow-md hover:opacity-90"
-                onClick={handleActivityReturnYes}
-              >
-                Yes
-              </Button>
-              <Button
-                variant="outline"
-                className="sm:flex-1 border border-neutral-200 bg-white text-neutral-700 hover:border-primary hover:text-primary"
-                onClick={handleActivityReturnNo}
               >
                 No
               </Button>
