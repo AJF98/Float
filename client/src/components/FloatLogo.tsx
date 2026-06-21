@@ -1,0 +1,45 @@
+interface FloatLogoProps {
+  variant?: "light" | "dark"
+  height?: number
+}
+
+export default function FloatLogo({ variant = "light", height = 40 }: FloatLogoProps) {
+  const wordColor = variant === "dark" ? "#0C0805" : "#FF6B2B"
+  const markColor = "#FF6B2B"
+  const width = height * 3.6
+
+  return (
+    <svg
+      width={width}
+      height={height}
+      viewBox="0 0 144 40"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-label="Float"
+    >
+      {/* Floating mark: dot above a wave */}
+      <circle cx="14" cy="10" r="5" fill={markColor} />
+      <path
+        d="M4 26 Q9 19 14 23 Q19 27 24 20"
+        stroke={markColor}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+
+      {/* Wordmark: "float" in Fraunces serif via text element */}
+      <text
+        x="36"
+        y="31"
+        fontFamily="'Fraunces', Georgia, serif"
+        fontWeight="800"
+        fontSize="28"
+        letterSpacing="-0.5"
+        fill={wordColor}
+      >
+        float
+      </text>
+    </svg>
+  )
+}
