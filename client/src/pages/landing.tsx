@@ -139,7 +139,7 @@ export default function Landing() {
         {/* HERO */}
         <section className="relative flex min-h-[100svh] items-center overflow-hidden" style={{ backgroundColor: DARK }}>
           <img
-            src="/landing/beach-group-1.jpg"
+            src="https://d8j0ntlcm91z4.cloudfront.net/user_3Eb7Je7YfaB7OIacbsxomTO4i4x/hf_20260621_205654_d3dbc9cc-e653-4fc6-8503-13e20d415ca5.png"
             alt=""
             role="presentation"
             className="absolute inset-0 h-full w-full object-cover object-[center_35%] opacity-40"
@@ -294,7 +294,7 @@ export default function Landing() {
 
             <div className="relative hidden overflow-hidden rounded-sm lg:block" style={{ background: '#F5E6C8' }}>
               <img
-                src="/landing/beach-group-2.jpg"
+                src="https://d8j0ntlcm91z4.cloudfront.net/user_3Eb7Je7YfaB7OIacbsxomTO4i4x/hf_20260621_205716_2c25edb0-1552-4707-9027-a9c3135d8fda.png"
                 alt=""
                 role="presentation"
                 className="h-full w-full object-cover object-center"
