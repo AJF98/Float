@@ -102,3 +102,22 @@ Avoid generic AI-generated aesthetics:
 
 Interpret creatively and make unexpected choices that feel genuinely designed for the context. Vary between light and dark themes, different fonts, different aesthetics. You still tend to converge on common choices (Space Grotesk, for example) across generations. Avoid this: it is critical that you think outside the box!
 </frontend_aesthetics>
+
+<use_interesting_fonts>
+Typography instantly signals quality. Avoid using boring, generic fonts.
+
+**Never use:** Inter, Roboto, Open Sans, Lato, default system fonts
+
+**Impact choices:**
+- Code aesthetic: JetBrains Mono, Fira Code, Space Grotesk
+- Editorial: Playfair Display, Crimson Pro, Fraunces
+- Startup: Clash Display, Satoshi, Cabinet Grotesk
+- Technical: IBM Plex family, Source Sans 3
+- Distinctive: Bricolage Grotesque, Obviously, Newsreader
+
+**Pairing principle:** High contrast = interesting. Display + monospace, serif + geometric sans, variable font across weights.
+
+**Use extremes:** 100/200 weight vs 800/900, not 400 vs 600. Size jumps of 3x+, not 1.5x.
+
+Pick one distinctive font, use it decisively. Load from Google Fonts. State your choice before coding.
+</use_interesting_fonts>
