@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import floatLogo from "@/assets/float-logo.png"
+import FloatLogo from "@/components/FloatLogo"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import {
@@ -102,26 +102,22 @@ export default function Landing() {
 
       {/* NAV */}
       <nav
-        className={`sticky top-0 z-30 border-b transition-all duration-300 ${isScrolled ? "shadow-sm backdrop-blur-2xl" : "border-transparent bg-transparent"}`}
-        style={isScrolled ? { borderColor: 'rgba(12,8,5,0.08)', backgroundColor: 'rgba(253,246,238,0.95)' } : {}}
+        className={`sticky top-0 z-30 transition-all duration-300 ${isScrolled ? "shadow-sm" : ""}`}
+        style={{ backgroundColor: DARK, borderBottom: '1px solid rgba(255,107,43,0.12)' }}
       >
-        <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4 lg:px-8">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-3"
+            className="flex items-center"
             aria-label="Float home"
           >
-            <img src={floatLogo} alt="Float" className="h-12 w-auto drop-shadow-sm sm:h-14" />
+            <FloatLogo height={34} variant="light" />
           </button>
 
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
-              className={`rounded-sm px-5 transition-colors ${
-                isScrolled
-                  ? "border-[rgba(12,8,5,0.15)] bg-transparent text-[#0C0805] hover:bg-[rgba(12,8,5,0.04)]"
-                  : "border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20"
-              }`}
+              className="rounded-sm px-5 transition-colors border-white/20 bg-transparent text-white hover:bg-white/10"
               style={{ ...MONO, fontSize: '13px' }}
               onClick={() => (window.location.href = "/login")}
             >
