@@ -144,12 +144,14 @@ export default function Landing() {
 
       <main>
         {/* HERO */}
-        <section className="relative flex min-h-[100svh] items-center overflow-hidden">
+        <section className="relative flex min-h-[100svh] items-center overflow-hidden bg-slate-900">
           <img
             src="/landing/beach-group-1.jpg"
-            alt="Group of friends celebrating on a beach at golden hour"
+            alt=""
+            role="presentation"
             className="absolute inset-0 h-full w-full object-cover object-[center_35%]"
             loading="eager"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
           />
           {/* Left-to-right scrim */}
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950/88 via-slate-950/60 to-slate-950/10" />
@@ -282,12 +284,14 @@ export default function Landing() {
             </div>
 
             {/* Right: Photo 2 */}
-            <div className="relative hidden overflow-hidden rounded-3xl lg:block">
+            <div className="relative hidden overflow-hidden rounded-3xl bg-gradient-to-br from-cyan-50 to-violet-100 lg:block">
               <img
                 src="/landing/beach-group-2.jpg"
-                alt="Group of friends walking on a beach at sunset"
+                alt=""
+                role="presentation"
                 className="h-full w-full object-cover object-center"
                 loading="lazy"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
               />
               <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-white/50 to-transparent" />
               <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 p-4 shadow-lg backdrop-blur-md">
