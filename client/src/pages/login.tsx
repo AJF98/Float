@@ -149,16 +149,16 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-12">
-      <Card className="w-full max-w-md border border-white/10 bg-slate-800/60 text-white shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#F0FDFA] via-[#E6FAF7] to-[#F0FDFA] px-4 py-12">
+      <Card className="w-full max-w-md">
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-900/40 shadow-[0_10px_30px_-12px_rgba(6,182,212,0.45)]">
-              <Plane className="h-6 w-6 text-cyan-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.10)] shadow-[0_10px_30px_-12px_rgba(13,148,136,0.20)]">
+              <Plane className="h-6 w-6 text-[#0D9488]" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-semibold">Welcome back</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-3xl font-semibold text-[#0D3D39]">Welcome back</CardTitle>
+          <CardDescription className="text-[#0D3D39]/60">
             Sign in to your Float account to continue planning
           </CardDescription>
         </CardHeader>
@@ -170,10 +170,10 @@ export default function Login() {
                 name="usernameOrEmail"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Username or Email</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Username or Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <User className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           type="text"
                           inputMode="email"
@@ -182,7 +182,7 @@ export default function Login() {
                           autoCorrect="off"
                           spellCheck={false}
                           placeholder="john@example.com or johndoe"
-                          className="pl-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11"
                           {...field}
                         />
                       </div>
@@ -197,22 +197,22 @@ export default function Login() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Password</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           type={showPassword ? "text" : "password"}
                           autoComplete="current-password"
                           placeholder="••••••••"
-                          className="pl-11 pr-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11 pr-11"
                           {...field}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-slate-400 hover:bg-slate-700"
+                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-[#0D3D39]/50 hover:bg-[rgba(13,148,136,0.08)]"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? (
@@ -235,11 +235,11 @@ export default function Login() {
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-[#0D3D39]/60">
               Don't have an account?{" "}
               <Link
                 href="/register"
-                className="font-medium text-cyan-400 hover:text-cyan-300"
+                className="font-medium text-[#0D9488] hover:text-[#0B7C73]"
               >
                 Create one here
               </Link>
@@ -249,7 +249,7 @@ export default function Login() {
           <div className="mt-4 text-center">
             <Link
               href="/forgot-password"
-              className="text-sm text-slate-400 hover:text-white"
+              className="text-sm text-[#0D3D39]/50 hover:text-[#0D3D39]"
             >
               Forgot your password?
             </Link>

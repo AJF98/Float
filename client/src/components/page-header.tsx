@@ -36,10 +36,11 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "bg-slate-900/80 backdrop-blur-xl border-b border-white/10",
+        "bg-white/95 border-b dark:bg-slate-900/80 dark:backdrop-blur-xl dark:border-white/10",
         sticky && "sticky top-0 z-10",
         className
       )}
+      style={{ borderColor: 'rgba(13,148,136,0.18)' }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 py-4 md:flex-row md:items-center md:justify-between md:py-0 md:h-16">
@@ -48,7 +49,7 @@ export function PageHeader({
               <Button
                 variant="ghost"
                 size="sm"
-                className="flex items-center text-slate-300 hover:text-white hover:bg-white/10"
+                className="flex items-center text-[#0D3D39]/65 hover:text-[#0D9488] hover:bg-[rgba(13,148,136,0.08)] dark:text-slate-300 dark:hover:text-white dark:hover:bg-white/10"
                 data-testid="button-back-navigation"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
@@ -57,12 +58,12 @@ export function PageHeader({
             </Link>
             <div className="flex items-center gap-3">
               {icon && (
-                <div className="flex-shrink-0 text-cyan-400">{icon}</div>
+                <div className="flex-shrink-0 text-[#0D9488] dark:text-cyan-400">{icon}</div>
               )}
               <div>
                 <div className="flex items-center gap-2">
                   <h1
-                    className="text-xl font-semibold text-white"
+                    className="text-xl font-semibold text-[#0D3D39] dark:text-white"
                     data-testid="text-page-title"
                   >
                     {title}
@@ -75,7 +76,7 @@ export function PageHeader({
                 </div>
                 {tripName && (
                   <p
-                    className="text-sm text-slate-400"
+                    className="text-sm text-[#0D3D39]/55 dark:text-slate-400"
                     data-testid="text-trip-context"
                   >
                     {tripName}

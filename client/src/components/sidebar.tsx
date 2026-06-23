@@ -17,7 +17,7 @@ import {
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 import type { TripWithDetails, User } from "@shared/schema";
-import floatLogo from "@/assets/float-logo.png";
+import FloatLogo from "@/components/FloatLogo";
 
 interface SidebarProps {
   trip: TripWithDetails;
@@ -27,13 +27,13 @@ interface SidebarProps {
 }
 
 const baseNavItemClasses =
-  "relative w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400/70";
+  "relative w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500/70 dark:rounded-xl";
 
 const inactiveNavItemClasses =
-  "text-slate-300 hover:text-white hover:bg-gradient-to-r hover:from-white/10 hover:to-white/5 hover:border-l-2 hover:border-cyan-400/50";
+  "text-[#0D3D39]/65 hover:text-[#0D9488] hover:bg-[rgba(13,148,136,0.08)] dark:text-slate-300 dark:hover:text-white dark:hover:bg-gradient-to-r dark:hover:from-white/10 dark:hover:to-white/5 dark:hover:border-l-2 dark:hover:border-cyan-400/50";
 
 const activeNavItemClasses =
-  "bg-gradient-to-r from-cyan-500/20 to-violet-500/15 text-white shadow-lg shadow-cyan-500/10 border-l-2 border-cyan-400 backdrop-blur-sm";
+  "bg-[rgba(13,148,136,0.10)] text-[#0D9488] font-semibold border-l-2 border-[#0D9488] dark:bg-gradient-to-r dark:from-cyan-500/20 dark:to-violet-500/15 dark:text-white dark:shadow-lg dark:shadow-cyan-500/10 dark:border-cyan-400";
 
 export function Sidebar({ trip, user, activeTab, onTabChange }: SidebarProps) {
   return (
@@ -41,11 +41,7 @@ export function Sidebar({ trip, user, activeTab, onTabChange }: SidebarProps) {
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex items-center justify-center px-4 py-4 border-b border-sidebar-border/60">
-          <img
-            src={floatLogo}
-            alt="Float"
-            className="h-10 w-auto"
-          />
+          <FloatLogo height={34} variant="dark" />
         </div>
 
         {/* Navigation */}
@@ -191,19 +187,19 @@ export function Sidebar({ trip, user, activeTab, onTabChange }: SidebarProps) {
         {/* User Profile */}
         <div className="px-4 py-4 border-t border-sidebar-border/60">
           <div className="flex items-center">
-            <Avatar className="w-10 h-10 ring-2 ring-white/20">
+            <Avatar className="w-10 h-10 ring-2 ring-[rgba(13,148,136,0.20)] dark:ring-white/20">
               <AvatarImage src={user?.profileImageUrl || undefined} alt={user?.firstName || "User"} />
-              <AvatarFallback className="bg-white/15 text-white">
+              <AvatarFallback className="bg-[rgba(13,148,136,0.12)] text-[#0D9488] dark:bg-white/15 dark:text-white">
                 {(user?.firstName?.[0] || user?.email?.[0] || "U").toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="ml-3">
-              <p className="text-sm font-semibold text-white">
+              <p className="text-sm font-semibold text-[#0D3D39] dark:text-white">
                 {user?.firstName && user?.lastName
                   ? `${user.firstName} ${user.lastName}`
                   : user?.firstName || user?.email || "User"}
               </p>
-              <p className="text-xs text-white/70">{user?.email}</p>
+              <p className="text-xs text-[#0D3D39]/55 dark:text-white/70">{user?.email}</p>
             </div>
           </div>
         </div>

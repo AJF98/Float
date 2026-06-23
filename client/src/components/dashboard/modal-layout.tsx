@@ -31,13 +31,13 @@ export default function ModalLayout({
   return (
     <div
       className={cn(
-        "flex h-full min-h-0 flex-col overflow-hidden bg-slate-900",
+        "flex h-full min-h-0 flex-col overflow-hidden bg-white dark:bg-slate-900",
         className,
       )}
     >
       <div
         className={cn(
-          "sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-white/10 bg-slate-900/95 px-6 py-5 backdrop-blur",
+          "sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-[rgba(13,148,136,0.15)] bg-white/95 dark:border-white/10 dark:bg-slate-900/95 px-6 py-5 backdrop-blur",
           headerClassName,
         )}
       >
@@ -46,7 +46,7 @@ export default function ModalLayout({
           type="button"
           ref={closeButtonRef}
           onClick={onClose}
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-800/60 text-slate-400 transition hover:border-white/20 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
+          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] text-[#0D3D39]/60 transition hover:border-[rgba(13,148,136,0.35)] hover:text-[#0D3D39] dark:border-white/10 dark:bg-slate-800/60 dark:text-slate-400 dark:hover:border-white/20 dark:hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
           aria-label={closeLabel}
         >
           <X className="h-5 w-5" aria-hidden="true" />
@@ -58,7 +58,7 @@ export default function ModalLayout({
       {footer ? (
         <div
           className={cn(
-            "sticky bottom-0 z-10 border-t border-white/10 bg-slate-900/95 px-6 py-5 backdrop-blur",
+            "sticky bottom-0 z-10 border-t border-[rgba(13,148,136,0.15)] bg-white/95 dark:border-white/10 dark:bg-slate-900/95 px-6 py-5 backdrop-blur",
             footerClassName,
           )}
         >

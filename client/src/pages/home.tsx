@@ -51,7 +51,7 @@ import {
   X,
 } from "lucide-react";
 import { Link } from "wouter";
-import floatLogo from "@/assets/float-logo.png";
+import FloatLogo from "@/components/FloatLogo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { TripCommandCenter } from "@/components/dashboard/trip-command-center";
 import {
@@ -1082,7 +1082,7 @@ export default function Home() {
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={`upcoming-expanded-skeleton-${index}`}
-              className="space-y-2 rounded-xl border border-white/10 bg-slate-800/40 p-4"
+              className="space-y-2 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
             >
               <Skeleton className="h-4 w-2/3" />
               <Skeleton className="h-3 w-1/2" />
@@ -1115,7 +1115,7 @@ export default function Home() {
                 aria-label={buildTripAriaLabel(trip.name, trip.destination, trip.startDate, trip.endDate)}
                 data-analytics="trip_card_click"
                 data-trip-id={trip.id}
-                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7C5CFF] active:-translate-y-0.5"
+                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:border-[rgba(13,148,136,0.30)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0D9488] active:-translate-y-0.5"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -1125,10 +1125,10 @@ export default function Home() {
                   <span className="text-xs font-semibold text-[#2563eb]">Open trip →</span>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 font-medium text-cyan-300">
+                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
                     {trip.destination}
                   </Badge>
-                  <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 font-medium text-cyan-300">
+                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
                     {getTravelersLabel(trip.travelersCount)}
                   </Badge>
                 </div>
@@ -1156,7 +1156,7 @@ export default function Home() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={`destinations-skeleton-${index}`}
-              className="space-y-2 rounded-xl border border-white/10 bg-slate-800/40 p-4"
+              className="space-y-2 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
             >
               <Skeleton className="h-4 w-1/2" />
               <Skeleton className="h-3 w-2/3" />
@@ -1181,7 +1181,7 @@ export default function Home() {
               return (
                 <div
                   key={`destination-summary-${destination.key}`}
-                  className="flex flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/50 p-4 shadow-sm"
+                  className="flex flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -1190,7 +1190,7 @@ export default function Home() {
                         <p className="text-xs text-slate-400">{destination.country}</p>
                       ) : null}
                     </div>
-                    <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+                    <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 text-xs font-semibold text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
                       {destination.tripCount} {destination.tripCount === 1 ? "trip" : "trips"}
                     </Badge>
                   </div>
@@ -1211,7 +1211,7 @@ export default function Home() {
                 )}
                 data-analytics="trip_card_click"
                 data-trip-id={nextTrip.id}
-                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-white/10 bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7C5CFF] active:-translate-y-0.5"
+                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:border-[rgba(13,148,136,0.30)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0D9488] active:-translate-y-0.5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -1220,7 +1220,7 @@ export default function Home() {
                       <p className="text-xs text-slate-400">{destination.country}</p>
                     ) : null}
                   </div>
-                  <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 text-xs font-semibold text-cyan-300">
+                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 text-xs font-semibold text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
                     {destination.tripCount} {destination.tripCount === 1 ? "trip" : "trips"}
                   </Badge>
                 </div>
@@ -1279,10 +1279,10 @@ export default function Home() {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 font-medium text-cyan-300">
+            <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
               {startsToday ? "Today" : `${daysToNextTrip} ${daysToNextTrip === 1 ? "day" : "days"} to go`}
             </Badge>
-            <Badge className="rounded-full bg-gradient-to-r from-cyan-900/40 via-violet-900/40 to-fuchsia-900/40 border border-white/10 px-3 py-1 font-medium text-cyan-300">
+            <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
               {travelerCountLabel}
             </Badge>
           </div>
@@ -1310,7 +1310,7 @@ export default function Home() {
           {Array.from({ length: 2 }).map((_, index) => (
             <div
               key={`travelers-skeleton-${index}`}
-              className="flex items-center gap-3 rounded-xl border border-white/10 bg-slate-800/40 p-4"
+              className="flex items-center gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
             >
               <Skeleton className="h-10 w-10 rounded-full" />
               <div className="flex-1 space-y-2">
@@ -1341,7 +1341,7 @@ export default function Home() {
           {travelerSummaries.map((traveler) => (
             <div
               key={`traveler-summary-${traveler.id}`}
-              className="flex items-start gap-3 rounded-xl border border-white/10 bg-slate-800/50 p-4 shadow-sm"
+              className="flex items-start gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm"
             >
               <Avatar className="h-10 w-10 border-2 border-white bg-slate-100">
                 <AvatarImage src={traveler.avatar ?? undefined} alt={traveler.name} loading="lazy" />
@@ -1412,12 +1412,7 @@ export default function Home() {
             href="/"
             className="dashboard-header__link inline-flex items-center rounded-full px-2 py-1"
           >
-            <img
-              src={floatLogo}
-              alt="Float"
-              className="h-14 sm:h-16 w-auto"
-              loading="lazy"
-            />
+            <FloatLogo height={40} variant="dark" />
           </Link>
           <div className="flex-1" />
           {isDesktop ? (
@@ -1532,7 +1527,7 @@ export default function Home() {
           {isDesktop ? (
             <Dialog open={isHowItWorksOpen} onOpenChange={handleHowItWorksOpenChange}>
               <DialogContent
-                className="flex w-full max-w-3xl flex-col gap-0 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl max-h-[min(90vh,calc(100vh-4rem))] sm:max-h-[min(90vh,calc(100vh-6rem))]"
+                className="flex w-full max-w-3xl flex-col gap-0 overflow-hidden rounded-[32px] border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl max-h-[min(90vh,calc(100vh-4rem))] sm:max-h-[min(90vh,calc(100vh-6rem))]"
                 aria-labelledby={howItWorksTitleId}
                 aria-describedby={howItWorksDescriptionId}
                 onOpenAutoFocus={handleHowItWorksOpenAutoFocus}
@@ -1545,7 +1540,7 @@ export default function Home() {
             <Sheet open={isHowItWorksOpen} onOpenChange={handleHowItWorksOpenChange}>
               <SheetContent
                 side="bottom"
-                className="flex h-[min(90vh,100dvh)] max-h-[min(90vh,100dvh)] w-full max-w-full flex-col gap-0 overflow-hidden rounded-t-[32px] border border-white/10 bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
+                className="flex h-[min(90vh,100dvh)] max-h-[min(90vh,100dvh)] w-full max-w-full flex-col gap-0 overflow-hidden rounded-t-[32px] border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
                 aria-labelledby={howItWorksTitleId}
                 aria-describedby={howItWorksDescriptionId}
                 onOpenAutoFocus={handleHowItWorksOpenAutoFocus}
@@ -1560,7 +1555,7 @@ export default function Home() {
             <Dialog open={isConverterOpen} onOpenChange={handleConverterVisibilityChange}>
               <DialogContent
                 id={converterDialogId}
-                className="w-full max-w-[560px] gap-0 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
+                className="w-full max-w-[560px] gap-0 overflow-hidden rounded-3xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
                 onOpenAutoFocus={handleConverterOpenAutoFocus}
                 onCloseAutoFocus={handleDialogCloseAutoFocus}
               >
@@ -1578,7 +1573,7 @@ export default function Home() {
             <Sheet open={isConverterOpen} onOpenChange={handleConverterVisibilityChange}>
               <SheetContent
                 side="bottom"
-                className="flex h-[100dvh] max-h-[100dvh] w-full max-w-full flex-col gap-0 overflow-hidden rounded-t-[32px] border border-white/10 bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
+                className="flex h-[100dvh] max-h-[100dvh] w-full max-w-full flex-col gap-0 overflow-hidden rounded-t-[32px] border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-900/95 backdrop-blur-xl p-0 shadow-2xl"
                 onOpenAutoFocus={handleConverterOpenAutoFocus}
                 onCloseAutoFocus={handleDialogCloseAutoFocus}
               >
@@ -1604,11 +1599,11 @@ export default function Home() {
               </h1>
               {nextTrip ? (
                 <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 px-3 py-1 text-xs font-medium text-teal-700 dark:text-slate-300">
                     <CalendarDays className="h-3.5 w-3.5" />
                     {daysToNextTrip === 0 ? "Today!" : `${daysToNextTrip} days to go`}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-700 dark:text-slate-300">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 px-3 py-1 text-xs font-medium text-teal-700 dark:text-slate-300">
                     <UserRound className="h-3.5 w-3.5" />
                     {nextTrip.memberCount ?? nextTrip.members.length} {(nextTrip.memberCount ?? nextTrip.members.length) === 1 ? "traveler" : "travelers"}
                   </span>
@@ -1618,7 +1613,7 @@ export default function Home() {
                         ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
                         : upcomingSummaries[0].progressPercent > 0
                           ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
-                          : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300"
+                          : "bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 text-teal-700 dark:text-slate-300"
                     }`}>
                       <Globe2 className="h-3.5 w-3.5" />
                       Planning {upcomingSummaries[0].progressPercent}%
@@ -1653,7 +1648,7 @@ export default function Home() {
                     <Link
                       key={`glance-${trip.id}`}
                       href={`/trip/${trip.id}`}
-                      className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900/60 px-4 py-3 text-sm transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                      className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900/60 px-4 py-3 text-sm transition hover:bg-[#F0FDFA] dark:hover:bg-slate-800/60"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         {isUrgent && (
@@ -1669,7 +1664,7 @@ export default function Home() {
                         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                           trip.progressPercent >= 50
                             ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                            : "bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 text-teal-700 dark:text-slate-400"
                         }`}>
                           {trip.progressPercent}%
                         </span>
@@ -1873,10 +1868,10 @@ function TripCard({ trip }: TripCardProps) {
             />
           ) : null}
           <div className="absolute bottom-3 left-4 right-4 flex flex-wrap items-center gap-2 text-xs font-medium text-white">
-            <Badge className="rounded-full bg-gradient-to-r from-white/90 via-sky-50/85 to-violet-50/85 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur">
+            <Badge className="rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-[#0D3D39] backdrop-blur">
               {formatDateRange(trip.startDate, trip.endDate)}
             </Badge>
-            <Badge className="rounded-full bg-gradient-to-r from-white/80 via-sky-50/70 to-violet-50/75 px-3 py-1 text-xs font-medium text-slate-700 backdrop-blur">
+            <Badge className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-[#0D3D39] backdrop-blur">
               {getTravelersLabel(trip.travelersCount)}
             </Badge>
           </div>
@@ -1897,7 +1892,7 @@ function TripCard({ trip }: TripCardProps) {
                 </Avatar>
               ))}
             </div>
-            <Badge variant="secondary" className="rounded-full bg-gradient-to-r from-cyan-100 via-violet-100 to-fuchsia-100 dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 border border-cyan-200 dark:border-white/10 px-3 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-300">
+            <Badge variant="secondary" className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 px-3 py-1 text-xs font-medium text-teal-700 dark:text-cyan-300">
               Planning {trip.progressPercent}%
             </Badge>
           </div>

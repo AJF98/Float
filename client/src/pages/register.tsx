@@ -144,16 +144,16 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 px-4 py-12">
-      <Card className="w-full max-w-2xl border border-white/10 bg-slate-800/60 text-white shadow-[0_24px_60px_-24px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#F0FDFA] via-[#E6FAF7] to-[#F0FDFA] px-4 py-12">
+      <Card className="w-full max-w-2xl">
         <CardHeader className="space-y-4 text-center">
           <div className="flex items-center justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-cyan-500/30 bg-cyan-900/40 shadow-[0_10px_30px_-12px_rgba(6,182,212,0.45)]">
-              <Plane className="h-6 w-6 text-cyan-400" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.10)] shadow-[0_10px_30px_-12px_rgba(13,148,136,0.20)]">
+              <Plane className="h-6 w-6 text-[#0D9488]" />
             </div>
           </div>
-          <CardTitle className="text-3xl font-semibold">Create your account</CardTitle>
-          <CardDescription className="text-slate-300">
+          <CardTitle className="text-3xl font-semibold text-[#0D3D39]">Create your account</CardTitle>
+          <CardDescription className="text-[#0D3D39]/60">
             Join Float to start planning unforgettable group adventures together
           </CardDescription>
         </CardHeader>
@@ -166,11 +166,11 @@ export default function Register() {
                   name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">First Name</FormLabel>
+                      <FormLabel className="text-[#0D3D39]">First Name</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="John"
-                          className="bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className=""
                           {...field}
                         />
                       </FormControl>
@@ -183,11 +183,11 @@ export default function Register() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-slate-300">Last Name</FormLabel>
+                      <FormLabel className="text-[#0D3D39]">Last Name</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Doe"
-                          className="bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className=""
                           {...field}
                         />
                       </FormControl>
@@ -202,13 +202,13 @@ export default function Register() {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Email</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Email</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Mail className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Mail className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           placeholder="john@example.com"
-                          className="pl-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11"
                           {...field}
                         />
                       </div>
@@ -223,19 +223,19 @@ export default function Register() {
                 name="phoneNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Phone Number</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Phone Number</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Phone className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Phone className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           type="tel"
                           placeholder="+1 (555) 123-4567"
-                          className="pl-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11"
                           {...field}
                         />
                       </div>
                     </FormControl>
-                    <p className="mt-1 text-xs text-slate-300">
+                    <p className="mt-1 text-xs text-[#0D3D39]/55">
                       Used for CashApp and Venmo payment integration
                     </p>
                     <FormMessage />
@@ -248,13 +248,13 @@ export default function Register() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Username</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Username</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <User className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <User className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           placeholder="johndoe"
-                          className="pl-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11"
                           {...field}
                         />
                       </div>
@@ -269,21 +269,21 @@ export default function Register() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Password</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-11 pr-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11 pr-11"
                           {...field}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-slate-500 hover:bg-slate-700"
+                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-[#0D3D39]/50 hover:bg-[rgba(13,148,136,0.08)]"
                           onClick={() => setShowPassword(!showPassword)}
                         >
                           {showPassword ? (
@@ -304,21 +304,21 @@ export default function Register() {
                 name="confirmPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-slate-300">Confirm Password</FormLabel>
+                    <FormLabel className="text-[#0D3D39]">Confirm Password</FormLabel>
                     <FormControl>
                       <div className="relative">
-                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-slate-400" />
+                        <Lock className="absolute left-4 top-3.5 h-4 w-4 text-[#0D9488]" />
                         <Input
                           type={showConfirmPassword ? "text" : "password"}
                           placeholder="••••••••"
-                          className="pl-11 pr-11 bg-slate-900/60 text-white placeholder:text-slate-500 focus-visible:ring-primary border-white/10"
+                          className="pl-11 pr-11"
                           {...field}
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-slate-500 hover:bg-slate-700"
+                          className="absolute right-1.5 top-1.5 h-7 w-7 rounded-full text-[#0D3D39]/50 hover:bg-[rgba(13,148,136,0.08)]"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
                           {showConfirmPassword ? (
@@ -341,11 +341,11 @@ export default function Register() {
           </Form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-[#0D3D39]/60">
               Already have an account?{" "}
               <Link
                 href="/login"
-                className="font-medium text-cyan-400 hover:text-cyan-300"
+                className="font-medium text-[#0D9488] hover:text-[#0B7C73]"
               >
                 Sign in here
               </Link>
