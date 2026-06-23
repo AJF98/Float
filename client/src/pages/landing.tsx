@@ -22,42 +22,42 @@ const painPoints = [
     icon: MessageCircleOff,
     iconClass: "text-rose-400",
     bgClass: "bg-rose-400/10",
-    text: "Scattered across three group chats and counting",
+    text: "One person carries the entire planning load while everyone else waits",
   },
   {
     icon: X,
     iconClass: "text-amber-400",
     bgClass: "bg-amber-400/10",
-    text: "No one knows which hotel is actually booked",
+    text: "Nobody knows who signed up for what until the day of",
   },
   {
     icon: Clock,
     iconClass: "text-rose-400",
     bgClass: "bg-rose-400/10",
-    text: "Decisions take days that should take minutes",
+    text: "Subgroups form on the fly with no way to see who's doing what",
   },
 ]
 
 const howItWorks = [
   {
     step: "01",
-    title: "Build your wish list",
+    title: "Propose anything to the group",
     detail:
-      "Everyone adds ideas — a boutique hotel they found, a sunset dinner spot, a kayaking tour. No idea is too early. Float collects everything in one living list the whole group can see and react to.",
+      "Anyone can float a flight option, a hotel they found, a dinner spot, a day trip. It goes straight to the group — no 300-message thread required. Everyone sees every idea the moment it's posted.",
     icon: List,
   },
   {
     step: "02",
-    title: "Float it as a proposal, vote as a group",
+    title: "Opt in or pass — no pressure",
     detail:
-      "When an idea's ready for a real decision, float it. The group votes — thumbs up, down, or pass. Results surface instantly so you skip the 'what does everyone think?' spiral and move straight to confirmed.",
+      "Members see every floated idea and decide what they're joining. Say yes, maybe, or skip it entirely. Subgroups form naturally around shared interests, without anyone having to negotiate.",
     icon: ThumbsUp,
   },
   {
     step: "03",
-    title: "Lock it in and sync your calendar",
+    title: "Everyone builds their own itinerary",
     detail:
-      "Confirmed items drop straight into a shared itinerary. Everyone sees one trusted schedule — no spreadsheet, no duplicated calendar events, no who-booked-what confusion.",
+      "Confirmed plans drop into each person's personal schedule inside the shared trip. Everyone sees exactly what they're doing — and what the rest of the group has planned.",
     icon: CalendarRange,
   },
 ]
@@ -65,18 +65,18 @@ const howItWorks = [
 const benefits = [
   {
     icon: Sparkles,
-    title: "Everyone has a voice",
-    body: "No one person has to carry the planning load. Ideas come from everywhere, votes are equal, and decisions feel shared — so the whole group feels ownership over the trip.",
+    title: "Your itinerary, your call",
+    body: "No one has to do what everyone else is doing. Float lets each person opt into what excites them and skip what doesn't — without the awkward group negotiation.",
   },
   {
     icon: CheckCircle2,
-    title: "Clarity at every step",
-    body: "You always know what's confirmed, what's still being decided, and who's responsible for what. No ambiguity. No surprise changes. One source of truth for the whole group.",
+    title: "Everyone plans, no one burns out",
+    body: "The organizer doesn't have to come up with every idea for every person. When the whole group can float ideas, planning becomes part of the adventure — not a job before it.",
   },
   {
     icon: Heart,
-    title: "More trip, less admin",
-    body: "Float handles the coordination busywork so you can spend your mental energy on the things that actually matter — being excited about where you're going, not stressed about how to get there.",
+    title: "Always know where your group is headed",
+    body: "See what everyone has planned, what's still up for grabs, and who's doing what on any given day. No surprises, no 'wait, I thought we were all doing that?'",
   },
 ]
 
@@ -161,25 +161,26 @@ export default function Landing() {
                 style={{ ...MONO, color: TANG, background: 'rgba(13,148,136,0.10)', border: '1px solid rgba(13,148,136,0.28)' }}
               >
                 <Sparkles className="h-3 w-3" />
-                Plan together. Arrive happy.
+                Trip planning, finally relaxed.
               </p>
 
               <h1
                 className="mt-10 text-[64px] sm:text-[80px] lg:text-[96px]"
                 style={{ fontWeight: 900, letterSpacing: '-0.025em', lineHeight: 1.0, color: DARK }}
               >
-                Group trips that{" "}
-                <br className="hidden sm:block" />
-                actually{" "}
-                <span style={{ color: TANG }}>come together</span>
+                Twelve people.
+                <br />
+                One trip.
+                <br />
+                <span style={{ color: TANG }}>Everyone's itinerary.</span>
               </h1>
 
               <p
                 className="mt-10 max-w-xl text-xl leading-relaxed lg:text-2xl"
                 style={{ fontWeight: 300, color: MUTED }}
               >
-                Float gives everyone in your crew one shared space to float ideas, vote on favorites, and lock down a
-                real itinerary — no chasing responses, no lost messages, no last-minute chaos.
+                Float lets every member of your group propose ideas, see who's in, and build their own schedule — so
+                no one person has to plan the whole trip for everyone else.
               </p>
 
               <div className="mt-10 flex flex-wrap gap-4">
@@ -188,7 +189,7 @@ export default function Landing() {
                   className="h-14 rounded-sm px-10 text-base font-semibold transition-transform hover:-translate-y-0.5"
                   style={{ ...MONO, letterSpacing: '0.02em', background: TANG, color: '#FFFFFF', boxShadow: '0 20px 40px -12px rgba(13,148,136,0.35)' }}
                 >
-                  Plan your trip — it's free
+                  Start floating — it's free
                 </Button>
                 <Button
                   variant="outline"
@@ -230,11 +231,12 @@ export default function Landing() {
           <div className="relative mx-auto w-full max-w-6xl px-4 lg:px-8">
             <p className="text-xs uppercase tracking-[0.25em]" style={LABEL}>Sound familiar?</p>
             <h2 className="mt-4 max-w-3xl text-3xl font-bold leading-tight lg:text-4xl" style={{ color: DARK }}>
-              Planning a group trip shouldn't feel like herding cats in a group chat
+              One person plans everything. The rest of the group just shows up.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-relaxed" style={{ fontWeight: 300, color: MUTED }}>
-              Seventeen open tabs. A 300-message thread nobody's reading. Half the group is annoyed, the other half is
-              winging it. By the time you leave, the planning itself has drained the excitement.
+              You've got twelve people with twelve different ideas of a perfect day. Someone wants temples, someone
+              wants beach. You're the only one holding the full picture — coordinating over group chats, chasing
+              responses, making calls for people who never asked you to. It shouldn't be this hard.
             </p>
 
             <div className="mt-10 grid gap-5 sm:grid-cols-3">
@@ -263,10 +265,11 @@ export default function Landing() {
             <div>
               <p className="uppercase tracking-[0.25em]" style={LABEL}>How it works</p>
               <h2 className="mt-4 text-3xl font-bold lg:text-4xl" style={{ color: DARK }}>
-                From a half-baked idea to a confirmed itinerary in three steps
+                Float an idea. See who's in. Own your days.
               </h2>
               <p className="mt-4 max-w-lg text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-                Built to keep group plans moving with clarity, speed, and fewer repetitive messages.
+                Anyone in the group can propose anything — then everyone decides what they're joining. No one person
+                runs the show.
               </p>
 
               <ol className="relative mt-10 space-y-6 border-l-2 border-dashed pl-10" style={{ borderColor: 'rgba(13,148,136,0.28)' }}>
@@ -309,9 +312,9 @@ export default function Landing() {
               >
                 <p className="uppercase tracking-widest" style={{ ...MONO, color: TANG, fontSize: '10px' }}>From Float users</p>
                 <p className="mt-1 text-sm font-medium" style={{ color: DARK }}>
-                  "We used to spend an hour just agreeing on dinner. Now we vote and move on."
+                  "I stopped dreading the group planning chat the moment everyone could just float their own ideas."
                 </p>
-                <p className="mt-1 text-xs" style={{ ...MONO, color: MUTED }}>— Mia, group trip to Portugal</p>
+                <p className="mt-1 text-xs" style={{ ...MONO, color: MUTED }}>— Jake, group trip to Japan (12 people)</p>
               </div>
             </div>
           </div>
@@ -328,11 +331,11 @@ export default function Landing() {
                   <List className="h-3 w-3" /> Wish List
                 </p>
                 <h3 className="mt-4 text-2xl font-bold lg:text-3xl" style={{ color: DARK }}>
-                  One place for every idea, from any member
+                  One place for every idea, from anyone in the group
                 </h3>
                 <p className="mt-4 text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-                  Your group drops links, suggestions, and notes into a shared wish list. Nothing gets lost in a chat
-                  thread. Everything is visible, sortable, and ready to act on when the time comes.
+                  Anyone can add a flight option, hotel, activity, or restaurant. Nothing lives in someone's DMs or
+                  gets buried in the chat. Every idea is visible to the whole group the moment it's posted.
                 </p>
               </div>
               <div className="rounded-sm p-1" style={{ background: '#FFF', border: '1px solid rgba(13,148,136,0.12)', boxShadow: '0 8px 24px -8px rgba(13,61,57,0.08)' }}>
@@ -366,14 +369,14 @@ export default function Landing() {
             <div className="grid gap-10 lg:grid-cols-2 lg:items-center lg:gap-16">
               <div className="lg:order-2">
                 <p className="inline-flex items-center gap-1.5 uppercase tracking-[0.25em]" style={LABEL}>
-                  <Vote className="h-3 w-3" /> Proposals &amp; Voting
+                  <Vote className="h-3 w-3" /> Float &amp; Vote
                 </p>
                 <h3 className="mt-4 text-2xl font-bold lg:text-3xl" style={{ color: DARK }}>
-                  Turn "thoughts?" into a decision in under a minute
+                  Float it to the group. Find out who's in.
                 </h3>
                 <p className="mt-4 text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-                  Float any wish-list item as a formal proposal. Members vote in real time. When a quorum is reached,
-                  the proposal resolves — no follow-up message, no tally, no ambiguity.
+                  When you're ready for a real decision, float it. Members vote yes, no, or maybe. No chasing
+                  responses — the answer surfaces in real time and everyone can see exactly where it landed.
                 </p>
               </div>
               <div className="rounded-sm p-1 lg:order-1" style={{ background: '#FFF', border: '1px solid rgba(13,148,136,0.12)', boxShadow: '0 8px 24px -8px rgba(13,61,57,0.08)' }}>
@@ -414,11 +417,11 @@ export default function Landing() {
                   <CalendarRange className="h-3 w-3" /> Itinerary &amp; Calendar
                 </p>
                 <h3 className="mt-4 text-2xl font-bold lg:text-3xl" style={{ color: DARK }}>
-                  A shared schedule that only shows what's confirmed
+                  Every person's schedule, inside the group trip
                 </h3>
                 <p className="mt-4 text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-                  Confirmed items appear on a group itinerary everyone can trust. Sync it to your phone calendar. Each
-                  member sees their days clearly. The chaos of "wait, is that still happening?" disappears.
+                  Confirmed plans land on a shared itinerary everyone can see. Each person knows exactly what they're
+                  doing — and can see what the rest of the group has planned for any given day.
                 </p>
               </div>
               <div className="rounded-sm p-1" style={{ background: '#FFF', border: '1px solid rgba(13,148,136,0.12)', boxShadow: '0 8px 24px -8px rgba(13,61,57,0.08)' }}>
@@ -471,11 +474,11 @@ export default function Landing() {
                   <Users2 className="h-3 w-3" /> RSVP Tracking
                 </p>
                 <h3 className="mt-4 text-2xl font-bold lg:text-3xl" style={{ color: DARK }}>
-                  Always know who's in — no more chasing replies
+                  Know who's joining — before the morning of
                 </h3>
                 <p className="mt-4 text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-                  Members RSVP per activity. You see a live roster of who's confirmed, who's out, and who hasn't
-                  responded. Plan group sizes, book the right table, and stop guessing.
+                  Float an activity, get a live headcount. No more "who's actually coming?" texts the day before.
+                  Plan for the right group size, book the right table, and move on.
                 </p>
               </div>
               <div className="rounded-sm p-1 lg:order-1" style={{ background: '#FFF', border: '1px solid rgba(13,148,136,0.12)', boxShadow: '0 8px 24px -8px rgba(13,61,57,0.08)' }}>
@@ -527,11 +530,11 @@ export default function Landing() {
           <div className="relative mx-auto w-full max-w-6xl px-4 lg:px-8">
             <p className="uppercase tracking-[0.25em]" style={LABEL}>Why Float</p>
             <h2 className="mt-4 text-3xl font-bold lg:text-4xl" style={{ color: DARK }}>
-              Planning should feel like part of the trip, not a job before it
+              Planning a trip together should feel like being on it.
             </h2>
             <p className="mt-4 max-w-2xl text-base leading-7" style={{ fontWeight: 300, color: MUTED }}>
-              Float is designed around how friend groups actually work — messy, busy, opinionated, and worth the
-              coordination.
+              Float is built for groups where everyone has different interests and a different idea of a perfect day.
+              We make it easy for everyone to contribute — and to own their own experience.
             </p>
             <div className="mt-12 grid gap-6 md:grid-cols-3">
               {benefits.map(({ icon: Icon, title, body }) => (
@@ -559,12 +562,13 @@ export default function Landing() {
               Your next adventure is waiting
             </p>
             <h2 className="mt-5 text-4xl font-bold lg:text-5xl" style={{ color: '#FFFFFF', lineHeight: 1.05 }}>
-              Stop planning in circles.
+              Stop running the trip.
               <br />
-              Start actually going places.
+              Start floating it.
             </h2>
             <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed" style={{ fontWeight: 300, color: 'rgba(255,255,255,0.80)' }}>
-              Float turns group trip chaos into collective momentum. Free to start, no credit card required.
+              Float gives everyone in your group a voice, a plan, and the freedom to make the trip their own. Free to
+              start — your whole crew gets access.
             </p>
             <div className="mt-10 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
               <Button
@@ -572,7 +576,7 @@ export default function Landing() {
                 className="h-14 rounded-sm px-10 text-base font-semibold transition-transform hover:-translate-y-0.5"
                 style={{ ...MONO, background: '#FFFFFF', color: TANG, letterSpacing: '0.02em', boxShadow: '0 16px 40px -12px rgba(13,61,57,0.25)' }}
               >
-                Create your first trip
+                Start floating — it's free
               </Button>
               <Button
                 variant="outline"
