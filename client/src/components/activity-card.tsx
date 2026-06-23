@@ -17,14 +17,14 @@ interface ActivityCardProps {
 }
 
 const categoryColors = {
-  food: "bg-red-900/40 border border-red-500/30 text-red-300",
-  sightseeing: "bg-emerald-900/40 border border-emerald-500/30 text-emerald-300",
-  transport: "bg-blue-900/40 border border-blue-500/30 text-blue-300",
-  entertainment: "bg-purple-900/40 border border-purple-500/30 text-purple-300",
-  shopping: "bg-pink-900/40 border border-pink-500/30 text-pink-300",
-  culture: "bg-amber-900/40 border border-amber-500/30 text-amber-300",
-  outdoor: "bg-indigo-900/40 border border-indigo-500/30 text-indigo-300",
-  other: "bg-slate-800/60 border border-white/10 text-slate-300",
+  food: "bg-red-50 border border-red-200 text-red-700 dark:bg-red-900/40 dark:border-red-500/30 dark:text-red-300",
+  sightseeing: "bg-emerald-50 border border-emerald-200 text-emerald-700 dark:bg-emerald-900/40 dark:border-emerald-500/30 dark:text-emerald-300",
+  transport: "bg-blue-50 border border-blue-200 text-blue-700 dark:bg-blue-900/40 dark:border-blue-500/30 dark:text-blue-300",
+  entertainment: "bg-purple-50 border border-purple-200 text-purple-700 dark:bg-purple-900/40 dark:border-purple-500/30 dark:text-purple-300",
+  shopping: "bg-pink-50 border border-pink-200 text-pink-700 dark:bg-pink-900/40 dark:border-pink-500/30 dark:text-pink-300",
+  culture: "bg-amber-50 border border-amber-200 text-amber-700 dark:bg-amber-900/40 dark:border-amber-500/30 dark:text-amber-300",
+  outdoor: "bg-indigo-50 border border-indigo-200 text-indigo-700 dark:bg-indigo-900/40 dark:border-indigo-500/30 dark:text-indigo-300",
+  other: "bg-slate-50 border border-slate-200 text-slate-600 dark:bg-slate-800/60 dark:border-white/10 dark:text-slate-300",
 };
 
 const categoryIcons = {
@@ -141,7 +141,6 @@ export function ActivityCard({
           <Badge
             key={`${invite.activityId}-${invite.userId}-${invite.status}`}
             variant="outline"
-            className="border-white/10 bg-slate-800/60 text-slate-300"
           >
             {getUserDisplayName(invite.user)}
           </Badge>

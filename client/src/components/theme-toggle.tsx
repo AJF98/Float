@@ -17,13 +17,13 @@ export function ThemeToggle() {
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+          className="h-9 w-9 rounded-lg border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] hover:bg-[rgba(13,148,136,0.12)] hover:border-[rgba(13,148,136,0.35)] dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
           data-testid="theme-toggle-button"
         >
           {resolvedTheme === "dark" ? (
             <Moon className="h-4 w-4 text-slate-300" />
           ) : (
-            <Sun className="h-4 w-4 text-amber-500" />
+            <Sun className="h-4 w-4 text-teal-600" />
           )}
           <span className="sr-only">Toggle theme</span>
         </Button>
@@ -73,13 +73,13 @@ export function ThemeToggleSimple() {
       variant="ghost"
       size="icon"
       onClick={toggleTheme}
-      className="h-9 w-9 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
+      className="h-9 w-9 rounded-lg border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] hover:bg-[rgba(13,148,136,0.12)] hover:border-[rgba(13,148,136,0.35)] dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
       data-testid="theme-toggle-simple"
     >
       {resolvedTheme === "dark" ? (
         <Moon className="h-4 w-4 text-slate-300" />
       ) : (
-        <Sun className="h-4 w-4 text-amber-500" />
+        <Sun className="h-4 w-4 text-teal-600" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>

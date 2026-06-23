@@ -54,11 +54,11 @@ export const StatCard = forwardRef<HTMLButtonElement, StatCardProps>(
         className={cn(
           "group relative flex flex-col overflow-hidden rounded-2xl dashboard-themed-card transition duration-200",
           isInteractive
-            ? "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#6366f1]"
+            ? "focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[#0D9488]"
             : "opacity-90",
           isSelected
-            ? "translate-y-0 shadow-[0_32px_70px_-35px_rgba(79,70,229,0.52)] ring-2 ring-[#6366f1]/35"
-            : "hover:-translate-y-0.5 hover:shadow-[0_35px_80px_-40px_rgba(79,70,229,0.42)]",
+            ? "translate-y-0 shadow-[0_32px_70px_-35px_rgba(13,148,136,0.25)] ring-2 ring-[rgba(13,148,136,0.30)]"
+            : "hover:-translate-y-0.5 hover:shadow-[0_35px_80px_-40px_rgba(13,148,136,0.20)]",
         )}
       >
         <button
@@ -69,7 +69,7 @@ export const StatCard = forwardRef<HTMLButtonElement, StatCardProps>(
           aria-controls={controlsId}
           disabled={!isInteractive}
           className={cn(
-            "relative z-[1] flex w-full flex-col gap-6 rounded-2xl bg-transparent p-6 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6366f1]",
+            "relative z-[1] flex w-full flex-col gap-6 rounded-2xl bg-transparent p-6 text-left transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D9488]",
             isInteractive ? "cursor-pointer" : "cursor-default",
           )}
           onClick={() => {
@@ -174,7 +174,7 @@ function CardContents({
   return (
     <div className="flex h-full flex-col gap-6">
       <div className="flex items-center justify-between">
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/30 via-violet-500/25 to-fuchsia-500/25 text-cyan-500 dark:text-cyan-300">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[rgba(13,148,136,0.12)] text-[#0D9488] dark:bg-gradient-to-br dark:from-cyan-500/30 dark:via-violet-500/25 dark:to-fuchsia-500/25 dark:text-cyan-300">
           {icon}
         </div>
         <ChevronDown
