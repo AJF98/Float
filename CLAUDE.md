@@ -66,7 +66,11 @@ Flip any flag to `true` to re-enable the corresponding search UI. All search cod
 
 ## Development Branch
 
-Active work happens on `claude/nifty-edison-lv78om`. Push there; each batch of changes needs a new PR to `main` (previous PR #68 merged wish-list fix; PR #69 merged feature flags).
+Active work happens on `claude/relaxed-noether-du8e43`. Push there; each batch of changes needs a new PR to `main` (previous PRs #84–#87 merged landing page teal rebrand and beach photos).
+
+## Static Assets
+
+Vite's root is `client/`, so static files must live in `client/public/` to be served at runtime. Landing page photos are at `client/public/landing/`. Do **not** put static assets in the root `public/` directory — Vite will not serve them from there.
 
 ## Environment Variables
 
