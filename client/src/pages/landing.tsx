@@ -259,7 +259,7 @@ export default function Landing() {
 
         {/* HOW IT WORKS */}
         <section id="how-it-works" className="py-20 lg:py-28" style={{ backgroundColor: LIGHT }}>
-          <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 lg:grid-cols-[1fr,0.85fr] lg:items-stretch lg:gap-16 lg:px-8">
+          <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 lg:grid-cols-[1fr,0.85fr] lg:items-start lg:gap-16 lg:px-8">
             <div>
               <p className="uppercase tracking-[0.25em]" style={LABEL}>How it works</p>
               <h2 className="mt-4 text-3xl font-bold lg:text-4xl" style={{ color: DARK }}>
@@ -293,12 +293,12 @@ export default function Landing() {
               </ol>
             </div>
 
-            <div className="relative hidden overflow-hidden rounded-sm lg:block" style={{ background: '#C8EDE9' }}>
+            <div className="relative hidden overflow-hidden rounded-sm lg:block" style={{ background: '#C8EDE9', maxHeight: '600px' }}>
               <img
                 src="/landing/hf_20260617_003956_ffd53767-1812-4f96-95ba-c01ad3bb72c7.png"
                 alt=""
                 role="presentation"
-                className="h-full w-full object-cover object-center"
+                className="h-full w-full object-cover object-[center_20%]"
                 loading="lazy"
                 onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none" }}
               />
