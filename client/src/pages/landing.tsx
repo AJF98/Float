@@ -140,7 +140,7 @@ export default function Landing() {
         {/* HERO */}
         <section className="relative flex min-h-[100svh] items-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #EEF9F7 0%, #E0F7F4 100%)' }}>
           <img
-            src="/landing/beach-group-1.jpg"
+            src="/landing/hf_20260617_003904_880d2e74-b221-46bc-99b2-05abaeffa11d.png"
             alt=""
             role="presentation"
             className="absolute inset-0 h-full w-full object-cover object-[center_35%] opacity-40"
@@ -295,7 +295,7 @@ export default function Landing() {
 
             <div className="relative hidden overflow-hidden rounded-sm lg:block" style={{ background: '#C8EDE9' }}>
               <img
-                src="/landing/beach-group-2.jpg"
+                src="/landing/hf_20260617_003956_ffd53767-1812-4f96-95ba-c01ad3bb72c7.png"
                 alt=""
                 role="presentation"
                 className="h-full w-full object-cover object-center"
