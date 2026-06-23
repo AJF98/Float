@@ -4,8 +4,8 @@ interface FloatLogoProps {
 }
 
 export default function FloatLogo({ variant = "light", height = 40 }: FloatLogoProps) {
-  const wordColor = variant === "dark" ? "#0C0805" : "#FF6B2B"
-  const markColor = "#FF6B2B"
+  const wordColor = variant === "dark" ? "#0D3D39" : "#FFFFFF"
+  const markColor = "#0D9488"
   const width = height * 3.6
 
   return (
