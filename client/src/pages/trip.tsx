@@ -7406,14 +7406,14 @@ function HotelBooking({
         >
           <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle>
-                {editingHotel ? "Edit Manual Hotel" : hotelMode === "PROPOSE" ? "Propose Hotel to Group" : "Add Hotel Manually"}
+              <DialogTitle className="font-fraunces text-[#0D3D39]">
+                {editingHotel ? "Edit lodging" : hotelMode === "PROPOSE" ? "Propose lodging to group" : "Add lodging manually"}
               </DialogTitle>
-              <DialogDescription>
+              <DialogDescription className="text-[rgba(13,61,57,0.65)]">
                 {editingHotel
                   ? "Update this reservation so everyone has the latest details."
                   : hotelMode === "PROPOSE"
-                    ? "Share this hotel option with your group for voting."
+                    ? "Share this option with your group for voting."
                     : "Record a stay that isn't imported from the hotel search results."}
               </DialogDescription>
             </DialogHeader>

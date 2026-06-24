@@ -84,25 +84,39 @@ export function HotelFormFields({
   const checkOutValue = form.watch("checkOutDate");
 
   return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {renderTextField(form, "hotelName")}
-        {renderNumberField(form, "hotelRating", { min: "0", max: "5", step: "0.1", placeholder: "4.5" })}
+    <div className="space-y-3">
+
+      {/* Section A — Property */}
+      <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Property</p>
+        <div className="grid grid-cols-[1fr_auto] gap-3 items-start">
+          <div className="space-y-1">
+            <label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+              Hotel Name <span className="text-destructive">*</span>
+            </label>
+            {renderTextField(form, "hotelName", { placeholder: "e.g., The Ritz-Carlton" })}
+          </div>
+          <div className="space-y-1 w-24">
+            <label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Stars</label>
+            {renderNumberField(form, "hotelRating", { min: "0", max: "5", step: "0.5", placeholder: "4.5" })}
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <p className="text-sm font-medium text-muted-foreground">Address</p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderTextField(form, "address", { placeholder: "123 Main St" })}
+      {/* Section B — Location */}
+      <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Location</p>
+        {renderTextField(form, "address", { placeholder: "123 Main St" })}
+        <div className="grid grid-cols-2 gap-3">
           {renderTextField(form, "city", { placeholder: "Austin" })}
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {renderTextField(form, "zipCode", { placeholder: "78701" })}
           {renderTextField(form, "country", { placeholder: "United States" })}
         </div>
+        {renderTextField(form, "zipCode", { placeholder: "78701" })}
       </div>
 
-      <div className="grid grid-cols-1">
+      {/* Section C — Stay Dates */}
+      <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Stay Dates</p>
         <FormField
           control={form.control}
           name="checkInDate"
@@ -113,48 +127,40 @@ export function HotelFormFields({
               ? { from: fromDate, to: toDate }
               : undefined;
 
-            const label = HOTEL_FIELD_LABELS.checkInDate;
             const hasBothDates = Boolean(selectedRange?.from && selectedRange?.to);
             const nights = hasBothDates
               ? Math.max(1, differenceInCalendarDays(selectedRange!.to!, selectedRange!.from!))
               : 0;
-            const description = hasBothDates
-              ? `${format(selectedRange!.from!, "MMM d, yyyy")} → ${format(selectedRange!.to!, "MMM d, yyyy")} • ${nights} night${nights === 1 ? "" : "s"}`
-              : selectedRange?.from
-                ? `Selected ${format(selectedRange.from, "MMM d, yyyy")}. Choose a check-out date.`
-                : "Select your stay dates.";
 
             return (
               <FormItem className="flex flex-col">
-                <FormLabel className="mb-1">
-                  Check-in / Check-out Dates
-                  <span className="text-destructive ml-0.5">*</span>
+                <FormLabel className="text-sm text-[rgba(13,61,57,0.65)] font-medium mb-1">
+                  Check-in / Check-out <span className="text-destructive ml-0.5">*</span>
                 </FormLabel>
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
                         variant="outline"
+                        type="button"
                         className={cn(
-                          "w-full justify-start text-left font-normal h-auto py-3",
+                          "w-full justify-start text-left font-normal h-auto py-2.5",
                           !selectedRange?.from && "text-muted-foreground",
-                          "hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
+                          "hover:bg-[rgba(13,148,136,0.05)] focus-visible:ring-2 focus-visible:ring-[#0D9488]/40 focus-visible:ring-offset-2"
                         )}
                       >
-                        <CalendarIcon className="mr-3 h-4 w-4 opacity-70" />
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-60" />
                         {selectedRange?.from ? (
-                          <span className="flex flex-col items-start">
-                            <span className="font-medium text-slate-900 dark:text-white">
-                              {format(selectedRange.from, "MMM d, yyyy")}
-                              {hasBothDates && (
-                                <span className="text-muted-foreground font-normal"> → {format(selectedRange!.to!, "MMM d, yyyy")}</span>
-                              )}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {hasBothDates
-                                ? `${nights} night${nights === 1 ? "" : "s"}`
-                                : "Select a check-out date"}
-                            </span>
+                          <span>
+                            {format(selectedRange.from, "MMM d, yyyy")}
+                            {hasBothDates && (
+                              <span className="text-muted-foreground"> → {format(selectedRange!.to!, "MMM d, yyyy")}</span>
+                            )}
+                            {hasBothDates && (
+                              <span className="text-[rgba(13,61,57,0.4)] text-xs ml-2">
+                                · {nights} night{nights === 1 ? "" : "s"}
+                              </span>
+                            )}
                           </span>
                         ) : (
                           <span className="text-muted-foreground">Select check-in and check-out dates</span>
@@ -199,111 +205,53 @@ export function HotelFormFields({
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {renderNumberField(form, "pricePerNight", { min: "0", step: "0.01", placeholder: "99.00" })}
-        {renderNumberField(form, "guestCount", { min: "1", step: "1" })}
-        {renderNumberField(form, "roomCount", { min: "1", step: "1" })}
+      {/* Section D — Pricing & Guests */}
+      <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Pricing & Guests</p>
+        <div className="grid grid-cols-3 gap-3">
+          {renderNumberField(form, "pricePerNight", { min: "0", step: "0.01", placeholder: "99.00" })}
+          {renderNumberField(form, "guestCount", { min: "1", step: "1" })}
+          {renderNumberField(form, "roomCount", { min: "1", step: "1" })}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      {/* Section E — Details */}
+      <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Details</p>
         {renderTextField(form, "bookingUrl", { type: "url", placeholder: "https://booking.com/..." })}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4">
         {renderTextareaField(form, "notes", "Share group preferences or special requests.")}
       </div>
 
-      <div className="grid grid-cols-1">
-        <FormField
-          control={form.control}
-          name="votingDeadline"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Voting Deadline (Optional)</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !field.value && "text-muted-foreground",
-                        "hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-                      )}
-                      data-testid="button-voting-deadline"
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP 'at' p")
-                      ) : (
-                        <span>Set a deadline for voting</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-70" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ?? undefined}
-                    onSelect={field.onChange}
-                    disabled={(date: Date) => {
-                      const today = new Date();
-                      today.setHours(0, 0, 0, 0);
-                      return date < today;
-                    }}
-                    initialFocus
-                  />
-                  <div className="p-3 border-t">
-                    <Input
-                      type="time"
-                      value={field.value ? format(field.value, "HH:mm") : ""}
-                      onChange={(e) => {
-                        const [hours, minutes] = e.target.value.split(":");
-                        const newDate = field.value ? new Date(field.value) : new Date();
-                        newDate.setHours(parseInt(hours), parseInt(minutes));
-                        field.onChange(newDate);
-                      }}
-                      className="w-full"
-                    />
-                  </div>
-                </PopoverContent>
-              </Popover>
-              <p className="text-xs text-muted-foreground">
-                Set when voting should close. Members will be notified as the deadline approaches.
-              </p>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      <Accordion type="single" collapsible className="overflow-hidden rounded-md border">
+      {/* Advanced Details */}
+      <Accordion type="single" collapsible className="overflow-hidden rounded-xl border border-[rgba(13,148,136,0.12)]">
         <AccordionItem value="advanced" className="border-b-0">
-          <AccordionTrigger className="px-4 text-sm font-medium">Advanced Details</AccordionTrigger>
+          <AccordionTrigger className="px-4 text-sm font-medium text-[rgba(13,61,57,0.65)] hover:text-[#0D3D39]">
+            Advanced Details
+          </AccordionTrigger>
           <AccordionContent className="px-4 pb-4">
-            <div className="space-y-6 pt-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderTextField(form, "hotelChain", { placeholder: "Hilton Worldwide" })}
                 {renderTextField(form, "roomType", { placeholder: "Double Queen" })}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderTextField(form, "bookingReference", { placeholder: "ABC123" })}
                 {renderTextField(form, "bookingSource", { placeholder: "Travel agent" })}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {renderNumberField(form, "totalPrice", { min: "0", step: "0.01", placeholder: "299.00" })}
                 {renderSelectField(form, "currency")}
                 {renderSelectField(form, "status")}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderNumberField(form, "latitude", { step: "0.000001" })}
                 {renderNumberField(form, "longitude", { step: "0.000001" })}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {renderTextField(form, "purchaseUrl", { type: "url", placeholder: "https://portal.example.com" })}
                 {renderSelectField(form, "bookingPlatform", true)}
                 {renderTextField(form, "cancellationPolicy", {
@@ -311,18 +259,18 @@ export function HotelFormFields({
                 })}
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {renderTextField(form, "contactInfo", { placeholder: "Front desk: +1 (555) 555-5555" })}
               </div>
 
-              <Separator />
+              <Separator className="bg-[rgba(13,148,136,0.12)]" />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {renderTextareaField(form, "amenities", "Separate amenities with commas or paste JSON.")}
                 {renderTextareaField(form, "policies", "Use JSON or descriptive text for important policies.")}
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 gap-3">
                 {renderTextareaField(form, "images", "Provide image URLs separated by commas or JSON array.")}
               </div>
             </div>
@@ -332,13 +280,23 @@ export function HotelFormFields({
 
       {children}
 
-      <div className="flex justify-end gap-3 pt-2">
+      <div className="flex justify-end gap-3 border-t border-[rgba(13,148,136,0.15)] pt-4 mt-2">
         {showCancelButton && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="text-[rgba(13,61,57,0.65)] hover:text-[#0D3D39] hover:bg-[rgba(13,148,136,0.05)]"
+          >
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
+        >
           {isSubmitting ? "Saving..." : submitLabel}
         </Button>
       </div>
@@ -360,7 +318,7 @@ function renderTextField(
       name={name as any}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
+          <FormLabel className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
             {label}
             <RequiredMark fieldName={name} />
           </FormLabel>
@@ -394,7 +352,7 @@ function renderNumberField(
       name={name as any}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
+          <FormLabel className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
             {label}
             <RequiredMark fieldName={name} />
           </FormLabel>
@@ -440,7 +398,7 @@ function renderSelectField(
       name={name as any}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>
+          <FormLabel className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
             {label}
             {!isOptional && <RequiredMark fieldName={name} />}
           </FormLabel>
@@ -479,17 +437,17 @@ function renderTextareaField(
       name={name as any}
       render={({ field }) => (
         <FormItem>
-          <FormLabel>{label}</FormLabel>
+          <FormLabel className="text-sm text-[rgba(13,61,57,0.65)] font-medium">{label}</FormLabel>
           <FormControl>
             <Textarea
-              rows={4}
+              rows={3}
               {...field}
               value={field.value ?? ""}
               onChange={(event) => field.onChange(event.target.value)}
             />
           </FormControl>
           {helperText && (
-            <p className="text-xs text-muted-foreground">{helperText}</p>
+            <p className="text-xs text-[rgba(13,61,57,0.5)]">{helperText}</p>
           )}
           <FormMessage />
         </FormItem>
