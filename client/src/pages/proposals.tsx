@@ -576,30 +576,6 @@ function ProposalsPage({
 
   const userId = user?.id ?? null;
 
-  const hotelRankingsUsed = useMemo(() => {
-    if (!userId) {
-      return new Set<number>();
-    }
-
-    return new Set(
-      filterActiveProposals(hotelProposals)
-        .map((proposal) => proposal.currentUserRanking?.ranking)
-        .filter((value): value is number => typeof value === "number"),
-    );
-  }, [hotelProposals, userId]);
-
-  const flightRankingsUsed = useMemo(() => {
-    if (!userId) {
-      return new Set<number>();
-    }
-
-    return new Set(
-      filterActiveProposals(flightProposals)
-        .map((proposal) => proposal.currentUserRanking?.ranking)
-        .filter((value): value is number => typeof value === "number"),
-    );
-  }, [flightProposals, userId]);
-
   const restaurantRankingsUsed = useMemo(() => {
     if (!userId) {
       return new Set<number>();
@@ -1405,19 +1381,6 @@ function ProposalsPage({
     }
 
     return rankings.find((ranking) => ranking.userId === userId)?.ranking;
-  };
-
-  const getRankingColor = (ranking: number) => {
-    switch (ranking) {
-      case 1:
-        return "text-green-600 bg-green-100";
-      case 2:
-        return "text-blue-600 bg-blue-100";
-      case 3:
-        return "text-orange-600 bg-orange-100";
-      default:
-        return "text-gray-600 bg-gray-100";
-    }
   };
 
   const calculateRoomsNeeded = (groupSize: number): number => {
@@ -2409,65 +2372,29 @@ function ProposalsPage({
             )}
           </div>
 
-          <div className="flex gap-3 items-center">
-            <Select
-              value={userRanking?.toString() || ""}
-              onValueChange={(value) => {
-                rankHotelMutation.mutate({ 
-                  proposalId: proposal.id, 
-                  ranking: parseInt(value) 
-                });
-              }}
-              data-testid={`select-hotel-ranking-${proposal.id}`}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Rank this option" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem
-                  value="1"
-                  data-testid={`option-ranking-1-${proposal.id}`}
-                  disabled={hotelRankingsUsed.has(1) && userRanking !== 1}
+          <div className="flex gap-3 items-center flex-wrap">
+            {!isActuallyMyProposal && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={userRanking === 1 ? "default" : "outline"}
+                  className={userRanking === 1 ? "bg-green-600 hover:bg-green-700" : ""}
+                  onClick={() => rankHotelMutation.mutate({ proposalId: proposal.id, ranking: userRanking === 1 ? 0 : 1 })}
+                  data-testid={`button-thumbs-up-hotel-${proposal.id}`}
                 >
-                  🥇 1st Choice
-                </SelectItem>
-                <SelectItem
-                  value="2"
-                  data-testid={`option-ranking-2-${proposal.id}`}
-                  disabled={hotelRankingsUsed.has(2) && userRanking !== 2}
+                  <ThumbsUp className="w-4 h-4 mr-1" /> I'm in
+                </Button>
+                <Button
+                  size="sm"
+                  variant={userRanking === -1 ? "default" : "outline"}
+                  className={userRanking === -1 ? "bg-red-600 hover:bg-red-700" : ""}
+                  onClick={() => rankHotelMutation.mutate({ proposalId: proposal.id, ranking: userRanking === -1 ? 0 : -1 })}
+                  data-testid={`button-thumbs-down-hotel-${proposal.id}`}
                 >
-                  🥈 2nd Choice
-                </SelectItem>
-                <SelectItem
-                  value="3"
-                  data-testid={`option-ranking-3-${proposal.id}`}
-                  disabled={hotelRankingsUsed.has(3) && userRanking !== 3}
-                >
-                  🥉 3rd Choice
-                </SelectItem>
-                <SelectItem
-                  value="4"
-                  data-testid={`option-ranking-4-${proposal.id}`}
-                  disabled={hotelRankingsUsed.has(4) && userRanking !== 4}
-                >
-                  4th Choice
-                </SelectItem>
-                <SelectItem
-                  value="5"
-                  data-testid={`option-ranking-5-${proposal.id}`}
-                  disabled={hotelRankingsUsed.has(5) && userRanking !== 5}
-                >
-                  5th Choice
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            
-            {userRanking && (
-              <Badge className={getRankingColor(userRanking)} data-testid={`badge-user-ranking-${proposal.id}`}>
-                Your choice: #{userRanking}
-              </Badge>
+                  <ThumbsDown className="w-4 h-4 mr-1" /> Not for me
+                </Button>
+              </div>
             )}
-            
             <Button
               variant="outline"
               size="sm"
@@ -2651,40 +2578,29 @@ function ProposalsPage({
             )}
           </div>
 
-          <div className="flex gap-3 items-center">
-            <Select
-              value={userRanking?.toString() || ""}
-              onValueChange={(value) => {
-                rankFlightMutation.mutate({ 
-                  proposalId: proposal.id, 
-                  ranking: parseInt(value) 
-                });
-              }}
-              data-testid={`select-flight-ranking-${proposal.id}`}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Rank this option" />
-              </SelectTrigger>
-              <SelectContent>
-                {Array.from({ length: Math.max(5, filterActiveProposals(flightProposals).length) }, (_, i) => i + 1).map((rank) => (
-                  <SelectItem
-                    key={rank}
-                    value={rank.toString()}
-                    data-testid={`option-ranking-${rank}-${proposal.id}`}
-                    disabled={flightRankingsUsed.has(rank) && userRanking !== rank}
-                  >
-                    {rank === 1 ? "🥇 1st Choice" : rank === 2 ? "🥈 2nd Choice" : rank === 3 ? "🥉 3rd Choice" : `${rank}${rank === 4 ? "th" : rank === 5 ? "th" : rank % 10 === 1 && rank !== 11 ? "st" : rank % 10 === 2 && rank !== 12 ? "nd" : rank % 10 === 3 && rank !== 13 ? "rd" : "th"} Choice`}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            {userRanking && (
-              <Badge className={getRankingColor(userRanking)} data-testid={`badge-user-ranking-${proposal.id}`}>
-                Your choice: #{userRanking}
-              </Badge>
+          <div className="flex gap-3 items-center flex-wrap">
+            {!isActuallyMyProposal && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant={userRanking === 1 ? "default" : "outline"}
+                  className={userRanking === 1 ? "bg-green-600 hover:bg-green-700" : ""}
+                  onClick={() => rankFlightMutation.mutate({ proposalId: proposal.id, ranking: userRanking === 1 ? 0 : 1 })}
+                  data-testid={`button-thumbs-up-flight-${proposal.id}`}
+                >
+                  <ThumbsUp className="w-4 h-4 mr-1" /> I'm in
+                </Button>
+                <Button
+                  size="sm"
+                  variant={userRanking === -1 ? "default" : "outline"}
+                  className={userRanking === -1 ? "bg-red-600 hover:bg-red-700" : ""}
+                  onClick={() => rankFlightMutation.mutate({ proposalId: proposal.id, ranking: userRanking === -1 ? 0 : -1 })}
+                  data-testid={`button-thumbs-down-flight-${proposal.id}`}
+                >
+                  <ThumbsDown className="w-4 h-4 mr-1" /> Not for me
+                </Button>
+              </div>
             )}
-            
             <Button
               variant="outline"
               size="sm"
