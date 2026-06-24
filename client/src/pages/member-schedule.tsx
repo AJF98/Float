@@ -232,7 +232,7 @@ export default function MemberSchedule() {
 
   if (authLoading || tripLoading) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Calendar className="text-white w-6 h-6" />
@@ -245,7 +245,7 @@ export default function MemberSchedule() {
 
   if (!trip) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <h1 className="text-xl font-bold text-neutral-900 mb-2">Trip not found</h1>
@@ -289,7 +289,7 @@ export default function MemberSchedule() {
 
   return (
     <>
-      <div className="min-h-dvh lg:min-h-screen bg-neutral-100">
+      <div className="min-h-dvh lg:min-h-screen bg-[#F0FDFA]">
         {/* Mobile Navigation */}
         <MobileNav
           trip={trip}

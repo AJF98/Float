@@ -125,7 +125,7 @@ export default function Join() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Calendar className="text-white w-6 h-6" />
@@ -138,7 +138,7 @@ export default function Join() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center mx-auto mb-4 animate-pulse">
             <Calendar className="text-white w-6 h-6" />
@@ -151,7 +151,7 @@ export default function Join() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
@@ -168,7 +168,7 @@ export default function Join() {
 
   if (joined) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6 text-center">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
@@ -200,7 +200,7 @@ export default function Join() {
 
   if (showLocationForm && trip) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="pt-6">
             <div className="text-center mb-6">
@@ -271,7 +271,7 @@ export default function Join() {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6 text-center">
           <Calendar className="w-12 h-12 text-primary mx-auto mb-4" />

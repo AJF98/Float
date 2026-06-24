@@ -2653,7 +2653,7 @@ export default function Trip() {
 
   if (authLoading || tripLoading) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <TravelLoading variant="journey" size="lg" text="Loading your trip adventure..." />
       </div>
     );
@@ -2661,7 +2661,7 @@ export default function Trip() {
 
   if (!trip) {
     return (
-      <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6 text-center">
             <h1 className="text-xl font-bold text-neutral-900 mb-2">Trip not found</h1>

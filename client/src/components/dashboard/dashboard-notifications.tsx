@@ -79,10 +79,10 @@ type ActorDetails = DashboardNotificationMemberProfile & {
 
 const MAX_NOTIFICATIONS = 25;
 
-const DASHBOARD_ACCENT_GRADIENT = "from-[#38bdf8] via-[#6366f1] to-[#a855f7]";
-const DASHBOARD_ACCENT_GRADIENT_SOFT = "from-[#60a5fa] via-[#818cf8] to-[#c4b5fd]";
-const DASHBOARD_ACCENT_GRADIENT_BOLD = "from-[#2563eb] via-[#4f46e5] to-[#7c3aed]";
-const DASHBOARD_ACCENT_GRADIENT_AQUA = "from-[#22d3ee] via-[#38bdf8] to-[#6366f1]";
+const DASHBOARD_ACCENT_GRADIENT = "from-[#0D9488] to-[#0B7C73]";
+const DASHBOARD_ACCENT_GRADIENT_SOFT = "from-[#0D9488] to-[#14b8a6]";
+const DASHBOARD_ACCENT_GRADIENT_BOLD = "from-[#0B7C73] to-[#0D3D39]";
+const DASHBOARD_ACCENT_GRADIENT_AQUA = "from-[#14b8a6] to-[#0D9488]";
 
 export function DashboardNotifications({
   memberLookup,
@@ -162,7 +162,7 @@ export function DashboardNotifications({
       {Array.from({ length: 3 }).map((_, index) => (
         <div
           key={`notification-skeleton-${index}`}
-          className="flex items-start gap-4 rounded-2xl border border-slate-200/70 bg-slate-50/60 p-4"
+          className="flex items-start gap-4 rounded-2xl border border-[rgba(13,148,136,0.12)] bg-[rgba(13,148,136,0.04)] p-4"
         >
           <Skeleton className="h-10 w-10 rounded-xl" />
           <div className="flex-1 space-y-2">
@@ -188,18 +188,18 @@ export function DashboardNotifications({
   return (
     <section aria-labelledby={sectionId} className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 id={sectionId} className="text-2xl font-semibold text-slate-900">
+        <h2 id={sectionId} className="text-2xl font-semibold text-[#0D3D39]">
           Notifications
         </h2>
       </div>
       <Card className="dashboard-themed-card p-0">
-      <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+      <div className="flex items-center justify-between border-b border-[rgba(13,148,136,0.12)] px-6 py-5">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Notifications</h3>
-          <p className="text-sm text-slate-500">Catch up on the latest updates from your crew.</p>
+          <h3 className="text-lg font-semibold text-[#0D3D39]">Notifications</h3>
+          <p className="text-sm text-[#0D3D39]/55">Catch up on the latest updates from your crew.</p>
         </div>
         {relevantNotifications.length > 0 ? (
-          <Badge className="rounded-full bg-gradient-to-r from-[#38bdf8] via-[#6366f1] to-[#a855f7] text-xs font-semibold text-white shadow-sm">
+          <Badge className="rounded-full bg-[#0D9488] text-xs font-semibold text-white shadow-sm">
             {relevantNotifications.length}
           </Badge>
         ) : null}
@@ -236,7 +236,7 @@ export function DashboardNotifications({
                 const timestamp = formatNotificationTimestamp(notification.createdAt);
                 const baseClasses = cn(
                   "group relative flex items-start gap-4 rounded-2xl border border-transparent bg-white/40 px-4 py-3 transition-colors",
-                  "hover:border-slate-200 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#6366f1]/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
+                  "hover:border-[rgba(13,148,136,0.20)] hover:bg-[rgba(13,148,136,0.04)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-white",
                 );
 
                 const content = (
@@ -254,43 +254,43 @@ export function DashboardNotifications({
                     </div>
                     <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-semibold text-slate-900">{tripName}</span>
+                        <span className="text-sm font-semibold text-[#0D3D39]">{tripName}</span>
                         {notification.isRead ? null : (
-                          <span className="flex items-center gap-1 rounded-full bg-gradient-to-r from-[#38bdf8] via-[#6366f1] to-[#a855f7] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
+                          <span className="flex items-center gap-1 rounded-full bg-[#0D9488] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white">
                             New
                           </span>
                         )}
                       </div>
-                      <p className="text-sm font-medium text-slate-800">
+                      <p className="text-sm font-medium text-[#0D3D39]">
                         {notification.title ?? "Trip update"}
                       </p>
                       {notification.message ? (
-                        <p className="text-sm text-slate-600 line-clamp-2">{notification.message}</p>
+                        <p className="text-sm text-[#0D3D39]/60 line-clamp-2">{notification.message}</p>
                       ) : null}
-                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-[#0D3D39]/50">
                         <div className="flex items-center gap-2">
-                          <Avatar className="h-7 w-7 border border-white shadow-sm">
+                          <Avatar className="h-7 w-7 border border-[rgba(13,148,136,0.20)] shadow-sm">
                             <AvatarImage src={actor.avatar ?? undefined} alt="" />
-                            <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-600">
+                            <AvatarFallback className="bg-[rgba(13,148,136,0.10)] text-xs font-semibold text-[#0D9488]">
                               {actor.initial}
                             </AvatarFallback>
                           </Avatar>
-                          <span className="font-medium text-slate-700">
+                          <span className="font-medium text-[#0D3D39]/70">
                             {actor.name}
                             {!actor.isResolved ? (
-                              <span className="ml-1 text-[10px] uppercase tracking-wide text-slate-400">(guest)</span>
+                              <span className="ml-1 text-[10px] uppercase tracking-wide text-[#0D3D39]/35">(guest)</span>
                             ) : null}
                           </span>
                         </div>
                         {timestamp ? (
-                          <span className="bg-gradient-to-r from-[#38bdf8] via-[#6366f1] to-[#a855f7] bg-clip-text font-semibold text-transparent">
+                          <span className="font-semibold text-[#0D9488]">
                             {timestamp}
                           </span>
                         ) : null}
                       </div>
                     </div>
                     {href ? (
-                      <div className="ml-auto flex h-full items-center text-slate-300 transition-colors group-hover:text-[#6366f1]">
+                      <div className="ml-auto flex h-full items-center text-[#0D3D39]/25 transition-colors group-hover:text-[#0D9488]">
                         <ChevronRight className="h-4 w-4" aria-hidden="true" />
                       </div>
                     ) : null}
