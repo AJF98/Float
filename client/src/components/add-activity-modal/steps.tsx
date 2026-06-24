@@ -109,10 +109,6 @@ export function TimingStep({
           onModeChange={(newMode) => onModeChange(newMode as ActivityType)}
           saveMode="SCHEDULED"
           proposeMode="PROPOSE"
-          saveLabel="Schedule & Invite"
-          proposeLabel="Float to Group"
-          saveDescription="Add to calendar now and send RSVP invites to selected members."
-          proposeDescription="Share with your group for voting and ranking."
         />
       ) : (
         <div className="space-y-2">
@@ -124,7 +120,7 @@ export function TimingStep({
           <p className="text-xs text-muted-foreground">
             {mode === "PROPOSE"
               ? "Share with your group for voting and ranking."
-              : "This will be added directly to the calendar and RSVPs sent."}
+              : "Adds directly to selected members' calendars — no acceptance needed."}
           </p>
         </div>
       )}
@@ -356,7 +352,7 @@ export function ExtrasStep({ form, formErrors, mode, enableVotingDeadline, onTog
       </div>
 
       {mode === "PROPOSE" && (
-        <div className="space-y-3 rounded-lg border border-neutral-200 p-4">
+        <div className="space-y-3 rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4">
           <div className="flex items-center space-x-2">
             <Checkbox
               id="enableVotingDeadline"
@@ -370,11 +366,11 @@ export function ExtrasStep({ form, formErrors, mode, enableVotingDeadline, onTog
               }}
               data-testid="checkbox-enable-voting-deadline"
             />
-            <Label htmlFor="enableVotingDeadline" className="text-sm font-medium cursor-pointer">
+            <Label htmlFor="enableVotingDeadline" className="cursor-pointer text-sm font-medium text-[#0D3D39]">
               Set voting deadline (optional)
             </Label>
           </div>
-          <p className="text-xs text-neutral-500">Add a time limit for team members to vote on this float</p>
+          <p className="text-xs text-[rgba(13,61,57,0.55)]">Add a time limit for group members to vote on this float</p>
 
           {enableVotingDeadline && (
             <div className="grid gap-4 sm:grid-cols-2 pt-2">

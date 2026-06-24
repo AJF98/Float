@@ -790,23 +790,21 @@ export default function HotelsPage() {
               <SaveProposeToggle
                 mode={hotelMode}
                 onModeChange={setHotelMode}
-                saveLabel="Schedule & Invite"
-                proposeLabel="Float to Group"
                 className="mb-4"
               />
             )}
 
             {hotelMode === 'PROPOSE' && !editingHotel && (
-              <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3 mb-4">
+              <div className="mb-4 rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-3">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">Voting Options</span>
+                  <Users className="h-4 w-4 text-[#0D9488]" />
+                  <span className="text-sm font-medium text-[#0D3D39]">Voting Options</span>
                 </div>
                 <div>
-                  <Label htmlFor="hotel-voting-deadline" className="text-sm text-blue-800">
+                  <Label htmlFor="hotel-voting-deadline" className="text-sm text-[rgba(13,61,57,0.75)]">
                     Voting Deadline (optional)
                   </Label>
-                  <p className="text-xs text-blue-600 mb-2">
+                  <p className="text-xs text-[rgba(13,61,57,0.55)] mb-2">
                     Set a deadline for group members to vote on this hotel option.
                   </p>
                   <Input
@@ -815,7 +813,7 @@ export default function HotelsPage() {
                     value={votingDeadline}
                     min={new Date().toISOString().slice(0, 16)}
                     onChange={(e) => setVotingDeadline(e.target.value)}
-                    className="bg-white"
+                    className="border-[rgba(13,148,136,0.20)] bg-white"
                   />
                 </div>
               </div>
@@ -826,7 +824,7 @@ export default function HotelsPage() {
                 <HotelFormFields
                   form={form}
                   isSubmitting={createHotelMutation.isPending || updateHotelMutation.isPending || proposeHotelMutation.isPending}
-                  submitLabel={editingHotel ? "Save Changes" : hotelMode === 'PROPOSE' ? "Float to Group" : "Add Hotel"}
+                  submitLabel={editingHotel ? "Save Changes" : hotelMode === 'PROPOSE' ? "Float Idea" : "Add to Trip"}
                   onCancel={handleDialogClose}
                   showCancelButton
                 >
