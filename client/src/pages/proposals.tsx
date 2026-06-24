@@ -1509,8 +1509,8 @@ function ProposalsPage({
   ) => {
     if (!rankings || rankings.length === 0) {
       return (
-        <div className="flex items-center gap-2 text-xs text-neutral-500" data-testid="preview-no-votes">
-          <Users className="w-4 h-4" />
+        <div className="flex items-center gap-1.5 text-xs text-[rgba(13,61,57,0.45)]" data-testid="preview-no-votes">
+          <Users className="w-3.5 h-3.5" />
           <span>No votes yet</span>
         </div>
       );
@@ -1520,16 +1520,16 @@ function ProposalsPage({
     const remaining = rankings.length - visibleRankings.length;
 
     return (
-      <div className="flex items-center gap-3 text-xs text-neutral-600" data-testid="preview-votes">
+      <div className="flex items-center gap-3 text-xs text-[rgba(13,61,57,0.65)]" data-testid="preview-votes">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4" />
+          <Users className="w-3.5 h-3.5 text-[#0D9488]" />
           <div className="flex -space-x-2">
             {visibleRankings.map((ranking) => (
-              <Avatar key={ranking.id} className="h-7 w-7 border border-white shadow-sm">
+              <Avatar key={ranking.id} className="h-6 w-6 border border-white shadow-sm">
                 {ranking.user.profileImageUrl ? (
                   <AvatarImage src={ranking.user.profileImageUrl ?? undefined} alt={ranking.user.firstName ?? ranking.user.username ?? "Group member"} />
                 ) : null}
-                <AvatarFallback>{getUserInitials(ranking.user)}</AvatarFallback>
+                <AvatarFallback className="text-[10px]">{getUserInitials(ranking.user)}</AvatarFallback>
               </Avatar>
             ))}
           </div>
@@ -1537,7 +1537,7 @@ function ProposalsPage({
         <span className="font-medium">
           {rankings.length} {rankings.length === 1 ? "vote" : "votes"}
         </span>
-        {remaining > 0 && <span className="text-neutral-400">+{remaining} more</span>}
+        {remaining > 0 && <span className="text-[rgba(13,61,57,0.4)]">+{remaining} more</span>}
       </div>
     );
   };
@@ -1564,22 +1564,22 @@ function ProposalsPage({
     endDateLabel?: string | null;
     testIdPrefix: string;
   }) => (
-    <div className="flex flex-wrap items-center gap-4 p-3 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800/50 dark:to-slate-700/50 rounded-lg border border-blue-100 dark:border-slate-600/50 mb-4">
+    <div className="flex flex-wrap items-center gap-4 px-3 py-2.5 bg-[rgba(13,148,136,0.06)] rounded-lg border border-[rgba(13,148,136,0.15)] mb-4">
       <div className="flex items-center gap-2">
-        <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        <Calendar className="w-4 h-4 text-[#0D9488] shrink-0" />
         <div>
-          <div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Date</div>
-          <div className="font-semibold text-neutral-900 dark:text-white" data-testid={`${testIdPrefix}-date`}>
+          <div className="text-[10px] text-[rgba(13,61,57,0.45)] uppercase tracking-widest font-semibold">Date</div>
+          <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`${testIdPrefix}-date`}>
             {dateLabel || "To be decided"}
           </div>
         </div>
       </div>
       {timeLabel && (
         <div className="flex items-center gap-2">
-          <Clock className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <Clock className="w-4 h-4 text-[#0D9488] shrink-0" />
           <div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Time</div>
-            <div className="font-semibold text-neutral-900 dark:text-white" data-testid={`${testIdPrefix}-time`}>
+            <div className="text-[10px] text-[rgba(13,61,57,0.45)] uppercase tracking-widest font-semibold">Time</div>
+            <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`${testIdPrefix}-time`}>
               {timeLabel}
             </div>
           </div>
@@ -1587,10 +1587,10 @@ function ProposalsPage({
       )}
       {endDateLabel && (
         <div className="flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <Calendar className="w-4 h-4 text-[#0D9488] shrink-0" />
           <div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">End Date</div>
-            <div className="font-semibold text-neutral-900 dark:text-white" data-testid={`${testIdPrefix}-end-date`}>
+            <div className="text-[10px] text-[rgba(13,61,57,0.45)] uppercase tracking-widest font-semibold">Check-out</div>
+            <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`${testIdPrefix}-end-date`}>
               {endDateLabel}
             </div>
           </div>
@@ -1696,17 +1696,17 @@ function ProposalsPage({
     };
 
     return (
-      <Card className="mb-4 hover:shadow-md transition-shadow border-dashed border-2 border-blue-300 bg-blue-50/30 dark:bg-blue-950/20" data-testid={`card-activity-proposal-${proposal.id}`}>
+      <Card className="mb-4 hover:shadow-sm transition-shadow border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]" data-testid={`card-activity-proposal-${proposal.id}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2" data-testid={`text-activity-name-${proposal.id}`}>
-                <MapPin className="w-5 h-5 text-purple-600" />
+              <CardTitle className="font-fraunces text-[#0D3D39] text-lg flex items-center gap-2" data-testid={`text-activity-name-${proposal.id}`}>
+                <MapPin className="w-5 h-5 text-[#0D9488]" />
                 {proposal.activityName}
               </CardTitle>
-              <CardDescription className="flex flex-wrap items-center gap-2 mt-1 text-neutral-600">
+              <CardDescription className="flex flex-wrap items-center gap-2 mt-1 text-[rgba(13,61,57,0.65)]">
                 {proposal.category ? (
-                  <span className="bg-purple-50 text-purple-700 px-2 py-1 rounded text-xs" data-testid={`text-activity-category-${proposal.id}`}>
+                  <span className="bg-[rgba(13,148,136,0.08)] text-[#0D9488] px-2 py-0.5 rounded text-xs font-medium" data-testid={`text-activity-category-${proposal.id}`}>
                     {proposal.category}
                   </span>
                 ) : null}
@@ -1734,6 +1734,7 @@ function ProposalsPage({
                 <>
                   <Button
                     size="sm"
+                    className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
                     onClick={() => convertActivityProposalMutation.mutate({ activityId: proposal.id })}
                     disabled={!hasStartTime || isConverting}
                     title={!hasStartTime ? "Add a date and time before scheduling this activity." : undefined}
@@ -1945,21 +1946,23 @@ function ProposalsPage({
     const votingDeadline = proposal.votingDeadline ? new Date(proposal.votingDeadline) : null;
 
     return (
-      <Card className="mb-4 hover:shadow-md transition-shadow border-dashed border-2 border-blue-300 bg-blue-50/30 dark:bg-blue-950/20" data-testid={`card-restaurant-proposal-${proposal.id}`}>
+      <Card className="mb-4 hover:shadow-sm transition-shadow border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]" data-testid={`card-restaurant-proposal-${proposal.id}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2" data-testid={`text-restaurant-name-${proposal.id}`}>
-                <Utensils className="w-5 h-5 text-green-600" />
+              <CardTitle className="font-fraunces text-[#0D3D39] text-lg flex items-center gap-2" data-testid={`text-restaurant-name-${proposal.id}`}>
+                <Utensils className="w-5 h-5 text-[#0D9488]" />
                 {proposal.restaurantName}
               </CardTitle>
               <CardDescription className="flex items-center gap-2 mt-1">
-                <span className="bg-gray-100 px-2 py-1 rounded text-xs" data-testid={`text-restaurant-cuisine-${proposal.id}`}>
-                  {proposal.cuisineType || 'Restaurant'}
+                <span className="bg-[rgba(13,148,136,0.08)] text-[#0D9488] px-2 py-0.5 rounded text-xs font-medium" data-testid={`text-restaurant-cuisine-${proposal.id}`}>
+                  {proposal.cuisineType || "Restaurant"}
                 </span>
-                <span className="text-gray-600" data-testid={`text-restaurant-price-range-${proposal.id}`}>
-                  {proposal.priceRange}
-                </span>
+                {proposal.priceRange && (
+                  <span className="text-[rgba(13,61,57,0.55)]" data-testid={`text-restaurant-price-range-${proposal.id}`}>
+                    {proposal.priceRange}
+                  </span>
+                )}
               </CardDescription>
             </div>
             <div className="flex flex-col items-end gap-2">
@@ -1986,6 +1989,7 @@ function ProposalsPage({
               {canConvert && (
                 <Button
                   size="sm"
+                  className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
                   onClick={() => convertRestaurantProposalMutation.mutate({ proposalId: proposal.id })}
                   disabled={isConverting}
                   data-testid={`button-convert-restaurant-proposal-${proposal.id}`}
@@ -2060,28 +2064,32 @@ function ProposalsPage({
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <span className="text-sm" data-testid={`text-restaurant-address-${proposal.id}`}>
-                {proposal.address}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="font-medium" data-testid={`text-restaurant-rating-${proposal.id}`}>
-                {proposal.rating ? parseFloat(proposal.rating.toString()).toFixed(1) : 'N/A'} rating
-              </span>
-            </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1.5 mb-4 text-sm">
+            {proposal.address && (
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-[#0D9488]" />
+                <span className="text-[rgba(13,61,57,0.65)]" data-testid={`text-restaurant-address-${proposal.id}`}>
+                  {proposal.address}
+                </span>
+              </div>
+            )}
+            {proposal.rating != null && (
+              <div className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-medium text-[#0D3D39]" data-testid={`text-restaurant-rating-${proposal.id}`}>
+                  {parseFloat(proposal.rating.toString()).toFixed(1)}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <UserIcon className="w-4 h-4" />
-              <span>Proposed by {proposal.proposer?.firstName || 'Unknown'}</span>
-              <Clock className="w-4 h-4 ml-2" />
+            <div className="flex items-center gap-1.5 text-sm text-[rgba(13,61,57,0.55)]">
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Proposed by {proposal.proposer?.firstName || "Unknown"}</span>
+              <span className="mx-0.5">·</span>
               <span data-testid={`text-restaurant-created-${proposal.id}`}>
-                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : 'Unknown'}
+                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : "Unknown"}
               </span>
             </div>
             {(proposal.rankings?.length ?? 0) > 0 && (() => {
@@ -2242,12 +2250,12 @@ function ProposalsPage({
     const votingDeadline = proposal.votingDeadline ? new Date(proposal.votingDeadline) : null;
 
     return (
-      <Card className="mb-4 hover:shadow-md transition-shadow border-dashed border-2 border-blue-300 bg-blue-50/30 dark:bg-blue-950/20" data-testid={`card-hotel-proposal-${proposal.id}`}>
+      <Card className="mb-4 hover:shadow-sm transition-shadow border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]" data-testid={`card-hotel-proposal-${proposal.id}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2" data-testid={`text-hotel-name-${proposal.id}`}>
-                <Hotel className="w-5 h-5 text-blue-600" />
+              <CardTitle className="font-fraunces text-[#0D3D39] text-lg flex items-center gap-2" data-testid={`text-hotel-name-${proposal.id}`}>
+                <Hotel className="w-5 h-5 text-[#0D9488]" />
                 {proposal.hotelName}
               </CardTitle>
               <CardDescription className="flex items-center gap-2 mt-1">
@@ -2265,6 +2273,7 @@ function ProposalsPage({
               {canConvert && (
                 <Button
                   size="sm"
+                  className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
                   onClick={() => convertHotelProposalMutation.mutate({ proposalId: proposal.id })}
                   disabled={isConverting}
                   data-testid={`button-convert-hotel-proposal-${proposal.id}`}
@@ -2296,26 +2305,30 @@ function ProposalsPage({
             {renderRankingPreview(proposal.rankings ?? [])}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-yellow-500" />
-              <span className="font-medium" data-testid={`text-hotel-rating-${proposal.id}`}>
-                {proposal.rating} stars
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-green-600" />
-              <span className="font-medium" data-testid={`text-hotel-price-${proposal.id}`}>
-                {totalPriceDisplay}
-                {stayNights ? (
-                  <span className="ml-1 text-xs text-neutral-600">for {stayNights} night{stayNights > 1 ? "s" : ""}</span>
-                ) : null}
-              </span>
-            </div>
+          <div className="flex flex-wrap gap-x-5 gap-y-2 mb-4 text-sm">
+            {proposal.rating != null && (
+              <div className="flex items-center gap-1.5">
+                <Star className="w-3.5 h-3.5 text-amber-400" />
+                <span className="font-medium text-[#0D3D39]" data-testid={`text-hotel-rating-${proposal.id}`}>
+                  {proposal.rating} stars
+                </span>
+              </div>
+            )}
+            {totalPriceNumber != null && totalPriceNumber > 0 && (
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-[#0D9488]" />
+                <span className="font-medium text-[#0D3D39]" data-testid={`text-hotel-price-${proposal.id}`}>
+                  {totalPriceDisplay}
+                  {stayNights ? (
+                    <span className="ml-1 text-xs text-[rgba(13,61,57,0.55)]">for {stayNights} night{stayNights > 1 ? "s" : ""}</span>
+                  ) : null}
+                </span>
+              </div>
+            )}
             {nightlyPriceDisplay ? (
-              <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-600" />
-                <span className="font-medium" data-testid={`text-hotel-nightly-${proposal.id}`}>
+              <div className="flex items-center gap-1.5">
+                <DollarSign className="w-3.5 h-3.5 text-[#0D9488]" />
+                <span className="font-medium text-[#0D3D39]" data-testid={`text-hotel-nightly-${proposal.id}`}>
                   {nightlyPriceDisplay} / night
                 </span>
               </div>
@@ -2324,12 +2337,12 @@ function ProposalsPage({
 
           {/* Group Budget Section */}
           {groupSize > 0 && (
-            <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200" data-testid={`group-budget-${proposal.id}`}>
+            <div className="mb-4 p-4 bg-[rgba(13,148,136,0.06)] rounded-lg border border-[rgba(13,148,136,0.15)]" data-testid={`group-budget-${proposal.id}`}>
               <div className="flex items-center gap-2 mb-3">
-                <Users className="w-5 h-5 text-blue-600" />
-                <h4 className="font-semibold text-blue-900">Group Budget Breakdown</h4>
+                <Users className="w-4 h-4 text-[#0D9488]" />
+                <h4 className="text-sm font-semibold text-[#0D3D39]">Group Budget Breakdown</h4>
               </div>
-              
+
               {budgetBreakdown.hasError ? (
                 <div className="flex items-center gap-2 text-amber-600 bg-amber-50 p-3 rounded border border-amber-200" data-testid={`error-message-${proposal.id}`}>
                   <AlertCircle className="w-4 h-4" />
@@ -2338,29 +2351,29 @@ function ProposalsPage({
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                   <div className="flex flex-col" data-testid={`text-group-size-${proposal.id}`}>
-                    <span className="text-neutral-600">For your group</span>
-                    <span className="font-semibold text-blue-900">
+                    <span className="text-[rgba(13,61,57,0.55)]">For your group</span>
+                    <span className="font-semibold text-[#0D3D39]">
                       {groupSize} people, {budgetBreakdown.roomsNeeded} room{budgetBreakdown.roomsNeeded > 1 ? 's' : ''}
                     </span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-[rgba(13,61,57,0.45)]">
                       Assuming 2 people per room
                     </span>
                   </div>
                   <div className="flex flex-col" data-testid={`text-total-cost-${proposal.id}`}>
-                    <span className="text-neutral-600">Total per night</span>
-                    <span className="font-semibold text-green-700">
+                    <span className="text-[rgba(13,61,57,0.55)]">Total per night</span>
+                    <span className="font-semibold text-[#0D9488]">
                       ${budgetBreakdown.totalCost.toFixed(2)}
                     </span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-[rgba(13,61,57,0.45)]">
                       {budgetBreakdown.roomsNeeded} × ${budgetBreakdown.pricePerRoom}
                     </span>
                   </div>
                   <div className="flex flex-col" data-testid={`text-per-person-cost-${proposal.id}`}>
-                    <span className="text-neutral-600">Per person/night</span>
-                    <span className="font-semibold text-purple-700">
+                    <span className="text-[rgba(13,61,57,0.55)]">Per person/night</span>
+                    <span className="font-semibold text-[#0D9488]">
                       ${budgetBreakdown.perPersonCost.toFixed(2)}
                     </span>
-                    <span className="text-xs text-neutral-500">
+                    <span className="text-xs text-[rgba(13,61,57,0.45)]">
                       Split {groupSize} ways
                     </span>
                   </div>
@@ -2378,17 +2391,17 @@ function ProposalsPage({
           )}
 
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <UserIcon className="w-4 h-4" />
-              <span>Proposed by {proposal.proposer?.firstName || 'Unknown'}</span>
-              <Clock className="w-4 h-4 ml-2" />
+            <div className="flex items-center gap-1.5 text-sm text-[rgba(13,61,57,0.55)]">
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Proposed by {proposal.proposer?.firstName || "Unknown"}</span>
+              <span className="mx-0.5">·</span>
               <span data-testid={`text-hotel-created-${proposal.id}`}>
-                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : 'Unknown'}
+                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : "Unknown"}
               </span>
             </div>
             {proposal.averageRanking != null && (
-              <div className="flex items-center gap-1 text-sm">
-                <TrendingUp className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center gap-1 text-sm text-[rgba(13,61,57,0.65)]">
+                <TrendingUp className="w-3.5 h-3.5 text-[#0D9488]" />
                 <span data-testid={`text-hotel-avg-ranking-${proposal.id}`}>
                   Avg: {proposal.averageRanking.toFixed(1)}
                 </span>
@@ -2514,12 +2527,12 @@ function ProposalsPage({
     const votingDeadline = proposal.votingDeadline ? new Date(proposal.votingDeadline) : null;
 
     return (
-      <Card className="mb-4 hover:shadow-md transition-shadow border-dashed border-2 border-blue-300 bg-blue-50/30 dark:bg-blue-950/20" data-testid={`card-flight-proposal-${proposal.id}`}>
+      <Card className="mb-4 hover:shadow-sm transition-shadow border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]" data-testid={`card-flight-proposal-${proposal.id}`}>
         <CardHeader className="pb-3">
           <div className="flex justify-between items-start gap-4">
             <div>
-              <CardTitle className="text-lg flex items-center gap-2" data-testid={`text-flight-number-${proposal.id}`}>
-                <Plane className="w-5 h-5 text-blue-600" />
+              <CardTitle className="font-fraunces text-[#0D3D39] text-lg flex items-center gap-2" data-testid={`text-flight-number-${proposal.id}`}>
+                <Plane className="w-5 h-5 text-[#0D9488]" />
                 {proposal.airline} {proposal.flightNumber}
               </CardTitle>
               <CardDescription className="flex items-center gap-2 mt-1">
@@ -2538,6 +2551,7 @@ function ProposalsPage({
               {canConvert && (
                 <Button
                   size="sm"
+                  className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
                   onClick={() => convertFlightProposalMutation.mutate({ proposalId: proposal.id })}
                   disabled={isConverting}
                   data-testid={`button-convert-flight-proposal-${proposal.id}`}
@@ -2558,57 +2572,78 @@ function ProposalsPage({
           </div>
         </CardHeader>
         <CardContent>
-          <ProposalDateTimeSection
-            dateLabel={proposal.departureTime ? format(new Date(proposal.departureTime), "EEE, MMM d, yyyy") : null}
-            timeLabel={proposal.departureTime ? format(new Date(proposal.departureTime), "h:mm a") : null}
-            testIdPrefix={`flight-proposal-${proposal.id}`}
-          />
+          {/* Departure → Arrival date pill */}
+          <div className="flex items-center gap-2 px-3 py-2.5 bg-[rgba(13,148,136,0.06)] rounded-lg border border-[rgba(13,148,136,0.15)] mb-4">
+            <Calendar className="w-4 h-4 text-[#0D9488] shrink-0" />
+            <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-date`}>
+              {proposal.departureTime
+                ? format(new Date(proposal.departureTime), "EEE, MMM d, yyyy")
+                : "Date TBD"}
+            </div>
+            {proposal.departureTime && (
+              <>
+                <span className="text-[rgba(13,61,57,0.35)] mx-0.5">·</span>
+                <Clock className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
+                <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-time`}>
+                  {format(new Date(proposal.departureTime), "h:mm a")}
+                </div>
+              </>
+            )}
+            {proposal.arrivalTime && (() => {
+              const dep = proposal.departureTime ? new Date(proposal.departureTime) : null;
+              const arr = new Date(proposal.arrivalTime);
+              const sameDay = dep && format(dep, "yyyy-MM-dd") === format(arr, "yyyy-MM-dd");
+              return (
+                <>
+                  <span className="text-[rgba(13,61,57,0.35)] mx-0.5">→</span>
+                  {!sameDay && (
+                    <span className="text-sm font-semibold text-[#0D3D39]">{format(arr, "MMM d")}</span>
+                  )}
+                  <span className="text-sm text-[rgba(13,61,57,0.55)]">{format(arr, "h:mm a")}</span>
+                </>
+              );
+            })()}
+          </div>
 
           <div className="mb-4">{renderRankingPreview(proposal.rankings ?? [])}</div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-            <div className="flex items-center gap-2">
-              <Plane className="w-4 h-4 text-blue-600" />
-              <div>
-                <div className="font-medium" data-testid={`text-flight-departure-${proposal.id}`}>
-                  Departs: {getFlightDateLabel(proposal.departureTime)}
-                </div>
-                <div className="text-sm text-neutral-600" data-testid={`text-flight-arrival-${proposal.id}`}>
-                  Arrives: {getFlightDateLabel(proposal.arrivalTime)}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-green-600" />
-              <span className="font-medium" data-testid={`text-flight-price-${proposal.id}`}>
-                ${parseFloat(proposal.price.toString()).toFixed(2)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-orange-600" />
-              <span className="font-medium" data-testid={`text-flight-duration-${proposal.id}`}>
-                {proposal.duration}
-                {proposal.stops > 0 && (
-                  <span className="text-sm text-neutral-600 ml-1">
-                    ({proposal.stops} stop{proposal.stops > 1 ? 's' : ''})
+          {/* Price / duration meta — only shown when values are meaningful */}
+          {(() => {
+            const priceNum = parseFloat(proposal.price?.toString() ?? "");
+            const hasPrice = !isNaN(priceNum) && priceNum > 0;
+            const hasDuration = Boolean(proposal.duration);
+            const hasStops = proposal.stops > 0;
+            if (!hasPrice && !hasDuration) return null;
+            return (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-[rgba(13,61,57,0.65)] mb-4">
+                {hasPrice && (
+                  <span className="flex items-center gap-1" data-testid={`text-flight-price-${proposal.id}`}>
+                    <DollarSign className="w-3.5 h-3.5 text-[#0D9488]" />
+                    <span className="font-medium">{priceNum.toFixed(2)}</span>
                   </span>
                 )}
-              </span>
-            </div>
-          </div>
+                {hasDuration && (
+                  <span className="flex items-center gap-1" data-testid={`text-flight-duration-${proposal.id}`}>
+                    <Clock className="w-3.5 h-3.5 text-[#0D9488]" />
+                    <span className="font-medium">{proposal.duration}{hasStops ? ` · ${proposal.stops} stop${proposal.stops > 1 ? "s" : ""}` : ""}</span>
+                  </span>
+                )}
+              </div>
+            );
+          })()}
 
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2 text-sm text-neutral-600">
-              <UserIcon className="w-4 h-4" />
-              <span>Proposed by {proposal.proposer?.firstName || 'Unknown'}</span>
-              <Clock className="w-4 h-4 ml-2" />
+            <div className="flex items-center gap-1.5 text-sm text-[rgba(13,61,57,0.55)]">
+              <UserIcon className="w-3.5 h-3.5" />
+              <span>Proposed by {proposal.proposer?.firstName || "Unknown"}</span>
+              <span className="mx-0.5">·</span>
               <span data-testid={`text-flight-created-${proposal.id}`}>
-                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : 'Unknown'}
+                {proposal.createdAt ? formatDistanceToNow(new Date(proposal.createdAt), { addSuffix: true }) : "Unknown"}
               </span>
             </div>
             {proposal.averageRanking != null && (
-              <div className="flex items-center gap-1 text-sm">
-                <TrendingUp className="w-4 h-4 text-blue-600" />
+              <div className="flex items-center gap-1 text-sm text-[rgba(13,61,57,0.65)]">
+                <TrendingUp className="w-3.5 h-3.5 text-[#0D9488]" />
                 <span data-testid={`text-flight-avg-ranking-${proposal.id}`}>
                   Avg: {proposal.averageRanking.toFixed(1)}
                 </span>
@@ -3021,8 +3056,8 @@ function ProposalsPage({
   const mainContent = (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold">Manage Floaters</h2>
-        <p className="text-neutral-600">
+        <h2 className="text-2xl font-fraunces font-bold text-[#0D3D39]">Manage Floaters</h2>
+        <p className="text-[rgba(13,61,57,0.65)]">
           View detailed vote breakdowns, edit your floaters, or cancel floaters you've created.
         </p>
       </div>
