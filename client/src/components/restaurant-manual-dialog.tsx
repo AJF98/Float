@@ -15,6 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { CalendarIcon } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -802,13 +803,13 @@ export function RestaurantManualDialog({ tripId, open, onOpenChange, onSuccess, 
 
             {mode === "PROPOSE" && !isEditing && (
               <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-2">
-                <Label htmlFor="voting-deadline" className="text-[rgba(13,61,57,0.75)]">Voting Deadline (Optional)</Label>
-                <Input
-                  id="voting-deadline"
-                  type="datetime-local"
+                <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  Voting Deadline <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
+                </Label>
+                <DateTimePicker
                   value={votingDeadline}
-                  onChange={(e) => setVotingDeadline(e.target.value)}
-                  className="border-[rgba(13,148,136,0.20)] bg-white"
+                  onChange={setVotingDeadline}
+                  placeholder="Set a voting deadline"
                 />
                 <p className="text-xs text-[rgba(13,61,57,0.55)]">
                   Set a deadline for group members to vote on this restaurant option.

@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { CalendarIcon } from "lucide-react";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import { SaveProposeToggle, type SaveProposeMode } from "@/components/save-propose-toggle";
 import { MemberSelector, type MemberOption } from "@/components/member-selector";
 import { useToast } from "@/hooks/use-toast";
@@ -659,7 +660,7 @@ export function RestaurantManualAddModal({ tripId, open, onOpenChange, prefill, 
             )}
 
             {mode === "PROPOSE" && (
-              <div className="space-y-3 p-3 bg-neutral-50 rounded-lg border border-neutral-200">
+              <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-3">
                 <div className="flex items-center gap-2">
                   <Checkbox
                     id="enableVotingDeadline"
@@ -671,38 +672,28 @@ export function RestaurantManualAddModal({ tripId, open, onOpenChange, prefill, 
                     }}
                     data-testid="checkbox-voting-deadline"
                   />
-                  <Label htmlFor="enableVotingDeadline" className="text-sm font-medium cursor-pointer">
+                  <Label htmlFor="enableVotingDeadline" className="text-sm font-medium text-[#0D3D39] cursor-pointer">
                     Set voting deadline
                   </Label>
                 </div>
 
                 {enableVotingDeadline && (
-                  <div className="grid grid-cols-2 gap-3 mt-2">
-                    <FormField
-                      control={form.control}
-                      name="votingDeadlineDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">Deadline date</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} data-testid="input-voting-deadline-date" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="votingDeadlineTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-xs">Deadline time</FormLabel>
-                          <FormControl>
-                            <Input type="time" {...field} data-testid="input-voting-deadline-time" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
+                  <div className="space-y-1">
+                    <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                      Voting Deadline
+                    </Label>
+                    <DateTimePicker
+                      value={
+                        form.watch("votingDeadlineDate")
+                          ? `${form.watch("votingDeadlineDate")}T${form.watch("votingDeadlineTime") || "12:00"}`
+                          : ""
+                      }
+                      onChange={(v) => {
+                        const [datePart, timePart] = v.split("T");
+                        form.setValue("votingDeadlineDate", datePart, { shouldValidate: true });
+                        form.setValue("votingDeadlineTime", timePart || "12:00", { shouldValidate: true });
+                      }}
+                      placeholder="Set a voting deadline"
                     />
                   </div>
                 )}

@@ -17,6 +17,7 @@ import SmartLocationSearch from "@/components/SmartLocationSearch";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { CoverPhotoSection, type CoverPhotoValue } from "@/components/cover-photo-section";
 import { createCoverPhotoBannerFile } from "@/lib/coverPhotoProcessing";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 interface CreateTripModalProps {
   open: boolean;
@@ -631,29 +632,20 @@ export function CreateTripModal({ open, onOpenChange }: CreateTripModalProps) {
               searchQuery={selectedDestination?.name || form.watch("destination") || ""}
             />
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="startDate" className="font-semibold">Start Date</Label>
-                <Input
-                  id="startDate"
-                  type="date"
-                  {...form.register("startDate")}
-                />
-                {form.formState.errors.startDate && (
-                  <p className="text-sm text-red-600">{form.formState.errors.startDate.message}</p>
-                )}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="endDate" className="font-semibold">End Date</Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  {...form.register("endDate")}
-                />
-                {form.formState.errors.endDate && (
-                  <p className="text-sm text-red-600">{form.formState.errors.endDate.message}</p>
-                )}
-              </div>
+            <div className="space-y-1.5">
+              <Label className="font-semibold">Dates</Label>
+              <DateRangePicker
+                startValue={form.watch("startDate") ?? ""}
+                endValue={form.watch("endDate") ?? ""}
+                onStartChange={(v) => form.setValue("startDate", v, { shouldValidate: true })}
+                onEndChange={(v) => form.setValue("endDate", v, { shouldValidate: true })}
+                placeholder="Select start and end dates"
+              />
+              {(form.formState.errors.startDate || form.formState.errors.endDate) && (
+                <p className="text-sm text-red-600">
+                  {form.formState.errors.startDate?.message ?? form.formState.errors.endDate?.message}
+                </p>
+              )}
             </div>
           </div>
 

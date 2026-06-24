@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Calendar,
+  Calendar as CalendarIcon,
   CalendarClock,
   Building,
   Plus,
@@ -176,6 +176,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import type { DateRange } from "react-day-picker";
+import { DateTimePicker } from "@/components/ui/date-time-picker";
 import {
   clearExternalRedirect,
   hasExternalRedirect,
@@ -2714,7 +2717,7 @@ export default function Trip() {
                       activeTab === "calendar" ? navButtonActiveClasses : navButtonInactiveClasses,
                     )}
                   >
-                    <Calendar className="w-5 h-5 mr-3 text-current" />
+                    <CalendarIcon className="w-5 h-5 mr-3 text-current" />
                     Calendar
                   </button>
                   {/* 2. Floaters */}
@@ -2862,7 +2865,7 @@ export default function Trip() {
                       <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:justify-between">
                         <div className="max-w-2xl space-y-5">
                           <div className="inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.3em] text-white/80">
-                            <Calendar className="h-4 w-4" />
+                            <CalendarIcon className="h-4 w-4" />
                             <span>Trip dashboard</span>
                           </div>
                           <div className="space-y-3">
@@ -2885,7 +2888,7 @@ export default function Trip() {
                               <span className="font-medium">{trip.destination}</span>
                             </div>
                             <div className="flex items-center gap-2 rounded-full bg-white/15 px-3 py-1.5 backdrop-blur">
-                              <Calendar className="h-4 w-4" />
+                              <CalendarIcon className="h-4 w-4" />
                               <span>
                                 {tripStartDate && tripEndDate
                                   ? `${format(tripStartDate, 'MMM dd')} - ${format(tripEndDate, 'MMM dd, yyyy')}`
@@ -3267,7 +3270,7 @@ export default function Trip() {
                                 <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.16),transparent_62%)] dark:bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.26),transparent_62%)]" />
                                 <div className="relative z-10 mx-auto flex max-w-xl flex-col items-center gap-5 px-6">
                                   <div className="flex h-16 w-16 items-center justify-center rounded-full border border-[color:var(--calendar-line)]/50 bg-[var(--calendar-surface)] shadow-[0_18px_40px_-24px_rgba(16,24,40,0.45)]">
-                                    <Calendar className="h-7 w-7 text-[color:var(--calendar-muted)]" />
+                                    <CalendarIcon className="h-7 w-7 text-[color:var(--calendar-muted)]" />
                                   </div>
                                   <div className="space-y-2">
                                     <h3 className="text-xl font-semibold text-[color:var(--calendar-ink)]">No activities planned yet</h3>
@@ -3530,7 +3533,7 @@ export default function Trip() {
                                   ) : null}
                                 </div>
                                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-cyan-100 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-300">
-                                  <Calendar className="h-5 w-5" />
+                                  <CalendarIcon className="h-5 w-5" />
                                 </div>
                               </div>
                               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
@@ -6002,65 +6005,93 @@ function FlightCoordination({
             <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Schedule</p>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-[rgba(13,61,57,0.55)] uppercase tracking-wide">Departure</p>
-                  <div className="space-y-1">
-                    <Label htmlFor="manual-departure-date" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Date</Label>
-                    <Input
-                      id="manual-departure-date"
-                      type="date"
-                      value={manualFlightData.departureTime ? manualFlightData.departureTime.split('T')[0] : ''}
-                      onChange={(event) => {
-                        const datePart = event.target.value;
-                        const timePart = manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
-                        setManualFlightData((prev) => ({ ...prev, departureTime: datePart + 'T' + timePart }));
+              {/* Date range picker */}
+              <div className="space-y-1">
+                <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  Flight Dates <span className="text-destructive ml-0.5">*</span>
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      type="button"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-auto py-2.5",
+                        !manualFlightData.departureTime && "text-muted-foreground",
+                        "hover:bg-[rgba(13,148,136,0.05)] focus-visible:ring-2 focus-visible:ring-[#0D9488]/40 focus-visible:ring-offset-2",
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4 opacity-60" />
+                      {(() => {
+                        const dep = manualFlightData.departureTime ? new Date(manualFlightData.departureTime) : null;
+                        const arr = manualFlightData.arrivalTime ? new Date(manualFlightData.arrivalTime) : null;
+                        if (dep && arr && !isNaN(dep.getTime()) && !isNaN(arr.getTime())) {
+                          return <span>{format(dep, "MMM d, yyyy")}<span className="text-muted-foreground"> → </span>{format(arr, "MMM d, yyyy")}</span>;
+                        } else if (dep && !isNaN(dep.getTime())) {
+                          return <span>{format(dep, "MMM d, yyyy")}</span>;
+                        }
+                        return <span className="text-muted-foreground">Select departure and arrival dates</span>;
+                      })()}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-3" align="start">
+                    <Calendar
+                      mode="range"
+                      defaultMonth={manualFlightData.departureTime ? new Date(manualFlightData.departureTime) : undefined}
+                      selected={(() => {
+                        const dep = manualFlightData.departureTime ? new Date(manualFlightData.departureTime) : undefined;
+                        const arr = manualFlightData.arrivalTime ? new Date(manualFlightData.arrivalTime) : undefined;
+                        if (dep && !isNaN(dep.getTime())) {
+                          return { from: dep, to: arr && !isNaN(arr.getTime()) ? arr : undefined } as DateRange;
+                        }
+                        return undefined;
+                      })()}
+                      onSelect={(range) => {
+                        if (range?.from) {
+                          const depTime = manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
+                          setManualFlightData((prev) => ({ ...prev, departureTime: format(range.from!, 'yyyy-MM-dd') + 'T' + depTime }));
+                        }
+                        if (range?.to) {
+                          const arrTime = manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
+                          setManualFlightData((prev) => ({ ...prev, arrivalTime: format(range.to!, 'yyyy-MM-dd') + 'T' + arrTime }));
+                        } else if (range?.from) {
+                          const arrTime = manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
+                          setManualFlightData((prev) => ({ ...prev, arrivalTime: format(range.from!, 'yyyy-MM-dd') + 'T' + arrTime }));
+                        }
                       }}
+                      numberOfMonths={2}
                     />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="manual-departure-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Time</Label>
-                    <Input
-                      id="manual-departure-time"
-                      type="time"
-                      value={manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
-                      onChange={(event) => {
-                        const timePart = event.target.value;
-                        const datePart = manualFlightData.departureTime ? manualFlightData.departureTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
-                        setManualFlightData((prev) => ({ ...prev, departureTime: datePart + 'T' + timePart }));
-                      }}
-                    />
-                  </div>
-                </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
 
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-[rgba(13,61,57,0.55)] uppercase tracking-wide">Arrival</p>
-                  <div className="space-y-1">
-                    <Label htmlFor="manual-arrival-date" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Date</Label>
-                    <Input
-                      id="manual-arrival-date"
-                      type="date"
-                      value={manualFlightData.arrivalTime ? manualFlightData.arrivalTime.split('T')[0] : ''}
-                      onChange={(event) => {
-                        const datePart = event.target.value;
-                        const timePart = manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
-                        setManualFlightData((prev) => ({ ...prev, arrivalTime: datePart + 'T' + timePart }));
-                      }}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="manual-arrival-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Time</Label>
-                    <Input
-                      id="manual-arrival-time"
-                      type="time"
-                      value={manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
-                      onChange={(event) => {
-                        const timePart = event.target.value;
-                        const datePart = manualFlightData.arrivalTime ? manualFlightData.arrivalTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
-                        setManualFlightData((prev) => ({ ...prev, arrivalTime: datePart + 'T' + timePart }));
-                      }}
-                    />
-                  </div>
+              {/* Time inputs */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="manual-departure-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Departure Time</Label>
+                  <Input
+                    id="manual-departure-time"
+                    type="time"
+                    value={manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
+                    onChange={(event) => {
+                      const timePart = event.target.value;
+                      const datePart = manualFlightData.departureTime ? manualFlightData.departureTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
+                      setManualFlightData((prev) => ({ ...prev, departureTime: datePart + 'T' + timePart }));
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="manual-arrival-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Arrival Time</Label>
+                  <Input
+                    id="manual-arrival-time"
+                    type="time"
+                    value={manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
+                    onChange={(event) => {
+                      const timePart = event.target.value;
+                      const datePart = manualFlightData.arrivalTime ? manualFlightData.arrivalTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
+                      setManualFlightData((prev) => ({ ...prev, arrivalTime: datePart + 'T' + timePart }));
+                    }}
+                  />
                 </div>
               </div>
             </div>
@@ -6106,18 +6137,16 @@ function FlightCoordination({
                   <span className="text-sm font-medium text-[#0D3D39]">Voting Options</span>
                 </div>
                 <div className="space-y-1">
-                  <Label htmlFor="flight-voting-deadline" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
                     Voting Deadline <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
                   </Label>
                   <p className="text-xs text-[rgba(13,61,57,0.55)]">
                     Set a deadline for group members to vote on this flight option.
                   </p>
-                  <Input
-                    id="flight-voting-deadline"
-                    type="datetime-local"
+                  <DateTimePicker
                     value={flightVotingDeadline}
-                    onChange={(e) => setFlightVotingDeadline(e.target.value)}
-                    className="border-[rgba(13,148,136,0.20)] bg-white"
+                    onChange={setFlightVotingDeadline}
+                    placeholder="Set a voting deadline"
                   />
                 </div>
               </div>
@@ -7402,14 +7431,15 @@ function HotelBooking({
 
             {hotelMode === "PROPOSE" && !editingHotel && (
               <div className="space-y-2">
-                <Label htmlFor="hotel-voting-deadline">Voting Deadline (Optional)</Label>
-                <Input
-                  id="hotel-voting-deadline"
-                  type="datetime-local"
+                <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  Voting Deadline <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
+                </Label>
+                <DateTimePicker
                   value={hotelVotingDeadline}
-                  onChange={(e) => setHotelVotingDeadline(e.target.value)}
+                  onChange={setHotelVotingDeadline}
+                  placeholder="Set a voting deadline"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[rgba(13,61,57,0.55)]">
                   Set a deadline for group members to vote on this hotel option.
                 </p>
               </div>
@@ -8446,7 +8476,7 @@ function WeatherReport({ trip }: { trip: TripWithDetails }) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Calendar className="w-5 h-5" />
+              <CalendarIcon className="w-5 h-5" />
               <span>
                 {metadata?.outOfRange 
                   ? `Available Forecast ${metadata.forecastCoverageStart && metadata.forecastCoverageEnd ? `(${format(new Date(metadata.forecastCoverageStart), 'MMM dd')} - ${format(new Date(metadata.forecastCoverageEnd), 'MMM dd')})` : ''}`

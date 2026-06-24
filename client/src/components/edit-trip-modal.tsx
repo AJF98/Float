@@ -17,6 +17,7 @@ import type { TripWithDetails } from "@shared/schema";
 import { format } from "date-fns";
 import { CoverPhotoSection, type CoverPhotoValue } from "@/components/cover-photo-section";
 import { createCoverPhotoBannerFile } from "@/lib/coverPhotoProcessing";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
 
 interface EditTripModalProps {
   open: boolean;
@@ -658,31 +659,20 @@ export function EditTripModal({ open, onOpenChange, trip }: EditTripModalProps) 
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label htmlFor="startDate">Start Date</Label>
-              <Input
-                id="startDate"
-                type="date"
-                {...form.register("startDate")}
-                data-testid="input-start-date"
-              />
-              {form.formState.errors.startDate && (
-                <p className="text-sm text-red-600 mt-1">{form.formState.errors.startDate.message}</p>
-              )}
-            </div>
-            <div>
-              <Label htmlFor="endDate">End Date</Label>
-              <Input
-                id="endDate"
-                type="date"
-                {...form.register("endDate")}
-                data-testid="input-end-date"
-              />
-              {form.formState.errors.endDate && (
-                <p className="text-sm text-red-600 mt-1">{form.formState.errors.endDate.message}</p>
-              )}
-            </div>
+          <div className="space-y-1.5">
+            <Label>Dates</Label>
+            <DateRangePicker
+              startValue={form.watch("startDate") ?? ""}
+              endValue={form.watch("endDate") ?? ""}
+              onStartChange={(v) => form.setValue("startDate", v, { shouldValidate: true })}
+              onEndChange={(v) => form.setValue("endDate", v, { shouldValidate: true })}
+              placeholder="Select start and end dates"
+            />
+            {(form.formState.errors.startDate || form.formState.errors.endDate) && (
+              <p className="text-sm text-red-600 mt-1">
+                {form.formState.errors.startDate?.message ?? form.formState.errors.endDate?.message}
+              </p>
+            )}
           </div>
 
           <CoverPhotoSection
