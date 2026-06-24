@@ -5414,7 +5414,7 @@ export class DatabaseStorage implements IStorage {
                 responded_at = EXCLUDED.responded_at,
                 updated_at = NOW()
           `,
-          [row.id, "pending", uniqueInviteeIds],
+          [row.id, typeValue === "SCHEDULED" ? "accepted" : "pending", uniqueInviteeIds],
         );
       }
 
@@ -8833,21 +8833,12 @@ ${selectUserColumns("participant_user", "participant_user_")}
     
     try {
       for (const memberId of memberIds) {
-        if (memberId === creatorUserId) {
-          await query(
-            `INSERT INTO flight_rsvps (flight_id, user_id, status, responded_at)
-             VALUES ($1, $2, 'accepted', NOW())
-             ON CONFLICT (flight_id, user_id) DO NOTHING`,
-            [flightId, memberId]
-          );
-        } else {
-          await query(
-            `INSERT INTO flight_rsvps (flight_id, user_id, status)
-             VALUES ($1, $2, 'pending')
-             ON CONFLICT (flight_id, user_id) DO NOTHING`,
-            [flightId, memberId]
-          );
-        }
+        await query(
+          `INSERT INTO flight_rsvps (flight_id, user_id, status, responded_at)
+           VALUES ($1, $2, 'accepted', NOW())
+           ON CONFLICT (flight_id, user_id) DO NOTHING`,
+          [flightId, memberId]
+        );
       }
     } catch (error) {
       const postgresError = error as { code?: string };
@@ -10996,21 +10987,12 @@ ${selectUserColumns("participant_user", "participant_user_")}
     
     const insertRsvps = async () => {
       for (const memberId of memberIds) {
-        if (memberId === creatorUserId) {
-          await query(
-            `INSERT INTO hotel_rsvps (hotel_id, user_id, status, responded_at)
-             VALUES ($1, $2, 'accepted', NOW())
-             ON CONFLICT (hotel_id, user_id) DO NOTHING`,
-            [hotelId, memberId]
-          );
-        } else {
-          await query(
-            `INSERT INTO hotel_rsvps (hotel_id, user_id, status)
-             VALUES ($1, $2, 'pending')
-             ON CONFLICT (hotel_id, user_id) DO NOTHING`,
-            [hotelId, memberId]
-          );
-        }
+        await query(
+          `INSERT INTO hotel_rsvps (hotel_id, user_id, status, responded_at)
+           VALUES ($1, $2, 'accepted', NOW())
+           ON CONFLICT (hotel_id, user_id) DO NOTHING`,
+          [hotelId, memberId]
+        );
       }
     };
 
@@ -11967,21 +11949,12 @@ ${selectUserColumns("participant_user", "participant_user_")}
     }
     
     for (const memberId of memberIds) {
-      if (memberId === creatorUserId) {
-        await query(
-          `INSERT INTO restaurant_rsvps (restaurant_id, user_id, status, responded_at)
-           VALUES ($1, $2, 'accepted', NOW())
-           ON CONFLICT (restaurant_id, user_id) DO NOTHING`,
-          [restaurantId, memberId]
-        );
-      } else {
-        await query(
-          `INSERT INTO restaurant_rsvps (restaurant_id, user_id, status)
-           VALUES ($1, $2, 'pending')
-           ON CONFLICT (restaurant_id, user_id) DO NOTHING`,
-          [restaurantId, memberId]
-        );
-      }
+      await query(
+        `INSERT INTO restaurant_rsvps (restaurant_id, user_id, status, responded_at)
+         VALUES ($1, $2, 'accepted', NOW())
+         ON CONFLICT (restaurant_id, user_id) DO NOTHING`,
+        [restaurantId, memberId]
+      );
     }
   }
 

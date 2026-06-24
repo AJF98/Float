@@ -3991,10 +3991,6 @@ export default function FlightsPage() {
           <SaveProposeToggle
             mode={flightMode}
             onModeChange={setFlightMode}
-            saveLabel="Schedule & Invite"
-            proposeLabel="Float to Group"
-            saveDescription="Add to your calendar now and send RSVP invites to selected members."
-            proposeDescription="Share this flight option with your group for voting."
           />
         )}
         
@@ -4065,7 +4061,7 @@ export default function FlightsPage() {
                     className={cn(
                       "w-full justify-start text-left font-normal h-auto py-3",
                       !manualFlightForm.departure && "text-muted-foreground",
-                      "hover:bg-primary/5 focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2"
+                      "hover:bg-[rgba(13,148,136,0.05)] focus-visible:ring-2 focus-visible:ring-[#0D9488]/40 focus-visible:ring-offset-2"
                     )}
                   >
                     <CalendarIcon className="mr-3 h-4 w-4 opacity-70" />
@@ -4078,7 +4074,7 @@ export default function FlightsPage() {
                       if (hasBothDates) {
                         return (
                           <span className="flex flex-col items-start">
-                            <span className="font-medium text-slate-900 dark:text-white">
+                            <span className="font-medium text-[#0D3D39]">
                               {format(depDate, "MMM d, yyyy")}
                               <span className="text-muted-foreground font-normal"> → {format(arrDate, "MMM d, yyyy")}</span>
                             </span>
@@ -4090,7 +4086,7 @@ export default function FlightsPage() {
                       } else if (hasDepOnly) {
                         return (
                           <span className="flex flex-col items-start">
-                            <span className="font-medium text-slate-900 dark:text-white">
+                            <span className="font-medium text-[#0D3D39]">
                               {format(depDate, "MMM d, yyyy")}
                             </span>
                             <span className="text-xs text-muted-foreground">
@@ -4208,16 +4204,16 @@ export default function FlightsPage() {
           )}
           
           {flightMode === 'PROPOSE' && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+            <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-3">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900">Voting Options</span>
+                <Users className="h-4 w-4 text-[#0D9488]" />
+                <span className="text-sm font-medium text-[#0D3D39]">Voting Options</span>
               </div>
               <div>
-                <Label htmlFor="voting-deadline" className="text-sm text-blue-800">
+                <Label htmlFor="voting-deadline" className="text-sm text-[rgba(13,61,57,0.75)]">
                   Voting Deadline (optional)
                 </Label>
-                <p className="text-xs text-blue-600 mb-2">
+                <p className="text-xs text-[rgba(13,61,57,0.55)] mb-2">
                   Set a deadline for group members to vote on this flight option.
                 </p>
                 <Input
@@ -4228,7 +4224,7 @@ export default function FlightsPage() {
                   onChange={(event) =>
                     setManualFlightForm((prev) => ({ ...prev, votingDeadline: event.target.value }))
                   }
-                  className="bg-white"
+                  className="border-[rgba(13,148,136,0.20)] bg-white"
                 />
               </div>
             </div>
@@ -4248,7 +4244,7 @@ export default function FlightsPage() {
                   {editingFlight ? "Saving..." : flightMode === 'PROPOSE' ? "Proposing..." : "Adding..."}
                 </>
               ) : (
-                editingFlight ? "Update Flight" : flightMode === 'PROPOSE' ? "Float to Group" : "Save Flight"
+                editingFlight ? "Update Flight" : flightMode === 'PROPOSE' ? "Float Idea" : "Add to Trip"
               )}
             </Button>
           </div>

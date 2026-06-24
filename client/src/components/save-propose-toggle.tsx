@@ -1,4 +1,4 @@
-import { Send, Users } from "lucide-react";
+import { CalendarPlus, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type SaveProposeMode = "SAVE" | "PROPOSE";
@@ -21,10 +21,10 @@ export function SaveProposeToggle<T extends string = SaveProposeMode>({
   onModeChange,
   saveMode = "SAVE" as T,
   proposeMode = "PROPOSE" as T,
-  saveLabel = "Schedule & Invite",
-  proposeLabel = "Float to Group",
-  saveDescription = "Add to your calendar now and send RSVP invites to selected members. They can Accept or Decline.",
-  proposeDescription = "Float this idea to your group for voting and ranking. Not added to calendars until confirmed.",
+  saveLabel = "Add to Trip",
+  proposeLabel = "Float Idea",
+  saveDescription = "Adds directly to selected members' trip calendars — no acceptance needed.",
+  proposeDescription = "Float this idea to the group for voting. Not added to calendars until confirmed.",
   disabled = false,
   className = "",
 }: SaveProposeToggleProps<T>) {
@@ -40,14 +40,14 @@ export function SaveProposeToggle<T extends string = SaveProposeMode>({
           disabled={disabled}
           data-testid="button-mode-save"
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full font-medium text-sm transition-all",
+            "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium transition-all",
             isSaveMode
-              ? "bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 text-white shadow-lg"
-              : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700",
-            disabled && "opacity-50 cursor-not-allowed"
+              ? "bg-[#0D9488] text-white shadow-sm"
+              : "border border-[rgba(13,148,136,0.20)] bg-white text-[#0D3D39] hover:bg-[rgba(13,148,136,0.06)]",
+            disabled && "cursor-not-allowed opacity-50",
           )}
         >
-          <Send className="h-4 w-4" />
+          <CalendarPlus className="h-4 w-4" />
           {saveLabel}
         </button>
         <button
@@ -56,18 +56,18 @@ export function SaveProposeToggle<T extends string = SaveProposeMode>({
           disabled={disabled}
           data-testid="button-mode-propose"
           className={cn(
-            "flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-full font-medium text-sm transition-all",
+            "flex flex-1 items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-medium transition-all",
             isProposeMode
-              ? "bg-gradient-to-r from-violet-500 via-purple-500 to-cyan-400 text-white shadow-lg"
-              : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700",
-            disabled && "opacity-50 cursor-not-allowed"
+              ? "bg-[#0D9488] text-white shadow-sm"
+              : "border border-[rgba(13,148,136,0.20)] bg-white text-[#0D3D39] hover:bg-[rgba(13,148,136,0.06)]",
+            disabled && "cursor-not-allowed opacity-50",
           )}
         >
           <Users className="h-4 w-4" />
           {proposeLabel}
         </button>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-[rgba(13,61,57,0.60)]">
         {isSaveMode ? saveDescription : proposeDescription}
       </p>
     </div>

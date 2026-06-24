@@ -910,11 +910,11 @@ export function AddActivityModal({
       const submissionType = normalizeActivityTypeInput(values.type, normalizedDefaultMode);
 
       toast({
-        title: submissionType === "PROPOSE" ? "Floated to group" : "Scheduled and invites sent",
+        title: submissionType === "PROPOSE" ? "Floated to group" : "Added to trip",
         description:
           submissionType === "PROPOSE"
             ? "We shared this idea with your group for feedback."
-            : "RSVPs are on the way to everyone selected.",
+            : "The activity has been added to the trip calendar.",
       });
 
       const { values: resetValues, mode: resetMode } = computeDefaults();
@@ -1232,9 +1232,9 @@ export function AddActivityModal({
                 ? "Saving..." 
                 : isEditMode 
                   ? "Save changes" 
-                  : mode === "PROPOSE" 
-                    ? "Propose to group" 
-                    : "Add to schedule"}
+                  : mode === "PROPOSE"
+                    ? "Float Idea"
+                    : "Add to Trip"}
             </Button>
           </div>
         </form>

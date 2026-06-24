@@ -3035,11 +3035,11 @@ export function setupRoutes(app: Express) {
         const notificationTitle =
           mode === "PROPOSE"
             ? `${proposerName} proposed ${activity.name}`
-            : `You've been invited to ${activity.name}`;
+            : `${proposerName} added you to ${activity.name}`;
         const notificationMessage =
           mode === "PROPOSE"
             ? `${proposerName} suggested ${activity.name} on ${formattedDate}${eventDate ? "" : " (time TBD)"}. Vote when you're ready.`
-            : `You've been invited to ${activity.name} on ${formattedDate}${eventDate ? "" : " (time TBD)"}.`;
+            : `${proposerName} added ${activity.name} to the trip calendar for ${formattedDate}${eventDate ? "" : " (time TBD)"}.`;
 
         const notificationResults = await Promise.allSettled(
           attendeesToNotify.map((attendeeId) =>
@@ -3470,8 +3470,8 @@ export function setupRoutes(app: Express) {
 
       const notificationTitle = `${proposerName} scheduled ${updatedActivity.name}`;
       const notificationMessage = formattedDate
-        ? `${proposerName} booked ${updatedActivity.name} for ${formattedDate}. RSVP when you can.`
-        : `${proposerName} booked ${updatedActivity.name}. RSVP when you can.`;
+        ? `${proposerName} added ${updatedActivity.name} to the trip calendar for ${formattedDate}.`
+        : `${proposerName} added ${updatedActivity.name} to the trip calendar.`;
 
       const inviteeIds = Array.from(
         new Set(

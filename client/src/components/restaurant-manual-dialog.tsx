@@ -502,23 +502,16 @@ export function RestaurantManualDialog({ tripId, open, onOpenChange, onSuccess, 
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {isEditing 
-              ? "Edit Restaurant Reservation" 
-              : mode === "PROPOSE" 
-                ? "Propose Restaurant to Group" 
+            {isEditing
+              ? "Edit Restaurant Reservation"
+              : mode === "PROPOSE"
+                ? "Float Restaurant Idea"
                 : "Add Restaurant Reservation"}
           </DialogTitle>
         </DialogHeader>
 
         {!isEditing && (
-          <SaveProposeToggle
-            mode={mode}
-            onModeChange={setMode}
-            saveLabel="Schedule & Invite"
-            proposeLabel="Float to Group"
-            saveDescription="Add to your calendar now and send RSVP invites to selected members."
-            proposeDescription="Share this restaurant option with your group for voting."
-          />
+          <SaveProposeToggle mode={mode} onModeChange={setMode} />
         )}
 
         <Form {...form}>
@@ -808,15 +801,16 @@ export function RestaurantManualDialog({ tripId, open, onOpenChange, onSuccess, 
             </div>
 
             {mode === "PROPOSE" && !isEditing && (
-              <div className="space-y-2">
-                <Label htmlFor="voting-deadline">Voting Deadline (Optional)</Label>
+              <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-2">
+                <Label htmlFor="voting-deadline" className="text-[rgba(13,61,57,0.75)]">Voting Deadline (Optional)</Label>
                 <Input
                   id="voting-deadline"
                   type="datetime-local"
                   value={votingDeadline}
                   onChange={(e) => setVotingDeadline(e.target.value)}
+                  className="border-[rgba(13,148,136,0.20)] bg-white"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-[rgba(13,61,57,0.55)]">
                   Set a deadline for group members to vote on this restaurant option.
                 </p>
               </div>
@@ -838,9 +832,9 @@ export function RestaurantManualDialog({ tripId, open, onOpenChange, onSuccess, 
                 Cancel
               </Button>
               <Button type="submit" disabled={isMutating}>
-                {isMutating 
-                  ? (isEditing ? "Saving..." : mode === "PROPOSE" ? "Proposing..." : "Adding...") 
-                  : (isEditing ? "Save Changes" : mode === "PROPOSE" ? "Propose Restaurant" : "Add Restaurant")}
+                {isMutating
+                  ? (isEditing ? "Saving..." : mode === "PROPOSE" ? "Floating..." : "Adding...")
+                  : (isEditing ? "Save Changes" : mode === "PROPOSE" ? "Float Idea" : "Add to Trip")}
               </Button>
             </div>
           </form>
