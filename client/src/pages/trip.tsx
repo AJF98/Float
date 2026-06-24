@@ -5866,17 +5866,17 @@ function FlightCoordination({
           }
         }}
       >
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[560px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
-              {editingFlight ? "Edit Manual Flight" : flightMode === "PROPOSE" ? "Propose Flight to Group" : "Add Flight Manually"}
+            <DialogTitle className="font-fraunces text-[#0D3D39]">
+              {editingFlight ? "Edit flight" : flightMode === "PROPOSE" ? "Propose flight to group" : "Add flight manually"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-[rgba(13,61,57,0.65)]">
               {editingFlight
-                ? "Update the details for this flight so everyone stays aligned."
+                ? "Update the details for this flight."
                 : flightMode === "PROPOSE"
                   ? "Share this flight option with your group for voting."
-                  : "Enter the flight details to share them with your group."}
+                  : "Enter the flight details to share with your group."}
             </DialogDescription>
           </DialogHeader>
 
@@ -5884,186 +5884,250 @@ function FlightCoordination({
             <SaveProposeToggle
               mode={flightMode}
               onModeChange={setFlightMode}
-              saveLabel="Schedule & Invite"
-              proposeLabel="Float to Group"
-              saveDescription="Add to your calendar now and send RSVP invites to selected members."
-              proposeDescription="Share this flight option with your group for voting."
             />
           )}
 
-          {flightMode === "PROPOSE" && !editingFlight && (
-            <div className="space-y-2">
-              <Label htmlFor="flight-voting-deadline">Voting Deadline (Optional)</Label>
-              <Input
-                id="flight-voting-deadline"
-                type="datetime-local"
-                value={flightVotingDeadline}
-                onChange={(e) => setFlightVotingDeadline(e.target.value)}
-              />
-              <p className="text-xs text-muted-foreground">
-                Set a deadline for group members to vote on this flight option.
-              </p>
-            </div>
-          )}
-
           <form
-            className="space-y-4"
+            className="space-y-3"
             onSubmit={(event) => {
               event.preventDefault();
               handleManualSubmit();
             }}
           >
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="manual-flight-number">Flight Number *</Label>
-                <Input
-                  id="manual-flight-number"
-                  placeholder="e.g., AA123"
-                  value={manualFlightData.flightNumber}
-                  onChange={(event) =>
-                    setManualFlightData((prev) => ({ ...prev, flightNumber: event.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="manual-airline">Airline *</Label>
-                <Input
-                  id="manual-airline"
-                  placeholder="e.g., American Airlines"
-                  value={manualFlightData.airline}
-                  onChange={(event) =>
-                    setManualFlightData((prev) => ({ ...prev, airline: event.target.value }))
-                  }
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label>From *</Label>
-                <SmartLocationSearch
-                  placeholder="Departure airport"
-                  value={manualFlightData.departureAirport}
-                  allowedTypes={['airport']}
-                  enrichWithNearbyAirports
-                  onQueryChange={(value) => {
-                    setManualFlightData((prev) => ({
-                      ...prev,
-                      departureAirport: value,
-                      departureCode: manualDepartureHasSelected ? '' : prev.departureCode,
-                    }));
-                    if (manualDepartureHasSelected) {
-                      setManualDepartureHasSelected(false);
+            {/* Section A — Flight Info */}
+            <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Flight Info</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="manual-flight-number" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Flight Number</Label>
+                  <Input
+                    id="manual-flight-number"
+                    placeholder="e.g., AA123"
+                    value={manualFlightData.flightNumber}
+                    onChange={(event) =>
+                      setManualFlightData((prev) => ({ ...prev, flightNumber: event.target.value }))
                     }
-                  }}
-                  onLocationSelect={(location: LocationResult) => {
-                    setManualDepartureHasSelected(true);
-                    const selectedDepartureCode = (
-                      location.iata ??
-                      location.icao ??
-                      location.code ??
-                      location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
-                      extractAirportCode(location.displayName ?? location.name ?? undefined) ??
-                      ''
-                    ).toUpperCase();
-                    setManualFlightData((prev) => ({
-                      ...prev,
-                      departureAirport: location.displayName,
-                      departureCode: selectedDepartureCode,
-                    }));
-                  }}
-                />
-              </div>
-              <div>
-                <Label>To *</Label>
-                <SmartLocationSearch
-                  placeholder="Arrival airport"
-                  value={manualFlightData.arrivalAirport}
-                  allowedTypes={['airport']}
-                  enrichWithNearbyAirports
-                  onQueryChange={(value) => {
-                    setManualFlightData((prev) => ({
-                      ...prev,
-                      arrivalAirport: value,
-                      arrivalCode: manualArrivalHasSelected ? '' : prev.arrivalCode,
-                    }));
-                    if (manualArrivalHasSelected) {
-                      setManualArrivalHasSelected(false);
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="manual-airline" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Airline</Label>
+                  <Input
+                    id="manual-airline"
+                    placeholder="e.g., American Airlines"
+                    value={manualFlightData.airline}
+                    onChange={(event) =>
+                      setManualFlightData((prev) => ({ ...prev, airline: event.target.value }))
                     }
-                  }}
-                  onLocationSelect={(location: LocationResult) => {
-                    setManualArrivalHasSelected(true);
-                    const selectedArrivalCode = (
-                      location.iata ??
-                      location.icao ??
-                      location.code ??
-                      location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
-                      extractAirportCode(location.displayName ?? location.name ?? undefined) ??
-                      ''
-                    ).toUpperCase();
-                    setManualFlightData((prev) => ({
-                      ...prev,
-                      arrivalAirport: location.displayName,
-                      arrivalCode: selectedArrivalCode,
-                    }));
-                  }}
-                />
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+                <div className="space-y-1">
+                  <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">From</Label>
+                  <SmartLocationSearch
+                    placeholder="Departure airport"
+                    value={manualFlightData.departureAirport}
+                    allowedTypes={['airport']}
+                    enrichWithNearbyAirports
+                    onQueryChange={(value) => {
+                      setManualFlightData((prev) => ({
+                        ...prev,
+                        departureAirport: value,
+                        departureCode: manualDepartureHasSelected ? '' : prev.departureCode,
+                      }));
+                      if (manualDepartureHasSelected) {
+                        setManualDepartureHasSelected(false);
+                      }
+                    }}
+                    onLocationSelect={(location: LocationResult) => {
+                      setManualDepartureHasSelected(true);
+                      const selectedDepartureCode = (
+                        location.iata ??
+                        location.icao ??
+                        location.code ??
+                        location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
+                        extractAirportCode(location.displayName ?? location.name ?? undefined) ??
+                        ''
+                      ).toUpperCase();
+                      setManualFlightData((prev) => ({
+                        ...prev,
+                        departureAirport: location.displayName,
+                        departureCode: selectedDepartureCode,
+                      }));
+                    }}
+                  />
+                </div>
+                <Plane className="h-4 w-4 text-[rgba(13,148,136,0.45)] mb-2.5 rotate-45" />
+                <div className="space-y-1">
+                  <Label className="text-sm text-[rgba(13,61,57,0.65)] font-medium">To</Label>
+                  <SmartLocationSearch
+                    placeholder="Arrival airport"
+                    value={manualFlightData.arrivalAirport}
+                    allowedTypes={['airport']}
+                    enrichWithNearbyAirports
+                    onQueryChange={(value) => {
+                      setManualFlightData((prev) => ({
+                        ...prev,
+                        arrivalAirport: value,
+                        arrivalCode: manualArrivalHasSelected ? '' : prev.arrivalCode,
+                      }));
+                      if (manualArrivalHasSelected) {
+                        setManualArrivalHasSelected(false);
+                      }
+                    }}
+                    onLocationSelect={(location: LocationResult) => {
+                      setManualArrivalHasSelected(true);
+                      const selectedArrivalCode = (
+                        location.iata ??
+                        location.icao ??
+                        location.code ??
+                        location.airports?.find((airportCode) => /^[A-Z0-9]{3,4}$/i.test(airportCode)) ??
+                        extractAirportCode(location.displayName ?? location.name ?? undefined) ??
+                        ''
+                      ).toUpperCase();
+                      setManualFlightData((prev) => ({
+                        ...prev,
+                        arrivalAirport: location.displayName,
+                        arrivalCode: selectedArrivalCode,
+                      }));
+                    }}
+                  />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="manual-departure-time">Departure Time *</Label>
-                <Input
-                  id="manual-departure-time"
-                  type="datetime-local"
-                  value={manualFlightData.departureTime}
-                  onChange={(event) =>
-                    setManualFlightData((prev) => ({ ...prev, departureTime: event.target.value }))
-                  }
-                />
-              </div>
-              <div>
-                <Label htmlFor="manual-arrival-time">Arrival Time *</Label>
-                <Input
-                  id="manual-arrival-time"
-                  type="datetime-local"
-                  value={manualFlightData.arrivalTime}
-                  onChange={(event) =>
-                    setManualFlightData((prev) => ({ ...prev, arrivalTime: event.target.value }))
-                  }
-                />
+
+            {/* Section B — Schedule */}
+            <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Schedule</p>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-[rgba(13,61,57,0.55)] uppercase tracking-wide">Departure</p>
+                  <div className="space-y-1">
+                    <Label htmlFor="manual-departure-date" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Date</Label>
+                    <Input
+                      id="manual-departure-date"
+                      type="date"
+                      value={manualFlightData.departureTime ? manualFlightData.departureTime.split('T')[0] : ''}
+                      onChange={(event) => {
+                        const datePart = event.target.value;
+                        const timePart = manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
+                        setManualFlightData((prev) => ({ ...prev, departureTime: datePart + 'T' + timePart }));
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="manual-departure-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Time</Label>
+                    <Input
+                      id="manual-departure-time"
+                      type="time"
+                      value={manualFlightData.departureTime ? (manualFlightData.departureTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
+                      onChange={(event) => {
+                        const timePart = event.target.value;
+                        const datePart = manualFlightData.departureTime ? manualFlightData.departureTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
+                        setManualFlightData((prev) => ({ ...prev, departureTime: datePart + 'T' + timePart }));
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-[rgba(13,61,57,0.55)] uppercase tracking-wide">Arrival</p>
+                  <div className="space-y-1">
+                    <Label htmlFor="manual-arrival-date" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Date</Label>
+                    <Input
+                      id="manual-arrival-date"
+                      type="date"
+                      value={manualFlightData.arrivalTime ? manualFlightData.arrivalTime.split('T')[0] : ''}
+                      onChange={(event) => {
+                        const datePart = event.target.value;
+                        const timePart = manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '00:00') : '00:00';
+                        setManualFlightData((prev) => ({ ...prev, arrivalTime: datePart + 'T' + timePart }));
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="manual-arrival-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Time</Label>
+                    <Input
+                      id="manual-arrival-time"
+                      type="time"
+                      value={manualFlightData.arrivalTime ? (manualFlightData.arrivalTime.split('T')[1]?.slice(0, 5) ?? '') : ''}
+                      onChange={(event) => {
+                        const timePart = event.target.value;
+                        const datePart = manualFlightData.arrivalTime ? manualFlightData.arrivalTime.split('T')[0] : format(new Date(), 'yyyy-MM-dd');
+                        setManualFlightData((prev) => ({ ...prev, arrivalTime: datePart + 'T' + timePart }));
+                      }}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div>
-                <Label htmlFor="manual-price">Price ($)</Label>
+
+            {/* Optional Details */}
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <Label htmlFor="manual-price" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  Price <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional, $)</span>
+                </Label>
                 <Input
                   id="manual-price"
                   type="number"
                   min="0"
+                  placeholder="e.g., 299"
                   value={manualFlightData.price}
                   onChange={(event) =>
                     setManualFlightData((prev) => ({ ...prev, price: event.target.value }))
                   }
                 />
               </div>
+              <div className="space-y-1">
+                <Label htmlFor="manual-booking-url" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                  Booking Link <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
+                </Label>
+                <Input
+                  id="manual-booking-url"
+                  type="url"
+                  placeholder="https://..."
+                  value={manualFlightData.bookingUrl}
+                  onChange={(event) =>
+                    setManualFlightData((prev) => ({ ...prev, bookingUrl: event.target.value }))
+                  }
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="manual-booking-url">Booking Link (Optional)</Label>
-              <Input
-                id="manual-booking-url"
-                type="url"
-                placeholder="https://..."
-                value={manualFlightData.bookingUrl}
-                onChange={(event) =>
-                  setManualFlightData((prev) => ({ ...prev, bookingUrl: event.target.value }))
-                }
-              />
-            </div>
-            <DialogFooter className="gap-2 sm:flex-row">
-              <Button variant="outline" type="button" onClick={closeManualFlightForm}>
+
+            {/* Voting Options (PROPOSE mode) */}
+            {flightMode === "PROPOSE" && !editingFlight && (
+              <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-[#0D9488]" />
+                  <span className="text-sm font-medium text-[#0D3D39]">Voting Options</span>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="flight-voting-deadline" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+                    Voting Deadline <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
+                  </Label>
+                  <p className="text-xs text-[rgba(13,61,57,0.55)]">
+                    Set a deadline for group members to vote on this flight option.
+                  </p>
+                  <Input
+                    id="flight-voting-deadline"
+                    type="datetime-local"
+                    value={flightVotingDeadline}
+                    onChange={(e) => setFlightVotingDeadline(e.target.value)}
+                    className="border-[rgba(13,148,136,0.20)] bg-white"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="border-t border-[rgba(13,148,136,0.12)] pt-4 flex justify-end gap-2">
+              <Button variant="ghost" type="button" className="text-[rgba(13,61,57,0.65)]" onClick={closeManualFlightForm}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSavingManualFlight}>
+              <Button type="submit" className="bg-[#0D9488] hover:bg-[#0B7C73] text-white" disabled={isSavingManualFlight}>
                 {isSavingManualFlight ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -6072,12 +6136,12 @@ function FlightCoordination({
                 ) : editingFlight ? (
                   "Update Flight"
                 ) : flightMode === "PROPOSE" ? (
-                  "Float to Group"
+                  "Float Idea"
                 ) : (
-                  "Add Flight"
+                  "Add to Trip"
                 )}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </DialogContent>
       </Dialog>
