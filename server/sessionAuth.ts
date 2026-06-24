@@ -61,7 +61,7 @@ function buildSessionOptions(): SessionOptions {
       break;
   }
 
-  let sameSite = sameSiteEnv ?? (isProduction ? "none" : "lax");
+  let sameSite = sameSiteEnv ?? "lax";
   if (secure === false && sameSite === "none") {
     console.warn(
       "⚠️ SESSION_COOKIE_SAMESITE was set to \"none\" but secure cookies are disabled; falling back to \"lax\" to satisfy browser requirements.",
