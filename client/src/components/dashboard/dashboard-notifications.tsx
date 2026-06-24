@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
@@ -18,6 +18,8 @@ import {
   CheckSquare,
   Users,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   type LucideIcon,
 } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -90,6 +92,7 @@ export function DashboardNotifications({
   sectionId = "dashboard-activity",
 }: DashboardNotificationsProps) {
   const { user, isLoading: authLoading } = useAuth();
+  const [collapsed, setCollapsed] = useState(false);
 
   const {
     data: notifications = [],
@@ -193,17 +196,28 @@ export function DashboardNotifications({
         </h2>
       </div>
       <Card className="dashboard-themed-card p-0">
-      <div className="flex items-center justify-between border-b border-[rgba(13,148,136,0.12)] px-6 py-5">
+      <button
+        type="button"
+        onClick={() => setCollapsed((c) => !c)}
+        className="flex w-full items-center justify-between border-b border-[rgba(13,148,136,0.12)] px-6 py-5 text-left transition-colors hover:bg-[rgba(13,148,136,0.03)]"
+        aria-expanded={!collapsed}
+      >
         <div>
           <h3 className="text-lg font-semibold text-[#0D3D39]">Notifications</h3>
           <p className="text-sm text-[#0D3D39]/55">Catch up on the latest updates from your crew.</p>
         </div>
-        {relevantNotifications.length > 0 ? (
-          <Badge className="rounded-full bg-[#0D9488] text-xs font-semibold text-white shadow-sm">
-            {relevantNotifications.length}
-          </Badge>
-        ) : null}
-      </div>
+        <div className="flex items-center gap-3">
+          {relevantNotifications.length > 0 ? (
+            <Badge className="rounded-full bg-[#0D9488] text-xs font-semibold text-white shadow-sm">
+              {relevantNotifications.length}
+            </Badge>
+          ) : null}
+          {collapsed
+            ? <ChevronDown className="h-4 w-4 text-[#0D3D39]/40" />
+            : <ChevronUp className="h-4 w-4 text-[#0D3D39]/40" />}
+        </div>
+      </button>
+      {!collapsed && (
       <div className="px-2 pb-4 pt-2">
         {authLoading || isLoading ? (
           renderSkeleton()
@@ -212,7 +226,7 @@ export function DashboardNotifications({
             We couldn’t load your activity feed right now. Try refreshing the page.
           </div>
         ) : (
-          <ScrollArea className="max-h-[420px] pr-4">
+          <ScrollArea className="max-h-[640px] pr-4">
             <ul className="space-y-2">
               {feedItems.map((notification) => {
                 const actor = resolveActor(notification);
@@ -313,6 +327,7 @@ export function DashboardNotifications({
           </ScrollArea>
         )}
       </div>
+      )}
       </Card>
     </section>
   );

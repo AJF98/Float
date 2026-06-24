@@ -54,9 +54,15 @@ Flip any flag to `true` to re-enable the corresponding search UI. All search cod
 
 ## Key Patterns
 
-**Data flow for proposals ("floats"):** Manual item added → user chooses "Propose to Group" → proposal record created with voting deadline → members vote → organizer confirms → item scheduled to calendar and RSVP invites sent.
+**Core loop:** Create trip → add items manually → choose "Add to Trip" (confirmed) or "Float Idea" (proposal) → if floating: group votes → organizer confirms → item moves to calendar.
 
-**Dual-mode entry:** Flights, hotels, restaurants, and activities all support two modes: "Schedule & Invite" (creates confirmed booking + RSVP invites) and "Propose to Group" (creates a voteable proposal).
+**Dual-mode entry — the two modes are meaningfully different:**
+- **"Add to Trip"** (`SCHEDULED` / `SAVE`): Item is immediately confirmed on selected members' trip calendars. All RSVPs are auto-accepted on creation (`status = 'accepted'`, `responded_at = NOW()`). No accept/decline step. Members get an "added you to" notification.
+- **"Float Idea"** (`PROPOSE`): Item goes into the proposals bucket. Members see it in the voting UI and rank/vote. Organizer picks the winner and confirms it to the calendar. RSVPs stay `'pending'` until the organizer confirms. This is the genuine group-deliberation flow — don't confuse it with the above.
+
+The toggle between these two modes is the `SaveProposeToggle` component (`client/src/components/save-propose-toggle.tsx`). It uses `saveMode`/`proposeMode` string values (`"SAVE"/"PROPOSE"` for flights, hotels, restaurants; `"SCHEDULED"/"PROPOSE"` for activities). Default labels are "Add to Trip" / "Float Idea" — don't add explicit overrides unless the labels genuinely differ.
+
+**RSVP auto-accept:** When mode = SAVE/SCHEDULED, all member RSVPs (flights: `flight_rsvps`, hotels: `hotel_rsvps`, restaurants: `restaurant_rsvps`, activities: `activity_invites`) are inserted with `status = 'accepted'` and `responded_at = NOW()` at creation time. Only PROPOSE mode uses `'pending'` status so members can vote.
 
 **Real-time:** WebSocket server initialized in `server/index.ts`; client hook `use-trip-realtime.ts` subscribes to trip-scoped events.
 
@@ -64,9 +70,41 @@ Flip any flag to `true` to re-enable the corresponding search UI. All search cod
 
 **StatusBadge colors:** emerald=confirmed/accepted, blue=proposed/voting, amber=pending/voting-closed, rose=declined/cancelled, sky=in-progress, slate=unknown.
 
+## Design System
+
+The app uses a **teal light palette** throughout. Never introduce violet/purple gradients or dark-mode classes into UI components — these are off-brand.
+
+**Color tokens:**
+| Token | Value | Use |
+|---|---|---|
+| Primary teal | `#0D9488` | Buttons, active states, icons |
+| Dark teal hover | `#0B7C73` | Button hover |
+| Deep teal heading | `#0D3D39` | Headings, strong labels |
+| Muted teal text | `rgba(13,61,57,0.65)` | Secondary text, descriptions |
+| Teal bg wash | `rgba(13,148,136,0.06)` | Section backgrounds, chips |
+| Teal border light | `rgba(13,148,136,0.15–0.20)` | Borders, dividers |
+
+**Typography:** Fraunces (`font-fraunces`) for all dialog titles and display headings. DM Mono for body/UI text. Never use Inter, Roboto, or system fonts.
+
+**Buttons:**
+- Primary: `bg-[#0D9488] hover:bg-[#0B7C73] text-white`
+- Cancel/ghost: `variant="ghost"` or `variant="outline"`, `text-[rgba(13,61,57,0.65)]`
+
+**Dialog/modal pattern:**
+```tsx
+<DialogTitle className="font-fraunces text-[#0D3D39]">…</DialogTitle>
+<DialogDescription className="text-[rgba(13,61,57,0.65)]">…</DialogDescription>
+// footer:
+<div className="border-t border-[rgba(13,148,136,0.15)] …">
+```
+
 ## Development Branch
 
-Active work happens on `claude/relaxed-noether-du8e43`. Push there; each batch of changes needs a new PR to `main` (previous PRs #84–#87 merged landing page teal rebrand and beach photos).
+Active work happens on `claude/relaxed-noether-du8e43`. Push there; each batch of changes gets its own PR to `main`.
+
+**Merged PRs:** #84–#87 (landing page teal rebrand + beach photos), #88–#91 (dashboard redesign: FeaturedTripCard, CompactTripPill, EmptyTripsState), #92–#94 (How It Works panel, Currency Converter, Profile page retheme; packing list fix).
+
+**Open PRs:** #95 (form retheme + "Add to Trip"/"Float Idea" UX reframe + auto-accept RSVPs), #96 (activity modal dialog styling — title font, button color, footer border).
 
 ## Static Assets
 
