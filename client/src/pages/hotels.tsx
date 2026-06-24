@@ -1306,7 +1306,7 @@ export default function HotelsPage() {
                         ) : (
                           <>
                             <Users className="h-3 w-3 mr-1" />
-                            Propose
+                            Float Idea
                           </>
                         )}
                       </Button>

@@ -7228,10 +7228,8 @@ function HotelBooking({
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                                     Proposing...
                                   </>
-                                ) : hotel.proposalId ? (
-                                  "Send to Group"
                                 ) : (
-                                  "Float to Group"
+                                  "Float Idea"
                                 )}
                               </Button>
                             ) : null}
@@ -7743,6 +7741,7 @@ function RestaurantBooking({
                       >
                         Edit
                       </Button>
+                      {!['confirmed', 'scheduled', 'booked'].includes((restaurant.reservationStatus ?? '').toLowerCase()) && (
                       <Button
                         variant="secondary"
                         size="sm"
@@ -7753,12 +7752,13 @@ function RestaurantBooking({
                         {proposeRestaurantMutation.isPending && proposingRestaurantId === restaurant.id ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Proposing...
+                            Floating...
                           </>
                         ) : (
-                          "Float to Group"
+                          "Float Idea"
                         )}
                       </Button>
+                      )}
                       {isOwner && (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

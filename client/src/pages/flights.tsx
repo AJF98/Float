@@ -3943,7 +3943,7 @@ export default function FlightsPage() {
                             }}
                           >
                             <Users className="mr-2 h-4 w-4" />
-                            Propose
+                            Float Idea
                           </Button>
                         )}
                         {permissions.isCreator && (
