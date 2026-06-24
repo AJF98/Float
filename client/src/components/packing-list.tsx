@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Plus, Package, User } from "lucide-react";
+import { Trash2, Plus, Package, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
@@ -14,21 +14,21 @@ interface PackingListProps {
   tripId: number;
 }
 
-type PackingListItem = PackingItem & { 
+type PackingListItem = PackingItem & {
   user: UserType;
   groupStatus?: { checkedCount: number; memberCount: number };
 };
 type PackingListData = PackingListItem[];
 
 const categories = [
-  { value: "general", label: "General", pillClass: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300" },
-  { value: "clothing", label: "Clothing", pillClass: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300" },
-  { value: "electronics", label: "Electronics", pillClass: "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300" },
-  { value: "toiletries", label: "Toiletries", pillClass: "bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300" },
-  { value: "documents", label: "Documents", pillClass: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300" },
-  { value: "medication", label: "Medication", pillClass: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300" },
-  { value: "food", label: "Food & Snacks", pillClass: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300" },
-  { value: "activities", label: "Activities", pillClass: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300" },
+  { value: "general", label: "General" },
+  { value: "clothing", label: "Clothing" },
+  { value: "electronics", label: "Electronics" },
+  { value: "toiletries", label: "Toiletries" },
+  { value: "documents", label: "Documents" },
+  { value: "medication", label: "Medication" },
+  { value: "food", label: "Food & Snacks" },
+  { value: "activities", label: "Activities" },
 ];
 
 export function PackingList({ tripId }: PackingListProps) {
@@ -51,7 +51,7 @@ export function PackingList({ tripId }: PackingListProps) {
   const addItemMutation = useMutation({
     mutationFn: async (data: { item: string; category: string; itemType: "personal" | "group" }) => {
       await apiRequest(`/api/trips/${tripId}/packing`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(data),
       });
     },
@@ -59,8 +59,8 @@ export function PackingList({ tripId }: PackingListProps) {
       queryClient.invalidateQueries({ queryKey: packingQueryKey });
       setNewItem("");
       toast({
-        title: "Item added!",
-        description: "The packing item has been added to the list.",
+        title: "Item added",
+        description: "The packing item has been added to your list.",
       });
     },
     onError: (error) => {
@@ -70,9 +70,7 @@ export function PackingList({ tripId }: PackingListProps) {
           description: "You are logged out. Logging in again...",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 500);
+        setTimeout(() => { window.location.href = "/login"; }, 500);
         return;
       }
       toast({
@@ -85,9 +83,7 @@ export function PackingList({ tripId }: PackingListProps) {
 
   const togglePersonalItemMutation = useMutation({
     mutationFn: async (itemId: number) => {
-      await apiRequest(`/api/packing/${itemId}/toggle`, {
-        method: 'PATCH',
-      });
+      await apiRequest(`/api/packing/${itemId}/toggle`, { method: "PATCH" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: packingQueryKey });
@@ -99,16 +95,10 @@ export function PackingList({ tripId }: PackingListProps) {
           description: "You are logged out. Logging in again...",
           variant: "destructive",
         });
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 500);
+        setTimeout(() => { window.location.href = "/login"; }, 500);
         return;
       }
-      toast({
-        title: "Error",
-        description: "Failed to update item. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to update item.", variant: "destructive" });
     },
   });
 
@@ -119,39 +109,36 @@ export function PackingList({ tripId }: PackingListProps) {
     { previousItems?: PackingListData }
   >({
     mutationFn: async ({ itemId, handled }) => {
-      const method = handled ? 'POST' : 'DELETE';
+      const method = handled ? "POST" : "DELETE";
       const res = await apiRequest(
         `/api/trips/${tripId}/packing/group-items/${itemId}/handled`,
         { method },
       );
-      const data = (await res.json()) as PackingListItem;
-      return data;
+      return (await res.json()) as PackingListItem;
     },
     onMutate: async ({ itemId, handled }) => {
       await queryClient.cancelQueries({ queryKey: packingQueryKey });
       const previousItems = queryClient.getQueryData<PackingListData>(packingQueryKey);
       if (previousItems) {
-        const updatedItems = previousItems.map(item => {
+        const updatedItems = previousItems.map((item) => {
           if (item.id !== itemId || item.itemType !== "group") return item;
-          const nextIsChecked = handled;
-          const delta = nextIsChecked === item.isChecked ? 0 : nextIsChecked ? 1 : -1;
-          const currentGroupStatus = item.groupStatus;
+          const delta = handled === item.isChecked ? 0 : handled ? 1 : -1;
           return {
             ...item,
-            isChecked: nextIsChecked,
-            groupStatus: currentGroupStatus
+            isChecked: handled,
+            groupStatus: item.groupStatus
               ? {
-                  ...currentGroupStatus,
-                  checkedCount: Math.max(0, Math.min(currentGroupStatus.memberCount, (currentGroupStatus.checkedCount ?? 0) + delta)),
+                  ...item.groupStatus,
+                  checkedCount: Math.max(0, Math.min(item.groupStatus.memberCount, (item.groupStatus.checkedCount ?? 0) + delta)),
                 }
-              : currentGroupStatus,
+              : item.groupStatus,
           };
         });
         queryClient.setQueryData<PackingListData>(packingQueryKey, updatedItems);
       }
       return { previousItems };
     },
-    onError: (error, _variables, context) => {
+    onError: (error, _vars, context) => {
       if (context?.previousItems) {
         queryClient.setQueryData<PackingListData>(packingQueryKey, context.previousItems);
       }
@@ -164,16 +151,12 @@ export function PackingList({ tripId }: PackingListProps) {
         setTimeout(() => { window.location.href = "/login"; }, 500);
         return;
       }
-      toast({
-        title: "Status not updated",
-        description: "Couldn't update your status. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Status not updated", description: "Couldn't update your status.", variant: "destructive" });
     },
     onSuccess: (updatedItem) => {
-      queryClient.setQueryData<PackingListData>(packingQueryKey, current => {
+      queryClient.setQueryData<PackingListData>(packingQueryKey, (current) => {
         if (!current) return current;
-        return current.map(item => item.id === updatedItem.id ? updatedItem : item);
+        return current.map((item) => (item.id === updatedItem.id ? updatedItem : item));
       });
     },
     onSettled: () => {
@@ -183,11 +166,11 @@ export function PackingList({ tripId }: PackingListProps) {
 
   const deleteItemMutation = useMutation({
     mutationFn: async (itemId: number) => {
-      await apiRequest(`/api/packing/${itemId}`, { method: 'DELETE' });
+      await apiRequest(`/api/packing/${itemId}`, { method: "DELETE" });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: packingQueryKey });
-      toast({ title: "Item deleted", description: "The packing item has been removed." });
+      toast({ title: "Item removed", description: "The packing item has been removed." });
     },
     onError: (error) => {
       if (isUnauthorizedError(error as Error)) {
@@ -199,69 +182,55 @@ export function PackingList({ tripId }: PackingListProps) {
         setTimeout(() => { window.location.href = "/login"; }, 500);
         return;
       }
-      toast({
-        title: "Error",
-        description: "Failed to delete item. Please try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Error", description: "Failed to delete item.", variant: "destructive" });
     },
   });
 
   const handleAddItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItem.trim()) return;
-    addItemMutation.mutate({
-      item: newItem.trim(),
-      category: selectedCategory,
-      itemType: selectedItemType,
-    });
+    addItemMutation.mutate({ item: newItem.trim(), category: selectedCategory, itemType: selectedItemType });
   };
 
-  const handlePersonalToggle = (itemId: number) => {
-    togglePersonalItemMutation.mutate(itemId);
-  };
+  const personalItems = packingItems.filter((item) => item.itemType === "personal" && item.userId === user?.id);
+  const groupItems = packingItems.filter((item) => item.itemType === "group");
 
-  const handleGroupItemToggle = (item: PackingListItem) => {
-    updateGroupItemStatusMutation.mutate({ itemId: item.id, handled: !item.isChecked });
-  };
+  const groupedPersonalItems = personalItems.reduce(
+    (acc, item) => {
+      const cat = item.category || "general";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    },
+    {} as Record<string, PackingListItem[]>,
+  );
 
-  const personalItems = packingItems.filter(item => item.itemType === "personal" && item.userId === user?.id);
-  const groupItems = packingItems.filter(item => item.itemType === "group");
+  const groupedGroupItems = groupItems.reduce(
+    (acc, item) => {
+      const cat = item.category || "general";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(item);
+      return acc;
+    },
+    {} as Record<string, PackingListItem[]>,
+  );
 
-  const groupedPersonalItems = personalItems.reduce((acc, item) => {
-    const cat = item.category || 'general';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {} as Record<string, PackingListItem[]>);
-
-  const groupedGroupItems = groupItems.reduce((acc, item) => {
-    const cat = item.category || 'general';
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {} as Record<string, PackingListItem[]>);
-
-  const getCategoryInfo = (categoryValue: string) => {
-    return categories.find(cat => cat.value === categoryValue) || categories[0];
-  };
-
-  const totalPersonalPacked = personalItems.filter(item => item.isChecked).length;
-  const totalGroupHandled = groupItems.filter(item => item.isChecked).length;
+  const totalPersonalPacked = personalItems.filter((item) => item.isChecked).length;
+  const totalGroupHandled = groupItems.filter((item) => item.isChecked).length;
   const totalPacked = totalPersonalPacked + totalGroupHandled;
   const totalItems = personalItems.length + groupItems.length;
   const progressPercent = totalItems > 0 ? Math.round((totalPacked / totalItems) * 100) : 0;
 
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-slate-800/60 rounded-2xl shadow-lg dark:shadow-[0_30px_60px_-40px_rgba(0,0,0,0.5)] border border-slate-200/60 dark:border-white/10 p-6">
-        <div className="mb-4 flex items-center space-x-2">
-          <Package className="h-5 w-5 text-violet-500 dark:text-cyan-400" />
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Packing Essentials</h2>
+      <div className="rounded-2xl border border-[rgba(13,148,136,0.15)] bg-white p-6 shadow-sm">
+        <div className="mb-4 flex items-center gap-2">
+          <Package className="h-5 w-5 text-[#0D9488]" />
+          <h2 className="font-fraunces text-lg font-semibold text-[#0D3D39]">Packing List</h2>
         </div>
         <div className="space-y-3">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-12 rounded-lg bg-slate-100 dark:bg-slate-700/50 animate-pulse" />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-12 animate-pulse rounded-lg bg-[rgba(13,148,136,0.06)]" />
           ))}
         </div>
       </div>
@@ -271,56 +240,53 @@ export function PackingList({ tripId }: PackingListProps) {
   const renderPersonalItem = (item: PackingListItem) => {
     const isChecked = item.isChecked;
     if (hideCompleted && isChecked) return null;
-    
+
     return (
       <div
         key={item.id}
-        data-testid={`packing-item-${item.id}`}
-        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+        className={`flex items-center justify-between rounded-xl border p-4 transition-all ${
           isChecked
-            ? 'bg-emerald-50 dark:bg-cyan-900/30 border-emerald-200 dark:border-cyan-500/30'
-            : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-white/10 hover:border-violet-300 dark:hover:bg-slate-700/50'
+            ? "border-[rgba(13,148,136,0.30)] bg-[rgba(13,148,136,0.06)]"
+            : "border-[rgba(13,148,136,0.12)] bg-white hover:border-[rgba(13,148,136,0.25)]"
         }`}
       >
-        <div className="flex items-center space-x-3 flex-1">
+        <div className="flex flex-1 items-center gap-3">
           <button
-            onClick={() => handlePersonalToggle(item.id)}
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            onClick={() => togglePersonalItemMutation.mutate(item.id)}
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
               isChecked
-                ? 'bg-emerald-500 border-emerald-500 text-white'
-                : 'border-slate-300 dark:border-slate-500 hover:border-violet-400'
+                ? "border-[#0D9488] bg-[#0D9488] text-white"
+                : "border-[rgba(13,148,136,0.35)] hover:border-[#0D9488]"
             }`}
           >
             {isChecked && (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </button>
           <div className="flex-1">
-            <span className={`font-medium block ${isChecked ? 'line-through text-emerald-600 dark:text-cyan-400' : 'text-slate-800 dark:text-white'}`}>
+            <span
+              className={`block font-medium ${
+                isChecked ? "text-[#0D9488] line-through opacity-70" : "text-[#0D3D39]"
+              }`}
+            >
               {item.item}
             </span>
             {isChecked && (
-              <span className="text-sm text-emerald-600 dark:text-cyan-400 font-medium">✓ Packed</span>
+              <span className="text-xs font-medium text-[#0D9488]">Packed</span>
             )}
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5 text-sm text-slate-500 dark:text-slate-400">
-            <User className="w-3.5 h-3.5" />
-            <span>{item.user.firstName || item.user.username || 'User'}</span>
-          </div>
-          {user?.id === item.userId && (
-            <button
-              onClick={() => deleteItemMutation.mutate(item.id)}
-              disabled={deleteItemMutation.isPending}
-              className="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {user?.id === item.userId && (
+          <button
+            onClick={() => deleteItemMutation.mutate(item.id)}
+            disabled={deleteItemMutation.isPending}
+            className="ml-3 rounded-lg p-1.5 text-[rgba(13,61,57,0.35)] transition-colors hover:bg-rose-50 hover:text-rose-500"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
     );
   };
@@ -332,122 +298,126 @@ export function PackingList({ tripId }: PackingListProps) {
     return (
       <div
         key={item.id}
-        className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+        className={`flex items-center justify-between rounded-xl border p-4 transition-all ${
           isChecked
-            ? 'bg-emerald-50 dark:bg-cyan-900/30 border-emerald-200 dark:border-cyan-500/30'
-            : 'bg-white dark:bg-slate-800/40 border-slate-200 dark:border-white/10 hover:border-violet-300 dark:hover:bg-slate-700/50'
+            ? "border-[rgba(13,148,136,0.30)] bg-[rgba(13,148,136,0.06)]"
+            : "border-[rgba(13,148,136,0.12)] bg-white hover:border-[rgba(13,148,136,0.25)]"
         }`}
       >
-        <div className="flex items-center space-x-3 flex-1">
+        <div className="flex flex-1 items-center gap-3">
           <button
-            onClick={() => handleGroupItemToggle(item)}
-            className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+            onClick={() => updateGroupItemStatusMutation.mutate({ itemId: item.id, handled: !isChecked })}
+            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
               isChecked
-                ? 'bg-emerald-500 border-emerald-500 text-white'
-                : 'border-slate-300 dark:border-slate-500 hover:border-violet-400'
+                ? "border-[#0D9488] bg-[#0D9488] text-white"
+                : "border-[rgba(13,148,136,0.35)] hover:border-[#0D9488]"
             }`}
           >
             {isChecked && (
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             )}
           </button>
           <div className="flex-1">
-            <span className={`font-medium block ${isChecked ? 'line-through text-emerald-600 dark:text-cyan-400' : 'text-slate-800 dark:text-white'}`}>
+            <span
+              className={`block font-medium ${
+                isChecked ? "text-[#0D9488] line-through opacity-70" : "text-[#0D3D39]"
+              }`}
+            >
               {item.item}
             </span>
-            <div className="flex items-center gap-2 mt-1">
-              {isChecked && (
-                <span className="text-sm text-emerald-600 dark:text-cyan-400 font-medium">✓ Handled</span>
-              )}
+            <div className="mt-0.5 flex items-center gap-2">
+              <span className="text-xs text-[rgba(13,61,57,0.55)]">
+                Suggested by {item.user.firstName || item.user.username || "a member"}
+              </span>
               {item.groupStatus && (
-                <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                  item.groupStatus.checkedCount === item.groupStatus.memberCount
-                    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
-                    : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300'
-                }`}>
-                  Group: {item.groupStatus.checkedCount}/{item.groupStatus.memberCount} handled
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    item.groupStatus.checkedCount === item.groupStatus.memberCount
+                      ? "bg-[rgba(13,148,136,0.10)] text-[#0D9488]"
+                      : "bg-[rgba(13,61,57,0.06)] text-[rgba(13,61,57,0.55)]"
+                  }`}
+                >
+                  {item.groupStatus.checkedCount}/{item.groupStatus.memberCount} handled
                 </span>
               )}
             </div>
           </div>
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="flex items-center space-x-1.5 text-sm text-slate-500 dark:text-slate-400">
-            <User className="w-3.5 h-3.5" />
-            <span>Suggested by {item.user.firstName || item.user.username || 'User'}</span>
-          </div>
-          {user?.id === item.userId && (
-            <button
-              onClick={() => deleteItemMutation.mutate(item.id)}
-              disabled={deleteItemMutation.isPending}
-              className="p-1.5 text-rose-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-          )}
-        </div>
+        {user?.id === item.userId && (
+          <button
+            onClick={() => deleteItemMutation.mutate(item.id)}
+            disabled={deleteItemMutation.isPending}
+            className="ml-3 rounded-lg p-1.5 text-[rgba(13,61,57,0.35)] transition-colors hover:bg-rose-50 hover:text-rose-500"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        )}
       </div>
     );
   };
 
   return (
-    <div className="bg-white dark:bg-slate-800/60 rounded-2xl shadow-lg dark:shadow-[0_30px_60px_-40px_rgba(0,0,0,0.5)] border border-slate-200/60 dark:border-white/10 p-6">
+    <div className="rounded-2xl border border-[rgba(13,148,136,0.15)] bg-white p-6 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <Package className="h-5 w-5 text-violet-500 dark:text-cyan-400" />
-          <h2 className="text-lg font-semibold text-slate-800 dark:text-white">Packing Essentials</h2>
-          <span className="px-2.5 py-1 text-sm font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full">
-            {totalPacked}/{totalItems} packed
-          </span>
+      <div className="mb-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Package className="h-5 w-5 text-[#0D9488]" />
+          <h2 className="font-fraunces text-lg font-semibold text-[#0D3D39]">Packing List</h2>
+          {totalItems > 0 && (
+            <span className="rounded-full bg-[rgba(13,148,136,0.08)] px-2.5 py-0.5 text-xs font-medium text-[#0D9488]">
+              {totalPacked}/{totalItems} done
+            </span>
+          )}
         </div>
-        <button
-          onClick={() => setHideCompleted(!hideCompleted)}
-          className="text-sm font-medium text-violet-600 dark:text-cyan-400 hover:text-violet-700 dark:hover:text-cyan-300 transition-colors"
-        >
-          {hideCompleted ? "Show Completed" : "Hide Completed"}
-        </button>
+        {totalItems > 0 && (
+          <button
+            onClick={() => setHideCompleted(!hideCompleted)}
+            className="text-sm font-medium text-[rgba(13,61,57,0.55)] transition-colors hover:text-[#0D9488]"
+          >
+            {hideCompleted ? "Show all" : "Hide done"}
+          </button>
+        )}
       </div>
 
-      {/* Progress Bar */}
+      {/* Progress bar */}
       {totalItems > 0 && (
         <div className="mb-6">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-slate-500 dark:text-slate-400">Progress</span>
-            <span className="font-medium text-slate-700 dark:text-slate-300">{progressPercent}%</span>
+          <div className="mb-1.5 flex justify-between text-xs text-[rgba(13,61,57,0.55)]">
+            <span>Packing progress</span>
+            <span className="font-medium text-[#0D9488]">{progressPercent}%</span>
           </div>
-          <div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-[rgba(13,148,136,0.12)]">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all duration-500"
+              className="h-full rounded-full bg-[#0D9488] transition-all duration-500"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
         </div>
       )}
 
-      {/* Add Item Form */}
+      {/* Add item form */}
       <form onSubmit={handleAddItem} className="mb-8">
         <div className="flex gap-2">
           <Input
             value={newItem}
             onChange={(e) => setNewItem(e.target.value)}
             placeholder="Add a packing item..."
-            className="flex-1 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-white/10"
+            className="flex-1 border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)] focus-visible:ring-[#0D9488]/30"
           />
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-32 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-white/10">
+            <SelectTrigger className="w-32 border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
               ))}
             </SelectContent>
           </Select>
           <Select value={selectedItemType} onValueChange={(v: "personal" | "group") => setSelectedItemType(v)}>
-            <SelectTrigger className="w-28 bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-white/10">
+            <SelectTrigger className="w-28 border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.03)]">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -458,60 +428,68 @@ export function PackingList({ tripId }: PackingListProps) {
           <Button
             type="submit"
             disabled={!newItem.trim() || addItemMutation.isPending}
-            className="bg-violet-500 hover:bg-violet-600 dark:bg-cyan-600 dark:hover:bg-cyan-700"
+            className="bg-[#0D9488] hover:bg-[#0B7C73]"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
           </Button>
         </div>
+        <p className="mt-2 text-xs text-[rgba(13,61,57,0.45)]">
+          {selectedItemType === "personal" ? (
+            <span className="flex items-center gap-1">
+              <Lock className="h-3 w-3" /> Personal items are private — only visible to you
+            </span>
+          ) : (
+            "Group items are visible to everyone and each person checks them off independently"
+          )}
+        </p>
       </form>
 
-      {totalItems === 0 ? (
-        <div className="py-12 text-center">
-          <Package className="mx-auto mb-4 h-12 w-12 text-slate-300 dark:text-slate-600" />
-          <h3 className="mb-2 text-lg font-medium text-slate-700 dark:text-white">No packing items yet</h3>
-          <p className="text-slate-500 dark:text-slate-400">
-            Start adding essential items that you need to pack for this trip.
+      {/* Empty state */}
+      {totalItems === 0 && (
+        <div className="py-10 text-center">
+          <Package className="mx-auto mb-3 h-10 w-10 text-[rgba(13,148,136,0.25)]" />
+          <h3 className="mb-1 font-fraunces text-base font-semibold text-[#0D3D39]">No items yet</h3>
+          <p className="text-sm text-[rgba(13,61,57,0.55)]">
+            Add personal items only you need, or group reminders like passports.
           </p>
         </div>
-      ) : (
+      )}
+
+      {totalItems > 0 && (
         <div className="space-y-8">
-          {/* Personal Items Section */}
+          {/* Personal items */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <User className="h-5 w-5 text-violet-500 dark:text-cyan-400" />
-              <h3 className="text-base font-semibold text-slate-800 dark:text-white">Personal Items</h3>
-              <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full">
-                You: {totalPersonalPacked}/{personalItems.length} packed
+            <div className="mb-3 flex items-center gap-2">
+              <Lock className="h-4 w-4 text-[#0D9488]" />
+              <h3 className="text-sm font-semibold text-[#0D3D39]">My Items</h3>
+              <span className="text-xs text-[rgba(13,61,57,0.55)]">private</span>
+              <span className="ml-auto rounded-full bg-[rgba(13,148,136,0.08)] px-2 py-0.5 text-xs font-medium text-[#0D9488]">
+                {totalPersonalPacked}/{personalItems.length}
               </span>
             </div>
 
             {personalItems.length === 0 ? (
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 py-6 text-center border border-dashed border-slate-200 dark:border-white/10">
-                <p className="text-slate-500 dark:text-slate-400">No personal items added yet</p>
+              <div className="rounded-xl border border-dashed border-[rgba(13,148,136,0.20)] py-5 text-center">
+                <p className="text-sm text-[rgba(13,61,57,0.45)]">No personal items — add things only you need</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {categories.map(category => {
+              <div className="space-y-3">
+                {categories.map((category) => {
                   const items = groupedPersonalItems[category.value] || [];
-                  const visibleItems = hideCompleted ? items.filter(item => !item.isChecked) : items;
+                  const visible = hideCompleted ? items.filter((i) => !i.isChecked) : items;
                   if (items.length === 0) return null;
-                  if (visibleItems.length === 0 && hideCompleted) return null;
-
-                  const catPacked = items.filter(i => i.isChecked).length;
-
+                  if (visible.length === 0 && hideCompleted) return null;
                   return (
                     <div key={category.value}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${category.pillClass}`}>
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <span className="rounded-full border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] px-2.5 py-0.5 text-xs font-medium text-[#0D9488]">
                           {category.label}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          You: {catPacked}/{items.length} packed
+                        <span className="text-xs text-[rgba(13,61,57,0.45)]">
+                          {items.filter((i) => i.isChecked).length}/{items.length}
                         </span>
                       </div>
-                      <div className="space-y-2">
-                        {visibleItems.map(renderPersonalItem)}
-                      </div>
+                      <div className="space-y-2">{visible.map(renderPersonalItem)}</div>
                     </div>
                   );
                 })}
@@ -519,46 +497,39 @@ export function PackingList({ tripId }: PackingListProps) {
             )}
           </div>
 
-          {/* Group Items Section */}
+          {/* Group items */}
           <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <Package className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
-              <h3 className="text-base font-semibold text-slate-800 dark:text-white">Group Items</h3>
-              <span className="px-2 py-0.5 text-xs font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full">
-                You: {totalGroupHandled}/{groupItems.length} handled
+            <div className="mb-3 flex items-center gap-2">
+              <Package className="h-4 w-4 text-[#0D9488]" />
+              <h3 className="text-sm font-semibold text-[#0D3D39]">Group Items</h3>
+              <span className="text-xs text-[rgba(13,61,57,0.55)]">everyone checks independently</span>
+              <span className="ml-auto rounded-full bg-[rgba(13,148,136,0.08)] px-2 py-0.5 text-xs font-medium text-[#0D9488]">
+                {totalGroupHandled}/{groupItems.length}
               </span>
             </div>
 
             {groupItems.length === 0 ? (
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 py-6 text-center border border-dashed border-slate-200 dark:border-white/10">
-                <p className="text-slate-500 dark:text-slate-400">No group items added yet</p>
-                <p className="mt-1 text-xs text-slate-400 dark:text-slate-500">
-                  Add shared reminders like passports, cash, or group gear
-                </p>
+              <div className="rounded-xl border border-dashed border-[rgba(13,148,136,0.20)] py-5 text-center">
+                <p className="text-sm text-[rgba(13,61,57,0.45)]">No group items — add shared reminders like passports</p>
               </div>
             ) : (
-              <div className="space-y-4">
-                {categories.map(category => {
+              <div className="space-y-3">
+                {categories.map((category) => {
                   const items = groupedGroupItems[category.value] || [];
-                  const visibleItems = hideCompleted ? items.filter(item => !item.isChecked) : items;
+                  const visible = hideCompleted ? items.filter((i) => !i.isChecked) : items;
                   if (items.length === 0) return null;
-                  if (visibleItems.length === 0 && hideCompleted) return null;
-
-                  const catHandled = items.filter(i => i.isChecked).length;
-
+                  if (visible.length === 0 && hideCompleted) return null;
                   return (
                     <div key={category.value}>
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${category.pillClass}`}>
+                      <div className="mb-1.5 flex items-center gap-2">
+                        <span className="rounded-full border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] px-2.5 py-0.5 text-xs font-medium text-[#0D9488]">
                           {category.label}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
-                          You: {catHandled}/{items.length} handled
+                        <span className="text-xs text-[rgba(13,61,57,0.45)]">
+                          You: {items.filter((i) => i.isChecked).length}/{items.length} handled
                         </span>
                       </div>
-                      <div className="space-y-2">
-                        {visibleItems.map(renderGroupItem)}
-                      </div>
+                      <div className="space-y-2">{visible.map(renderGroupItem)}</div>
                     </div>
                   );
                 })}

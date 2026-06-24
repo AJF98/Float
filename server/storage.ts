@@ -3737,6 +3737,25 @@ export class DatabaseStorage implements IStorage {
     }
 
     this.packingInitPromise = (async () => {
+      // Create packing_items if it doesn't exist (it's not auto-created by initdb.sql at runtime)
+      await query(`
+        CREATE TABLE IF NOT EXISTS packing_items (
+          id SERIAL PRIMARY KEY,
+          trip_id INTEGER NOT NULL REFERENCES trip_calendars(id) ON DELETE CASCADE,
+          name TEXT NOT NULL,
+          category TEXT,
+          assigned_to TEXT REFERENCES users(id) ON DELETE SET NULL,
+          is_packed BOOLEAN DEFAULT FALSE,
+          created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          item_type TEXT DEFAULT 'personal',
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )
+      `);
+
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_packing_items_trip ON packing_items(trip_id)`,
+      );
+
       await this.ensurePackingItemsCreatorCompatibility();
 
       await query(`

@@ -133,6 +133,7 @@ CREATE TABLE IF NOT EXISTS packing_items (
   assigned_to TEXT REFERENCES users(id) ON DELETE SET NULL,
   is_packed BOOLEAN DEFAULT FALSE,
   created_by TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  item_type TEXT DEFAULT 'personal',
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
