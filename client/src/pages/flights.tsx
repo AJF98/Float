@@ -859,7 +859,8 @@ type ProposeFlightInput =
   | (Partial<ManualFlightPayload> & { votingDeadline?: string; flightId?: number; selectedMemberIds?: string[] });
 
 interface ManualFlightFormState {
-  airlineFlight: string;
+  airline: string;
+  flightNumber: string;
   from: string;
   to: string;
   departure: string;
@@ -870,7 +871,8 @@ interface ManualFlightFormState {
 }
 
 interface ManualFlightFormErrors {
-  airlineFlight?: string;
+  airline?: string;
+  flightNumber?: string;
   from?: string;
   to?: string;
   departure?: string;
@@ -2345,7 +2347,8 @@ export default function FlightsPage() {
   
   // Flight form state
   const defaultManualFlightForm: ManualFlightFormState = {
-    airlineFlight: '',
+    airline: '',
+    flightNumber: '',
     from: '',
     to: '',
     departure: '',
@@ -2847,7 +2850,7 @@ export default function FlightsPage() {
           for (const detail of errorDetails) {
             const field = Array.isArray(detail?.path) ? detail.path[0] : undefined;
             if (field === 'airlineCode') {
-              nextErrors.airlineFlight = "Use a valid 2-letter airline IATA code (e.g., DL, AA).";
+              nextErrors.flightNumber = "Use a valid 2-letter airline IATA code (e.g., DL, AA).";
             }
             if (field === 'departureCode') {
               nextErrors.from = "Use a valid IATA code (e.g., LAX, JFK).";
@@ -2868,7 +2871,7 @@ export default function FlightsPage() {
         if (typeof rawMessage === 'string' && rawMessage) {
           const normalized = rawMessage.toLowerCase();
           if (normalized.includes('airlinecode') || normalized.includes('airline code')) {
-            nextErrors.airlineFlight = "Use a valid 2-letter airline code (e.g., DL1234).";
+            nextErrors.flightNumber = "Use a valid 2-letter airline code (e.g., DL1234).";
           }
           if (normalized.includes('departurecode') || normalized.includes('departure code')) {
             nextErrors.from = "Use a valid IATA code (e.g., ATL, JFK).";
@@ -3513,7 +3516,8 @@ export default function FlightsPage() {
       : 'ECONOMY';
 
     setManualFlightForm({
-      airlineFlight: formatManualAirlineFlightDisplay(flight),
+      airline: flight.airline ?? '',
+      flightNumber: flight.flightNumber ?? '',
       from: formatAirportDisplay(flight.departureAirport, flight.departureCode),
       to: formatAirportDisplay(flight.arrivalAirport, flight.arrivalCode),
       departure: departureValue,
@@ -3535,10 +3539,15 @@ export default function FlightsPage() {
     }
 
     const errors: ManualFlightFormErrors = {};
-    const airlineFlightInput = manualFlightForm.airlineFlight.trim();
-    const parsedAirline = parseManualAirlineFlight(airlineFlightInput);
-    if (!parsedAirline) {
-      errors.airlineFlight = "Enter an airline and flight number (e.g., Delta DL1234).";
+    const airlineInput = manualFlightForm.airline.trim();
+    const flightNumberInput = manualFlightForm.flightNumber.trim();
+    if (!airlineInput) errors.airline = "Enter the airline name (e.g., Delta).";
+    if (!flightNumberInput) errors.flightNumber = "Enter the flight number (e.g., DL1234).";
+    const parsedAirline = (airlineInput && flightNumberInput)
+      ? parseManualAirlineFlight(`${airlineInput} ${flightNumberInput}`)
+      : null;
+    if (!parsedAirline && airlineInput && flightNumberInput) {
+      errors.flightNumber = "Use a format like DL1234 (airline code + number).";
     }
 
     const fromLocation = parseManualLocationInput(manualFlightForm.from);
@@ -3982,75 +3991,107 @@ export default function FlightsPage() {
     >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {editingFlight ? "Edit manual flight" : flightMode === 'PROPOSE' ? "Propose Flight to Group" : "Add manual flight"}
+          <DialogTitle className="font-fraunces text-[#0D3D39]">
+            {editingFlight ? "Edit flight" : flightMode === 'PROPOSE' ? "Propose flight to group" : "Add flight manually"}
           </DialogTitle>
         </DialogHeader>
-        
+
         {!editingFlight && (
           <SaveProposeToggle
             mode={flightMode}
             onModeChange={setFlightMode}
           />
         )}
-        
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="manual-airline-flight">Airline + flight number</Label>
-            <Input
-              id="manual-airline-flight"
-              placeholder="e.g., Delta DL1234"
-              value={manualFlightForm.airlineFlight}
-              aria-invalid={manualFlightErrors.airlineFlight ? 'true' : 'false'}
-              onChange={(event) => {
-                const value = event.target.value;
-                setManualFlightForm((prev) => ({ ...prev, airlineFlight: value }));
-                setManualFlightErrors((prev) => ({ ...prev, airlineFlight: undefined }));
-              }}
-            />
-            {manualFlightErrors.airlineFlight && (
-              <p className="mt-1 text-sm text-destructive">{manualFlightErrors.airlineFlight}</p>
-            )}
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label htmlFor="manual-from">From</Label>
-              <Input
-                id="manual-from"
-                placeholder="City or airport (e.g., Atlanta (ATL))"
-                value={manualFlightForm.from}
-                aria-invalid={manualFlightErrors.from ? 'true' : 'false'}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setManualFlightForm((prev) => ({ ...prev, from: value }));
-                  setManualFlightErrors((prev) => ({ ...prev, from: undefined }));
-                }}
-              />
-              {manualFlightErrors.from && (
-                <p className="mt-1 text-sm text-destructive">{manualFlightErrors.from}</p>
-              )}
+
+        <div className="space-y-3">
+          {/* Section A — Flight Info */}
+          <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Flight Info</p>
+
+            {/* Airline + Flight Number */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="manual-airline" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Airline</Label>
+                <Input
+                  id="manual-airline"
+                  placeholder="e.g., Delta"
+                  value={manualFlightForm.airline}
+                  aria-invalid={manualFlightErrors.airline ? 'true' : 'false'}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setManualFlightForm((prev) => ({ ...prev, airline: value }));
+                    setManualFlightErrors((prev) => ({ ...prev, airline: undefined }));
+                  }}
+                />
+                {manualFlightErrors.airline && (
+                  <p className="text-xs text-destructive">{manualFlightErrors.airline}</p>
+                )}
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="manual-flight-number" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Flight Number</Label>
+                <Input
+                  id="manual-flight-number"
+                  placeholder="e.g., DL1234"
+                  value={manualFlightForm.flightNumber}
+                  aria-invalid={manualFlightErrors.flightNumber ? 'true' : 'false'}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setManualFlightForm((prev) => ({ ...prev, flightNumber: value }));
+                    setManualFlightErrors((prev) => ({ ...prev, flightNumber: undefined }));
+                  }}
+                />
+                {manualFlightErrors.flightNumber && (
+                  <p className="text-xs text-destructive">{manualFlightErrors.flightNumber}</p>
+                )}
+              </div>
             </div>
-            <div>
-              <Label htmlFor="manual-to">To</Label>
-              <Input
-                id="manual-to"
-                placeholder="City or airport (e.g., Los Angeles (LAX))"
-                value={manualFlightForm.to}
-                aria-invalid={manualFlightErrors.to ? 'true' : 'false'}
-                onChange={(event) => {
-                  const value = event.target.value;
-                  setManualFlightForm((prev) => ({ ...prev, to: value }));
-                  setManualFlightErrors((prev) => ({ ...prev, to: undefined }));
-                }}
-              />
-              {manualFlightErrors.to && (
-                <p className="mt-1 text-sm text-destructive">{manualFlightErrors.to}</p>
-              )}
+
+            {/* Route row */}
+            <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
+              <div className="space-y-1">
+                <Label htmlFor="manual-from" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">From</Label>
+                <Input
+                  id="manual-from"
+                  placeholder="ATL or Atlanta (ATL)"
+                  value={manualFlightForm.from}
+                  aria-invalid={manualFlightErrors.from ? 'true' : 'false'}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setManualFlightForm((prev) => ({ ...prev, from: value }));
+                    setManualFlightErrors((prev) => ({ ...prev, from: undefined }));
+                  }}
+                />
+                {manualFlightErrors.from && (
+                  <p className="text-xs text-destructive">{manualFlightErrors.from}</p>
+                )}
+              </div>
+              <Plane className="h-4 w-4 text-[rgba(13,148,136,0.45)] mb-2.5 rotate-45" />
+              <div className="space-y-1">
+                <Label htmlFor="manual-to" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">To</Label>
+                <Input
+                  id="manual-to"
+                  placeholder="LAX or Los Angeles (LAX)"
+                  value={manualFlightForm.to}
+                  aria-invalid={manualFlightErrors.to ? 'true' : 'false'}
+                  onChange={(event) => {
+                    const value = event.target.value;
+                    setManualFlightForm((prev) => ({ ...prev, to: value }));
+                    setManualFlightErrors((prev) => ({ ...prev, to: undefined }));
+                  }}
+                />
+                {manualFlightErrors.to && (
+                  <p className="text-xs text-destructive">{manualFlightErrors.to}</p>
+                )}
+              </div>
             </div>
           </div>
-          <div className="space-y-4">
+
+          {/* Section B — Schedule */}
+          <div className="rounded-xl bg-[rgba(13,148,136,0.04)] border border-[rgba(13,148,136,0.12)] p-4 space-y-3">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[rgba(13,61,57,0.4)]">Schedule</p>
+
             <div>
-              <Label className="mb-2 block">
+              <Label className="mb-2 block text-sm text-[rgba(13,61,57,0.65)] font-medium">
                 Flight Dates
                 <span className="text-destructive ml-0.5">*</span>
               </Label>
@@ -4070,7 +4111,7 @@ export default function FlightsPage() {
                       const arrDate = manualFlightForm.arrival ? new Date(manualFlightForm.arrival) : null;
                       const hasBothDates = depDate && arrDate && !isNaN(depDate.getTime()) && !isNaN(arrDate.getTime());
                       const hasDepOnly = depDate && !isNaN(depDate.getTime());
-                      
+
                       if (hasBothDates) {
                         return (
                           <span className="flex flex-col items-start">
@@ -4114,7 +4155,7 @@ export default function FlightsPage() {
                     })()}
                     onSelect={(range) => {
                       if (range?.from) {
-                        const depTime = manualFlightForm.departure 
+                        const depTime = manualFlightForm.departure
                           ? manualFlightForm.departure.split('T')[1] || '00:00'
                           : '00:00';
                         const newDepDate = format(range.from, "yyyy-MM-dd") + 'T' + depTime;
@@ -4122,14 +4163,14 @@ export default function FlightsPage() {
                         setManualFlightErrors((prev) => ({ ...prev, departure: undefined }));
                       }
                       if (range?.to) {
-                        const arrTime = manualFlightForm.arrival 
+                        const arrTime = manualFlightForm.arrival
                           ? manualFlightForm.arrival.split('T')[1] || '00:00'
                           : '00:00';
                         const newArrDate = format(range.to, "yyyy-MM-dd") + 'T' + arrTime;
                         setManualFlightForm((prev) => ({ ...prev, arrival: newArrDate }));
                         setManualFlightErrors((prev) => ({ ...prev, arrival: undefined }));
                       } else if (range?.from) {
-                        const arrTime = manualFlightForm.arrival 
+                        const arrTime = manualFlightForm.arrival
                           ? manualFlightForm.arrival.split('T')[1] || '00:00'
                           : '00:00';
                         const newArrDate = format(range.from, "yyyy-MM-dd") + 'T' + arrTime;
@@ -4142,36 +4183,37 @@ export default function FlightsPage() {
                 </PopoverContent>
               </Popover>
               {(manualFlightErrors.departure || manualFlightErrors.arrival) && (
-                <p className="mt-1 text-sm text-destructive">
+                <p className="mt-1 text-xs text-destructive">
                   {manualFlightErrors.departure || manualFlightErrors.arrival}
                 </p>
               )}
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label htmlFor="manual-departure-time">Departure Time (local)</Label>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="manual-departure-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Departure Time</Label>
                 <Input
                   id="manual-departure-time"
                   type="time"
                   value={manualFlightForm.departure ? manualFlightForm.departure.split('T')[1] || '' : ''}
                   onChange={(event) => {
                     const time = event.target.value;
-                    const datePart = manualFlightForm.departure 
+                    const datePart = manualFlightForm.departure
                       ? manualFlightForm.departure.split('T')[0]
                       : format(new Date(), "yyyy-MM-dd");
                     setManualFlightForm((prev) => ({ ...prev, departure: datePart + 'T' + time }));
                   }}
                 />
               </div>
-              <div>
-                <Label htmlFor="manual-arrival-time">Arrival Time (local)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="manual-arrival-time" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">Arrival Time</Label>
                 <Input
                   id="manual-arrival-time"
                   type="time"
                   value={manualFlightForm.arrival ? manualFlightForm.arrival.split('T')[1] || '' : ''}
                   onChange={(event) => {
                     const time = event.target.value;
-                    const datePart = manualFlightForm.arrival 
+                    const datePart = manualFlightForm.arrival
                       ? manualFlightForm.arrival.split('T')[0]
                       : format(new Date(), "yyyy-MM-dd");
                     setManualFlightForm((prev) => ({ ...prev, arrival: datePart + 'T' + time }));
@@ -4180,11 +4222,15 @@ export default function FlightsPage() {
               </div>
             </div>
           </div>
-          <div>
-            <Label htmlFor="manual-notes">Notes</Label>
+
+          {/* Notes */}
+          <div className="space-y-1">
+            <Label htmlFor="manual-notes" className="text-sm text-[rgba(13,61,57,0.65)] font-medium">
+              Notes <span className="text-[rgba(13,61,57,0.4)] font-normal">(optional)</span>
+            </Label>
             <Textarea
               id="manual-notes"
-              placeholder="Add any optional notes"
+              placeholder="Add any notes about this flight"
               value={manualFlightForm.notes}
               onChange={(event) =>
                 setManualFlightForm((prev) => ({ ...prev, notes: event.target.value }))
@@ -4202,7 +4248,7 @@ export default function FlightsPage() {
               currentUserId={currentUserId ?? undefined}
             />
           )}
-          
+
           {flightMode === 'PROPOSE' && (
             <div className="rounded-xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-4 space-y-3">
               <div className="flex items-center gap-2">
@@ -4229,12 +4275,13 @@ export default function FlightsPage() {
               </div>
             </div>
           )}
-          
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleCancelEdit}>
+
+          <div className="border-t border-[rgba(13,148,136,0.12)] pt-4 flex justify-end gap-2">
+            <Button variant="ghost" className="text-[rgba(13,61,57,0.65)]" onClick={handleCancelEdit}>
               Cancel
             </Button>
             <Button
+              className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
               onClick={handleFlightSubmit}
               disabled={createFlightMutation.isPending || updateFlightMutation.isPending || proposeFlightMutation.isPending}
             >
