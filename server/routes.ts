@@ -3769,6 +3769,7 @@ export function setupRoutes(app: Express) {
         reservationTime: restaurantData.reservationTime ?? restaurantData.reservation_time,
         partySize: restaurantData.partySize ?? restaurantData.party_size,
         tripId,
+        reservationStatus: "confirmed",
       });
 
       const reservationDateIso = toDateOnlyIsoString(validatedData.reservationDate);
