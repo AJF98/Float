@@ -3136,6 +3136,11 @@ export class DatabaseStorage implements IStorage {
         `CREATE INDEX IF NOT EXISTS idx_proposal_schedule_links_lookup ON proposal_schedule_links (proposal_type, proposal_id)`,
       );
 
+      // Add city/country/currency to hotels table if missing (needed by fetchHotelProposals JOIN)
+      for (const col of ["city", "country", "currency"] as const) {
+        await query(`ALTER TABLE hotels ADD COLUMN IF NOT EXISTS ${col} TEXT`);
+      }
+
       this.proposalLinksInitialized = true;
     })();
 
