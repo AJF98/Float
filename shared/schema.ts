@@ -898,7 +898,7 @@ export interface HotelRanking {
 
 export const insertHotelRankingSchema = z.object({
   proposalId: z.number(),
-  ranking: z.number().min(0), // 0 = Not Interested, 1+ = ranking preference
+  ranking: z.number().min(-1), // -1 = Not for me, 0 = clear, 1 = I'm in
   notes: z.string().nullable().optional(),
 });
 
@@ -992,7 +992,7 @@ export interface FlightRanking {
 
 export const insertFlightRankingSchema = z.object({
   proposalId: z.number(),
-  ranking: z.number().min(0), // 0 = Not Interested, 1+ = ranking preference
+  ranking: z.number().min(-1), // -1 = Not for me, 0 = clear, 1 = I'm in
   notes: z.string().nullable().optional(),
 });
 
