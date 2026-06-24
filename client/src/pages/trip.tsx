@@ -4816,16 +4816,22 @@ function FlightCoordination({
   ]);
 
   const resetManualFlightForm = useCallback(() => {
+    const raw = trip?.startDate;
+    const dateStr = raw
+      ? (typeof raw === "string" ? raw.slice(0, 10) : format(new Date(raw as string | Date), "yyyy-MM-dd"))
+      : "";
+    const defaultDate = dateStr ? `${dateStr}T00:00` : "";
+
     setManualFlightData({
       flightNumber: "",
       airline: "",
       airlineCode: "",
       departureAirport: "",
       departureCode: "",
-      departureTime: "",
+      departureTime: defaultDate,
       arrivalAirport: "",
       arrivalCode: "",
-      arrivalTime: "",
+      arrivalTime: defaultDate,
       price: "",
       aircraft: "",
       status: "confirmed",
@@ -4834,7 +4840,7 @@ function FlightCoordination({
     setManualDepartureHasSelected(false);
     setManualArrivalHasSelected(false);
     setEditingFlight(null);
-  }, []);
+  }, [trip?.startDate]);
 
   const openManualFlightForm = useCallback(() => {
     resetManualFlightForm();
