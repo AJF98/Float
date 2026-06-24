@@ -110,11 +110,11 @@ const formatLocationResult = (
 const getTypeBadgeStyle = (type: ProfileLocationOption["type"]): string => {
   switch (type) {
     case "AIRPORT":
-      return "bg-cyan-900/40 text-cyan-300 border border-cyan-500/30";
+      return "bg-[rgba(13,148,136,0.10)] text-[#0D9488] border border-[rgba(13,148,136,0.25)]";
     case "CITY":
-      return "bg-emerald-900/40 text-emerald-300 border border-emerald-500/30";
+      return "bg-[rgba(13,148,136,0.10)] text-[#0D9488] border border-[rgba(13,148,136,0.25)]";
     default:
-      return "bg-slate-800/60 text-slate-300 border border-white/10";
+      return "bg-[rgba(13,148,136,0.06)] text-[rgba(13,61,57,0.65)] border border-[rgba(13,148,136,0.15)]";
   }
 };
 
@@ -445,18 +445,19 @@ export default function Profile() {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <h2 className="text-xl font-semibold mb-2">Please log in</h2>
-          <p className="text-slate-400">You need to be logged in to view this page.</p>
+          <p className="text-[rgba(13,61,57,0.65)]">You need to be logged in to view this page.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-8">
+    <div className="dashboard-themed-background min-h-screen">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       {/* Back to Main Page Button */}
       <div className="mb-6">
         <Link href="/">
-          <Button variant="outline" className="flex items-center gap-2">
+          <Button variant="outline" className="flex items-center gap-2 rounded-full border-[rgba(13,148,136,0.25)] text-[#0D3D39] hover:border-[rgba(13,148,136,0.45)] hover:bg-[rgba(13,148,136,0.06)]">
             <ArrowLeft className="w-4 h-4" />
             Back to Main Page
           </Button>
@@ -465,23 +466,23 @@ export default function Profile() {
 
       <div className="flex flex-col gap-4 mb-8 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-4">
-          <Avatar className="w-16 h-16">
+          <Avatar className="w-16 h-16 border-2 border-[rgba(13,148,136,0.25)]">
             <AvatarImage src={user.profileImageUrl || undefined} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-[rgba(13,148,136,0.10)] text-[#0D9488] font-semibold text-lg">
               {user.firstName?.[0] || user.email?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
           <div>
-            <h1 className="text-2xl font-bold">
+            <h1 className="font-fraunces text-2xl font-semibold text-[#0D3D39]">
               {user.firstName} {user.lastName}
             </h1>
-            <p className="text-slate-400">{user.email}</p>
+            <p className="text-sm text-[rgba(13,61,57,0.65)]">{user.email}</p>
           </div>
         </div>
         <Button
           type="button"
           variant="outline"
-          className="flex items-center justify-center gap-2 w-full sm:w-auto"
+          className="flex items-center justify-center gap-2 w-full sm:w-auto rounded-full border-[rgba(13,148,136,0.25)] text-[#0D3D39] hover:border-[rgba(13,148,136,0.45)] hover:bg-[rgba(13,148,136,0.06)]"
           onClick={handleLogout}
         >
           <LogOut className="w-4 h-4" />
@@ -521,8 +522,8 @@ export default function Profile() {
                   <Smartphone className="w-5 h-5" />
                   Payment Apps
                 </h3>
-                <p className="text-sm text-slate-400">
-                  Adding your payment app usernames helps group members quickly send you money 
+                <p className="text-sm text-[rgba(13,61,57,0.65)]">
+                  Adding your payment app usernames helps group members quickly send you money
                   when splitting expenses.
                 </p>
                 
@@ -535,7 +536,7 @@ export default function Profile() {
                         <FormLabel>CashApp Username</FormLabel>
                         <FormControl>
                           <div className="flex items-center">
-                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-white/10 bg-slate-800/60 text-slate-400 text-sm">
+                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] text-[#0D9488] text-sm">
                               $
                             </span>
                             <Input
@@ -558,7 +559,7 @@ export default function Profile() {
                         <FormLabel>Venmo Username</FormLabel>
                         <FormControl>
                           <div className="flex items-center">
-                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-white/10 bg-slate-800/60 text-slate-400 text-sm">
+                            <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] text-[#0D9488] text-sm">
                               @
                             </span>
                             <Input
@@ -575,17 +576,17 @@ export default function Profile() {
                 </div>
 
                 {(user.cashAppUsername || user.venmoUsername) && (
-                  <div className="mt-4 p-4 bg-emerald-900/30 border border-emerald-500/30 rounded-lg">
-                    <h4 className="font-medium text-emerald-300 mb-2">Current Payment Methods:</h4>
-                    <div className="flex gap-2">
+                  <div className="mt-4 p-4 bg-[rgba(13,148,136,0.06)] border border-[rgba(13,148,136,0.20)] rounded-xl">
+                    <h4 className="font-medium text-[#0D3D39] mb-2">Current Payment Methods:</h4>
+                    <div className="flex flex-wrap gap-2">
                       {user.cashAppUsername && (
-                        <Badge variant="secondary" className="bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">
+                        <Badge variant="secondary" className="bg-[rgba(13,148,136,0.10)] text-[#0D9488] border border-[rgba(13,148,136,0.25)]">
                           <Smartphone className="w-3 h-3 mr-1" />
                           CashApp: ${user.cashAppUsername}
                         </Badge>
                       )}
                       {user.venmoUsername && (
-                        <Badge variant="secondary" className="bg-emerald-900/40 text-emerald-300 border border-emerald-500/30">
+                        <Badge variant="secondary" className="bg-[rgba(13,148,136,0.10)] text-[#0D9488] border border-[rgba(13,148,136,0.25)]">
                           <Smartphone className="w-3 h-3 mr-1" />
                           Venmo: @{user.venmoUsername}
                         </Badge>
@@ -626,13 +627,13 @@ export default function Profile() {
           <Form {...form}>
             <form onSubmit={handleSubmit("location")} className="space-y-6">
               <div className="space-y-4">
-                <div className="p-4 bg-cyan-900/30 border border-cyan-500/30 rounded-lg">
-                  <h4 className="font-medium text-cyan-300 mb-2 flex items-center gap-2">
+                <div className="p-4 bg-[rgba(13,148,136,0.06)] border border-[rgba(13,148,136,0.20)] rounded-xl">
+                  <h4 className="font-medium text-[#0D9488] mb-2 flex items-center gap-2">
                     <Plane className="w-4 h-4" />
                     How this helps
                   </h4>
-                  <p className="text-sm text-cyan-300/80">
-                    When you join new trips, your location will be automatically used for flight searches. 
+                  <p className="text-sm text-[rgba(13,61,57,0.65)]">
+                    When you join new trips, your location will be automatically used for flight searches.
                     You can also update this per trip if needed.
                   </p>
                 </div>
@@ -642,7 +643,7 @@ export default function Profile() {
                     <Label className="text-sm font-medium">Search Your Location</Label>
                     <div className="relative">
                       <div className="flex">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[rgba(13,61,57,0.40)] w-4 h-4" />
                         <Input
                           value={locationQuery}
                           onChange={(e) => {
@@ -682,7 +683,7 @@ export default function Profile() {
                           <button
                             type="button"
                             onClick={handleClearLocation}
-                            className="text-xs text-cyan-400 hover:text-cyan-300"
+                            className="text-xs text-[#0D9488] hover:text-[#0B7C73]"
                           >
                             Clear
                           </button>
@@ -691,12 +692,12 @@ export default function Profile() {
 
                       {showLocationResults && (
                         <div
-                          className="absolute z-10 w-full mt-1 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-md shadow-lg max-h-60 overflow-auto"
+                          className="absolute z-10 w-full mt-1 bg-white border border-[rgba(13,148,136,0.20)] rounded-xl shadow-lg max-h-60 overflow-auto"
                           role="listbox"
                         >
                           {isSearchingLocations && (
-                            <div className="flex items-center justify-center gap-2 px-4 py-3 text-xs text-muted-foreground">
-                              <Loader2 className="h-4 w-4 animate-spin text-cyan-400" />
+                            <div className="flex items-center justify-center gap-2 px-4 py-3 text-xs text-[rgba(13,61,57,0.65)]">
+                              <Loader2 className="h-4 w-4 animate-spin text-[#0D9488]" />
                               Searching for locations...
                             </div>
                           )}
@@ -707,14 +708,14 @@ export default function Profile() {
                                 event.preventDefault();
                                 handleLocationSelect(location);
                               }}
-                              className={`px-4 py-3 cursor-pointer border-b border-white/5 last:border-b-0 ${
-                                highlightedResult === index ? "bg-cyan-900/40" : "hover:bg-slate-800/60"
+                              className={`px-4 py-3 cursor-pointer border-b border-[rgba(13,148,136,0.08)] last:border-b-0 ${
+                                highlightedResult === index ? "bg-[rgba(13,148,136,0.08)]" : "hover:bg-[rgba(13,148,136,0.04)]"
                               }`}
                               role="option"
                               aria-selected={highlightedResult === index}
                             >
                               <div className="flex items-start gap-2">
-                                <MapPin className="w-4 h-4 text-slate-400 mt-0.5" />
+                                <MapPin className="w-4 h-4 text-[rgba(13,61,57,0.40)] mt-0.5" />
                                 <div className="flex-1">
                                   <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
                                     <span>{location.formatted}</span>
@@ -722,17 +723,17 @@ export default function Profile() {
                                       {getTypeLabel(location.type)}
                                     </Badge>
                                   </div>
-                                  <div className="text-xs text-slate-400 mt-1">
+                                  <div className="text-xs text-[rgba(13,61,57,0.55)] mt-1">
                                     {location.countryName || location.displayName}
                                     {location.countryName && location.region && ` • ${location.region}`}
                                   </div>
                                   {location.type === 'CITY' && location.locationCode && (
-                                    <div className="text-xs text-cyan-400 mt-1">
+                                    <div className="text-xs text-[#0D9488] mt-1">
                                       Major airport code: {location.locationCode}
                                     </div>
                                   )}
                                   {location.type === 'AIRPORT' && location.cityCode && location.cityCode !== location.locationCode && (
-                                    <div className="text-xs text-slate-400 mt-1">
+                                    <div className="text-xs text-[rgba(13,61,57,0.55)] mt-1">
                                       Serves city code {location.cityCode}
                                     </div>
                                   )}
@@ -741,7 +742,7 @@ export default function Profile() {
                             </div>
                           ))}
                           {!isSearchingLocations && !locationError && locationResults.length === 0 && (
-                            <div className="px-4 py-3 text-xs text-muted-foreground">
+                            <div className="px-4 py-3 text-xs text-[rgba(13,61,57,0.55)]">
                               No results—try a city, country, or airport code.
                             </div>
                           )}
@@ -753,27 +754,27 @@ export default function Profile() {
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[rgba(13,61,57,0.55)]">
                       Start typing to search for your departure location. This will be used for flight and hotel searches.
                     </p>
                   </div>
                 </div>
 
                 {(user?.defaultLocation || user?.defaultCity) && (
-                  <div className="mt-4 p-4 bg-emerald-900/30 border border-emerald-500/30 rounded-lg">
+                  <div className="mt-4 p-4 bg-[rgba(13,148,136,0.06)] border border-[rgba(13,148,136,0.20)] rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-emerald-400" />
-                      <h4 className="font-medium text-emerald-300">Current Default Location</h4>
+                      <MapPin className="w-4 h-4 text-[#0D9488]" />
+                      <h4 className="font-medium text-[#0D3D39]">Current Default Location</h4>
                       {user.defaultLocationCode && (
                         <div className="flex items-center gap-1">
-                          <Plane className="w-3 h-3 text-emerald-400" />
-                          <span className="text-xs font-mono text-emerald-300 bg-emerald-900/50 px-1 py-0.5 rounded border border-emerald-500/30">
+                          <Plane className="w-3 h-3 text-[#0D9488]" />
+                          <span className="text-xs font-mono text-[#0D9488] bg-[rgba(13,148,136,0.10)] px-1.5 py-0.5 rounded border border-[rgba(13,148,136,0.25)]">
                             {user.defaultLocationCode}
                           </span>
                         </div>
                       )}
                     </div>
-                    <div className="text-sm text-emerald-300">
+                    <div className="text-sm text-[rgba(13,61,57,0.65)]">
                       <p>{user?.defaultLocation || `${user?.defaultCity}, ${user?.defaultCountry}`}</p>
                       {user.defaultCity && user.defaultCountry && (
                         <p className="text-xs opacity-75">{user.defaultCity}, {user.defaultCountry}</p>
@@ -799,6 +800,7 @@ export default function Profile() {
 
       {/* Notifications Section */}
       <NotificationsSection />
+    </div>
     </div>
   );
 }

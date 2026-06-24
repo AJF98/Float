@@ -393,8 +393,8 @@ export default function CurrencyConverterTool({
       )}
       header={
         <div className="space-y-1">
-          <h2 className="text-lg font-semibold text-white">Currency converter</h2>
-          <p className="text-sm text-slate-400">Live mid-market rates with offline fallbacks.</p>
+          <h2 className="font-fraunces text-xl font-semibold text-[#0D3D39] dark:text-white">Currency converter</h2>
+          <p className="text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-400">Live mid-market rates with offline fallbacks.</p>
         </div>
       }
     >
@@ -479,7 +479,7 @@ export default function CurrencyConverterTool({
             <Button
               type="button"
               variant="ghost"
-              className="w-fit text-slate-300 hover:text-white"
+              className="w-fit text-[#0D9488] hover:text-[#0B7C73] dark:text-slate-300 dark:hover:text-white"
               onClick={() => setShowFee(true)}
             >
               + Add fee
@@ -494,7 +494,7 @@ export default function CurrencyConverterTool({
                 key={`${recent.from}-${recent.to}`}
                 type="button"
                 variant="secondary"
-                className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-300"
+                className="rounded-full border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] px-3 py-1 text-xs font-medium text-[#0D9488] hover:bg-[rgba(13,148,136,0.12)] dark:bg-slate-800 dark:text-teal-300"
                 onClick={() => handleRecentSelect(recent)}
               >
                 {recent.from} → {recent.to}
@@ -503,13 +503,13 @@ export default function CurrencyConverterTool({
           </div>
         ) : null}
 
-        <div className="space-y-3 rounded-2xl bg-slate-800/60 p-4" aria-live="polite">
-          <div className="text-2xl font-semibold text-white">
+        <div className="space-y-3 rounded-2xl border border-[rgba(13,148,136,0.15)] bg-[rgba(13,148,136,0.06)] p-4 dark:border-white/10 dark:bg-slate-800/60" aria-live="polite">
+          <div className="text-2xl font-semibold text-[#0D3D39] dark:text-white">
             {result != null
               ? `${formatResult.format(result)} ${toCurrency}`
               : "Conversion pending"}
           </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-[rgba(13,61,57,0.65)] dark:text-slate-400">
             {rate != null ? (
               <span>
                 1 {fromCurrency} = {formatRate.format(rate)} {toCurrency}
@@ -518,7 +518,7 @@ export default function CurrencyConverterTool({
               <span>Rate updates after conversion</span>
             )}
             {rateSource ? (
-              <Badge variant="outline" className="rounded-full border-slate-300 text-slate-300">
+              <Badge variant="outline" className="rounded-full border-[rgba(13,148,136,0.30)] text-[#0D9488] dark:border-slate-300 dark:text-slate-300">
                 {rateSource === "live"
                   ? "Live rate"
                   : rateSource === "offline"
@@ -528,7 +528,7 @@ export default function CurrencyConverterTool({
             ) : null}
             {timestampDescriptor ? <span>as of {timestampDescriptor}</span> : null}
             {lockedRate != null ? (
-              <Badge variant="secondary" className="rounded-full bg-slate-900 text-white">
+              <Badge variant="secondary" className="rounded-full bg-[#0D9488] text-white dark:bg-slate-900">
                 Rate locked
               </Badge>
             ) : null}
@@ -613,13 +613,13 @@ function CurrencyCombobox({ label, value, onChange }: CurrencyComboboxProps) {
             type="button"
             role="combobox"
             aria-expanded={open}
-            className="h-12 w-full justify-between rounded-xl border-white/10 bg-slate-800 text-left"
+            className="h-12 w-full justify-between rounded-xl border-[rgba(13,148,136,0.20)] bg-white text-left hover:border-[rgba(13,148,136,0.40)] hover:bg-[rgba(13,148,136,0.03)] dark:border-white/10 dark:bg-slate-800"
           >
             {selected ? (
               <span className="flex flex-1 items-center gap-3">
                 <span className="text-xl">{selected.flag}</span>
-                <span className="font-semibold text-white">{selected.code}</span>
-                <span className="text-xs text-slate-400">{selected.name}</span>
+                <span className="font-semibold text-[#0D3D39] dark:text-white">{selected.code}</span>
+                <span className="text-xs text-[rgba(13,61,57,0.65)] dark:text-slate-400">{selected.name}</span>
               </span>
             ) : (
               "Select currency"
@@ -643,7 +643,7 @@ function CurrencyCombobox({ label, value, onChange }: CurrencyComboboxProps) {
                   >
                     <span className="mr-3 text-xl">{currency.flag}</span>
                     <span className="font-medium">{currency.code}</span>
-                    <span className="ml-2 text-xs text-slate-400">{currency.name}</span>
+                    <span className="ml-2 text-xs text-[rgba(13,61,57,0.65)] dark:text-slate-400">{currency.name}</span>
                   </CommandItem>
                 ))}
               </CommandGroup>
