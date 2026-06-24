@@ -59,7 +59,7 @@ export function NotificationsSection() {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'new_member':
-        return <MapPin className="w-5 h-5 text-blue-500" />;
+        return <MapPin className="w-5 h-5 text-[#0D9488]" />;
       case 'new_activity':
         return <Calendar className="w-5 h-5 text-green-500" />;
       case 'payment_due':
@@ -131,7 +131,7 @@ export function NotificationsSection() {
                     {unreadNotifications.map((notification) => (
                       <div
                         key={notification.id}
-                        className="p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                        className="p-4 bg-[rgba(13,148,136,0.06)] border border-[rgba(13,148,136,0.20)] rounded-lg hover:bg-[rgba(13,148,136,0.10)] transition-colors"
                       >
                         <div className="flex items-start gap-3">
                           <div className="flex-shrink-0">
@@ -145,7 +145,7 @@ export function NotificationsSection() {
                               <Badge variant="secondary" className="text-xs">
                                 {getNotificationTypeLabel(notification.type)}
                               </Badge>
-                              <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0" />
+                              <div className="w-2 h-2 bg-[#0D9488] rounded-full flex-shrink-0" />
                             </div>
                             <p className="text-sm text-gray-600 mb-2">
                               {notification.message}

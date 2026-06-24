@@ -41,7 +41,7 @@ export default function Logout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-neutral-100 flex items-center justify-center">
+    <div className="min-h-screen bg-[#F0FDFA] flex items-center justify-center">
       <div className="text-center">
         <TravelLoading size="lg" text="Logging you out..." />
         <p className="mt-4 text-gray-600">Clearing your session...</p>
