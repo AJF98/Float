@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { NotificationsSection } from "@/components/notifications-section";
+
 import { Smartphone, Settings, MapPin, Plane, PlayCircle, ArrowLeft, Search, Loader2, LogOut } from "lucide-react";
 import { useState, useEffect, useMemo, type KeyboardEvent } from "react";
 import { Link, useLocation } from "wouter";
@@ -798,8 +798,6 @@ export default function Profile() {
         </CardContent>
       </Card>
 
-      {/* Notifications Section */}
-      <NotificationsSection />
     </div>
     </div>
   );
