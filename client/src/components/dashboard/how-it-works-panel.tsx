@@ -45,7 +45,7 @@ const benefits: Benefit[] = [
     description:
       "Keep flights, stays, meals, activities, and RSVPs on a single shared timeline.",
     icon: (
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-900/40 border border-cyan-500/30 text-cyan-400">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(13,148,136,0.10)] border border-[rgba(13,148,136,0.25)] text-[#0D9488]">
         <UsersRound className="h-5 w-5" aria-hidden="true" />
       </div>
     ),
@@ -54,7 +54,7 @@ const benefits: Benefit[] = [
     title: "Decide fast.",
     description: "Float options, vote, and convert winners into scheduled items.",
     icon: (
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-900/40 border border-violet-500/30 text-violet-400">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(13,148,136,0.10)] border border-[rgba(13,148,136,0.25)] text-[#0D9488]">
         <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
       </div>
     ),
@@ -62,9 +62,9 @@ const benefits: Benefit[] = [
   {
     title: "Stay in sync.",
     description:
-      "Personal schedule for what you’re attending; group calendar for everything the trip sees.",
+      "Personal schedule for what you're attending; group calendar for everything the trip sees.",
     icon: (
-      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-900/40 border border-amber-500/30 text-amber-400">
+      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[rgba(13,148,136,0.10)] border border-[rgba(13,148,136,0.25)] text-[#0D9488]">
         <CalendarDays className="h-5 w-5" aria-hidden="true" />
       </div>
     ),
@@ -127,7 +127,7 @@ export default function HowItWorksPanel({
     },
     {
       title: "Tune Notifications & Preferences",
-      description: "Choose what updates you get and how you’re notified.",
+      description: "Choose what updates you get and how you're notified.",
       cta: "Profile & Preferences",
       onClick: onOpenPreferences,
     },
@@ -140,23 +140,23 @@ export default function HowItWorksPanel({
       closeLabel="Close how it works"
       headerClassName={`px-6 ${mobile ? "pt-6" : "pt-8"} pb-4 sm:px-10 ${mobile ? "sm:pt-8" : "sm:pt-10"}`}
       bodyClassName={`px-6 pb-10 pt-2 sm:px-10 ${mobile ? "sm:pb-10" : "sm:pb-12"}`}
-      footerClassName="border-t border-white/10 bg-slate-900/95 px-6 py-5 backdrop-blur sm:px-10"
+      footerClassName="border-t border-[rgba(13,148,136,0.15)] bg-white/95 dark:border-white/10 dark:bg-slate-900/95 px-6 py-5 backdrop-blur sm:px-10"
       header={
         <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-900/30 px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-cyan-300">
-            <Sparkles className="h-3.5 w-3.5 text-cyan-400" aria-hidden="true" />
+          <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-4 py-1.5 text-xs font-medium uppercase tracking-[0.2em] text-[#0D9488]">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
             How it works
           </div>
           <div className="space-y-3">
             <h1
               id={titleId}
-              className="text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              className="font-fraunces text-3xl font-semibold tracking-tight text-[#0D3D39] dark:text-white sm:text-4xl"
             >
               How Float Works
             </h1>
             <p
               id={descriptionId}
-              className="max-w-2xl text-base text-slate-300 sm:text-lg"
+              className="max-w-2xl text-base text-[rgba(13,61,57,0.65)] dark:text-slate-300 sm:text-lg"
             >
               Plan amazing group trips with collaborative tools — all in one place.
             </p>
@@ -168,14 +168,14 @@ export default function HowItWorksPanel({
           <Button
             type="button"
             variant="ghost"
-            className="h-11 rounded-full px-5 text-sm font-semibold text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            className="h-11 rounded-full px-5 text-sm font-semibold text-[rgba(13,61,57,0.65)] transition hover:bg-[rgba(13,148,136,0.08)] hover:text-[#0D3D39] dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
             onClick={onCreateTrip}
           >
             Create a trip
           </Button>
           <Button
             type="button"
-            className="h-11 rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 px-6 text-sm font-semibold text-white shadow-sm transition hover:from-cyan-600 hover:to-violet-600"
+            className="h-11 rounded-full px-6 text-sm font-semibold"
             onClick={onDismiss}
           >
             Got it
@@ -186,20 +186,20 @@ export default function HowItWorksPanel({
       <div className="space-y-12">
         <section aria-labelledby="how-it-works-why" className="space-y-4">
           <div className="flex flex-wrap items-end justify-between gap-2">
-            <h2 id="how-it-works-why" className="text-lg font-semibold text-white">
+            <h2 id="how-it-works-why" className="text-lg font-semibold text-[#0D3D39] dark:text-white">
               Why Float
             </h2>
-            <span className="text-sm text-slate-400">Three quick benefits</span>
+            <span className="text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-400">Three quick benefits</span>
           </div>
           <div className="grid gap-4 sm:grid-cols-3">
             {benefits.map((benefit) => (
               <article
                 key={benefit.title}
-                className="group relative overflow-hidden rounded-3xl border border-white/10 bg-slate-800/60 p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                className="group relative overflow-hidden rounded-2xl border border-[rgba(13,148,136,0.15)] bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-[rgba(13,148,136,0.30)] hover:shadow-md dark:border-white/10 dark:bg-slate-800/60"
               >
                 {benefit.icon}
-                <h3 className="mt-5 text-base font-semibold text-white">{benefit.title}</h3>
-                <p className="mt-3 text-sm text-slate-300">{benefit.description}</p>
+                <h3 className="mt-5 text-base font-semibold text-[#0D3D39] dark:text-white">{benefit.title}</h3>
+                <p className="mt-3 text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-300">{benefit.description}</p>
               </article>
             ))}
           </div>
@@ -207,31 +207,31 @@ export default function HowItWorksPanel({
 
         <section aria-labelledby="how-it-works-flow" className="space-y-5">
           <div className="space-y-2">
-            <h2 id="how-it-works-flow" className="text-lg font-semibold text-white">
+            <h2 id="how-it-works-flow" className="text-lg font-semibold text-[#0D3D39] dark:text-white">
               The flow
             </h2>
-            <p className="text-sm text-slate-400">Seven quick steps to launch your next adventure.</p>
+            <p className="text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-400">Seven quick steps to launch your next adventure.</p>
           </div>
           <div className="space-y-3">
             {flowSteps.map((step, index) => (
               <article
                 key={step.title}
-                className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-slate-800/50 p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-4 rounded-2xl border border-[rgba(13,148,136,0.12)] bg-white p-5 shadow-sm transition hover:border-[rgba(13,148,136,0.25)] sm:flex-row sm:items-center sm:justify-between dark:border-white/10 dark:bg-slate-800/50"
               >
                 <div className="flex flex-1 items-start gap-4">
-                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-cyan-500 to-violet-500 text-sm font-semibold text-white">
+                  <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#0D9488] text-sm font-semibold text-white">
                     {index + 1}
                   </span>
                   <div className="space-y-1.5">
-                    <h3 className="text-base font-semibold text-white">{step.title}</h3>
-                    <p className="text-sm text-slate-300">{step.description}</p>
+                    <h3 className="text-base font-semibold text-[#0D3D39] dark:text-white">{step.title}</h3>
+                    <p className="text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-300">{step.description}</p>
                   </div>
                 </div>
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="h-9 shrink-0 rounded-full border border-white/10 bg-slate-800/60 px-4 text-sm font-medium text-slate-300 transition hover:border-white/20 hover:bg-slate-700 hover:text-white"
+                  className="h-9 shrink-0 rounded-full border border-[rgba(13,148,136,0.20)] bg-white px-4 text-sm font-medium text-[#0D3D39] transition hover:border-[rgba(13,148,136,0.40)] hover:bg-[rgba(13,148,136,0.06)] dark:border-white/10 dark:bg-slate-800/60 dark:text-slate-300 dark:hover:border-white/20 dark:hover:bg-slate-700 dark:hover:text-white"
                   onClick={step.onClick}
                 >
                   {step.cta}
@@ -243,26 +243,26 @@ export default function HowItWorksPanel({
         </section>
 
         <section aria-labelledby="how-it-works-tips" className="space-y-4">
-          <h2 id="how-it-works-tips" className="text-lg font-semibold text-white">
+          <h2 id="how-it-works-tips" className="text-lg font-semibold text-[#0D3D39] dark:text-white">
             Tips
           </h2>
-          <div className="space-y-4 rounded-3xl border border-cyan-500/30 bg-cyan-900/30 p-6 shadow-sm">
+          <div className="space-y-4 rounded-2xl border border-[rgba(13,148,136,0.20)] bg-[rgba(13,148,136,0.06)] p-6">
             <div>
-              <h3 className="text-base font-semibold text-cyan-300">Scheduled vs Floated</h3>
-              <p className="mt-1.5 text-sm text-cyan-300/80">
+              <h3 className="text-base font-semibold text-[#0D9488]">Scheduled vs Floated</h3>
+              <p className="mt-1.5 text-sm text-[rgba(13,61,57,0.65)]">
                 Use <strong>Scheduled</strong> when a time/date is set and you need accept/decline. Use <strong>Floated</strong> to
                 collect interest/votes before booking.
               </p>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-cyan-300">Two calendars</h3>
-              <p className="mt-1.5 text-sm text-cyan-300/80">
-                <strong>My Schedule</strong> shows only what you’re attending; <strong>Group Calendar</strong> shows everything on the trip.
+              <h3 className="text-base font-semibold text-[#0D9488]">Two calendars</h3>
+              <p className="mt-1.5 text-sm text-[rgba(13,61,57,0.65)]">
+                <strong>My Schedule</strong> shows only what you're attending; <strong>Group Calendar</strong> shows everything on the trip.
               </p>
             </div>
             <div>
-              <h3 className="text-base font-semibold text-cyan-300">Quick add</h3>
-              <p className="mt-1.5 text-sm text-cyan-300/80">
+              <h3 className="text-base font-semibold text-[#0D9488]">Quick add</h3>
+              <p className="mt-1.5 text-sm text-[rgba(13,61,57,0.65)]">
                 You can add items from each tab without leaving the page (search sits in-page).
               </p>
             </div>
