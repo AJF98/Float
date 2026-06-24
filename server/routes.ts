@@ -4965,6 +4965,7 @@ export function setupRoutes(app: Express) {
               typeof parsedData.status === 'string' && parsedData.status.trim().length > 0
                 ? (parsedData.status as string)
                 : 'proposed',
+            votingDeadline: parsedData.votingDeadline != null ? String(parsedData.votingDeadline) : undefined,
           };
 
           const fallbackSchema = insertHotelProposalSchema.extend({
@@ -5388,9 +5389,10 @@ export function setupRoutes(app: Express) {
     }
   });
 
-  app.post('/api/trips/:id/flight-proposals', isAuthenticated, async (req: any, res) => {
+  const handleFlightProposalCreate = async (req: any, res: any) => {
     let userId: string | undefined;
-    const tripId = Number.parseInt(req.params.id, 10);
+    const rawTripId = req.params.tripId ?? req.params.id;
+    const tripId = Number.parseInt(String(rawTripId ?? ''), 10);
     try {
       if (Number.isNaN(tripId)) {
         return res.status(400).json({ message: "Invalid trip id" });
@@ -5482,7 +5484,10 @@ export function setupRoutes(app: Express) {
       });
       res.status(500).json({ message: "Failed to create flight proposal" });
     }
-  });
+  };
+
+  app.post('/api/trips/:id/flight-proposals', isAuthenticated, handleFlightProposalCreate);
+  app.post('/api/trips/:tripId/proposals/flights', isAuthenticated, handleFlightProposalCreate);
 
   app.post('/api/flight-proposals/:id/rank', isAuthenticated, async (req: any, res) => {
     try {
