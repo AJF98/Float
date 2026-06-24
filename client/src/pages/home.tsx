@@ -7,18 +7,15 @@ import {
   useMemo,
   useRef,
   useState,
-  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import {
   differenceInCalendarDays,
-  endOfYear,
   isBefore,
   parseISO,
   startOfDay,
-  startOfYear,
 } from "date-fns";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -43,17 +40,12 @@ import type { LastConversion } from "@/components/dashboard/converter-types";
 import type { TripWithDetails } from "@shared/schema";
 import {
   CalendarDays,
-  CheckCircle2,
-  Globe2,
   Plane,
-  UserRound,
   MapPin,
-  X,
 } from "lucide-react";
 import { Link } from "wouter";
 import FloatLogo from "@/components/FloatLogo";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { TripCommandCenter } from "@/components/dashboard/trip-command-center";
 import {
   DashboardNotifications,
   type DashboardNotificationMemberProfile,
@@ -61,17 +53,14 @@ import {
   type DashboardNotificationTripLookup,
 } from "@/components/dashboard/dashboard-notifications";
 import {
-  selectAllDestinationsUnique,
   selectNextTrip,
-  selectUniqueTravelersThisYear,
   selectUpcomingTrips,
-  selectUpcomingDestinationsUnique,
   isTripInactive,
   calculateTripPlanningProgress,
+  countOpenDecisions,
   type TripWithPlanningData,
 } from "@/lib/dashboardSelectors";
 import {
-  TRIP_COVER_GRADIENT,
   buildCoverPhotoAltText,
   buildCoverPhotoSrcSet,
   getCoverPhotoObjectPosition,
@@ -89,14 +78,6 @@ const HowItWorksPanel = lazy(() =>
 const LAST_CONVERSION_KEY = "dashboard.converter.last";
 const HOW_IT_WORKS_DISMISSED_KEY = "dismissedHowItWorks";
 
-const MAX_UPCOMING_PREVIEW = 5;
-const NEXT_TRIP_CHECKLIST = [
-  "Confirm reservations",
-  "Share itinerary",
-  "Review packing list",
-];
-
-type ExpandedCardKey = "upcoming" | "destinations" | "next" | "travelers";
 
 function useMediaQuery(query: string) {
   const [matches, setMatches] = useState(() =>
@@ -171,33 +152,6 @@ function formatDateRange(startDate: string, endDate: string): string {
   return "Dates TBD";
 }
 
-function getCountdownLabel(startDate: string, endDate: string): string {
-  const start = startOfDay(parseISO(startDate));
-  const end = startOfDay(parseISO(endDate));
-  const today = startOfDay(new Date());
-
-  if (start.getTime() === today.getTime()) {
-    return "Starts today";
-  }
-
-  if (start > today) {
-    const diff = differenceInCalendarDays(start, today);
-    if (diff === 1) {
-      return "1 day to go";
-    }
-    return `${diff} days to go`;
-  }
-
-  if (today >= start && today <= end) {
-    return "In progress";
-  }
-
-  const diffFromEnd = differenceInCalendarDays(today, end);
-  if (diffFromEnd === 1) {
-    return "Ended 1 day ago";
-  }
-  return `Ended ${diffFromEnd} days ago`;
-}
 
 function buildTripAriaLabel(
   name: string | null | undefined,
@@ -321,46 +275,6 @@ type TripSummary = {
   coverPhotoAlt?: string | null;
 };
 
-type Insight = {
-  id: string;
-  title: string;
-  description: string;
-  href: string;
-  icon: string;
-};
-
-type CompactUpcomingTrip = {
-  id: number;
-  name: string;
-  destination: string;
-  startDate: string;
-  endDate: string;
-  travelersCount: number;
-  progressPercent: number;
-};
-
-type DestinationSummary = {
-  key: string;
-  city: string;
-  country: string | null;
-  tripCount: number;
-  nextTrip: TripWithDetails | null;
-};
-
-type TravelerTrip = {
-  id: number;
-  name: string;
-  startDate: string;
-  endDate: string;
-};
-
-type TravelerSummaryRow = {
-  id: string;
-  name: string;
-  avatar: string | null;
-  initial: string;
-  trips: TravelerTrip[];
-};
 
 export default function Home() {
   const { user } = useAuth();
@@ -368,11 +282,6 @@ export default function Home() {
   const [lastConversion, setLastConversion] = useState<LastConversion | null>(null);
   const isDesktop = useMediaQuery("(min-width: 1024px)");
   const converterDialogId = useId();
-  const upcomingCardLabelId = useId();
-  const destinationsCardLabelId = useId();
-  const nextTripCardLabelId = useId();
-  const travelersCardLabelId = useId();
-  const statsPanelId = useId();
   const howItWorksTitleId = useId();
   const howItWorksDescriptionId = useId();
   const converterButtonRef = useRef<HTMLElement | null>(null);
@@ -380,29 +289,11 @@ export default function Home() {
   const howItWorksCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const converterCloseButtonRef = useRef<HTMLButtonElement | null>(null);
   const shouldRestoreHowItWorksFocus = useRef(true);
-  const upcomingSectionRef = useRef<HTMLHeadingElement | null>(null);
-  const statsPanelRef = useRef<HTMLDivElement | null>(null);
-  const cardButtonRefs = useRef<Record<ExpandedCardKey, HTMLButtonElement | null>>({
-    upcoming: null,
-    destinations: null,
-    next: null,
-    travelers: null,
-  });
   const quickActionsButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isConverterOpen, setIsConverterOpen] = useState(false);
   const [isHowItWorksOpen, setIsHowItWorksOpen] = useState(false);
   const [isQuickActionsOpen, setIsQuickActionsOpen] = useState(false);
   const [howItWorksLoaded, setHowItWorksLoaded] = useState(false);
-  const [expandedCard, setExpandedCard] = useState<ExpandedCardKey | null>(null);
-  const handleToggleCard = useCallback((card: ExpandedCardKey) => {
-    setExpandedCard((current) => (current === card ? null : card));
-  }, []);
-  const handleClosePanel = useCallback(() => {
-    setExpandedCard(null);
-  }, []);
-  const handleScrollToUpcoming = useCallback(() => {
-    upcomingSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, []);
   const handleConverterVisibilityChange = useCallback(
     (open: boolean) => {
       setIsConverterOpen(open);
@@ -439,42 +330,6 @@ export default function Home() {
       element.focus();
     });
   }, []);
-
-  const trackStatsPanelOpened = useCallback((card: ExpandedCardKey) => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const detail = { card };
-    const analyticsWindow = window as typeof window & {
-      analytics?: { track?: (eventName: string, payload?: Record<string, unknown>) => void };
-    };
-    analyticsWindow.analytics?.track?.("stats_panel_opened", detail);
-    try {
-      window.dispatchEvent(new CustomEvent("stats_panel_opened", { detail }));
-    } catch {
-      // noop
-    }
-  }, []);
-
-  const lastExpandedCardRef = useRef<ExpandedCardKey | null>(null);
-
-  useEffect(() => {
-    if (!expandedCard) {
-      if (lastExpandedCardRef.current) {
-        const trigger = cardButtonRefs.current[lastExpandedCardRef.current];
-        focusElement(trigger ?? null);
-      }
-      lastExpandedCardRef.current = null;
-      return;
-    }
-
-    if (lastExpandedCardRef.current !== expandedCard) {
-      trackStatsPanelOpened(expandedCard);
-    }
-
-    lastExpandedCardRef.current = expandedCard;
-    focusElement(statsPanelRef.current);
-  }, [expandedCard, focusElement, trackStatsPanelOpened]);
 
   const handleHowItWorksOpenAutoFocus = useCallback(
     (event: Event) => {
@@ -661,16 +516,6 @@ export default function Home() {
     [primaryTrip, nextTrip, upcomingTripsForStats, sortedTrips],
   );
 
-  const uniqueDestinations = useMemo(
-    () => selectAllDestinationsUnique(sortedTrips, today),
-    [sortedTrips, today],
-  );
-
-  const travelersThisYear = useMemo(
-    () => selectUniqueTravelersThisYear(sortedTrips, today),
-    [sortedTrips, today],
-  );
-
   const daysToNextTrip = useMemo(() => {
     if (!nextTrip) {
       return null;
@@ -718,148 +563,6 @@ export default function Home() {
       coverPhotoAlt: trip.coverPhotoAlt ?? undefined,
     }));
   }, [upcomingTripsForDisplay]);
-
-  const upcomingPreviewTrips: CompactUpcomingTrip[] = useMemo(() => {
-    return upcomingTripsForStats.slice(0, MAX_UPCOMING_PREVIEW).map((trip) => ({
-      id: trip.id,
-      name: trip.name || trip.destination,
-      destination: trip.destination,
-      startDate: toDateString(trip.startDate),
-      endDate: toDateString(trip.endDate),
-      travelersCount: trip.memberCount,
-      progressPercent: calculateTripPlanningProgress(trip).percentage,
-    }));
-  }, [upcomingTripsForStats]);
-
-  const destinationSummaries: DestinationSummary[] = useMemo(() => {
-    const startYearBoundary = startOfYear(today);
-    const endYearBoundary = endOfYear(today);
-    const buckets = new Map<string, { city: string; country: string | null; trips: TripWithDetails[] }>();
-
-    for (const trip of sortedTrips) {
-      if (isTripInactive(trip)) {
-        continue;
-      }
-
-      const tripStart = startOfDay(parseISO(toDateString(trip.startDate)));
-      const tripEnd = startOfDay(parseISO(toDateString(trip.endDate)));
-      const overlapsYear =
-        tripEnd.getTime() >= startYearBoundary.getTime() &&
-        tripStart.getTime() <= endYearBoundary.getTime();
-
-      if (!overlapsYear) {
-        continue;
-      }
-
-      const fallbackDestination = trip.destination?.trim() || "Destination TBD";
-      const city = trip.cityName?.trim() || fallbackDestination;
-      const country = trip.countryName?.trim() ?? null;
-      const key = trip.geonameId
-        ? `geo-${trip.geonameId}`
-        : `${city.toLowerCase()}|${country?.toLowerCase() ?? fallbackDestination.toLowerCase()}`;
-
-      if (!buckets.has(key)) {
-        buckets.set(key, { city, country, trips: [] });
-      }
-
-      buckets.get(key)!.trips.push(trip);
-    }
-
-    return Array.from(buckets.entries())
-      .map(([key, bucket]) => {
-        const sortedByDate = bucket.trips
-          .slice()
-          .sort(
-            (a, b) =>
-              parseISO(toDateString(a.startDate)).getTime() -
-              parseISO(toDateString(b.startDate)).getTime(),
-          );
-
-        const next =
-          sortedByDate.find((trip) => {
-            const start = startOfDay(parseISO(toDateString(trip.startDate)));
-            return start.getTime() >= today.getTime();
-          }) ?? sortedByDate[0] ?? null;
-
-        return {
-          key,
-          city: bucket.city,
-          country: bucket.country,
-          tripCount: bucket.trips.length,
-          nextTrip: next,
-        } satisfies DestinationSummary;
-      })
-      .sort((a, b) => a.city.localeCompare(b.city));
-  }, [sortedTrips, today]);
-
-  const travelerSummaries: TravelerSummaryRow[] = useMemo(() => {
-    const startYearBoundary = startOfYear(today);
-    const endYearBoundary = endOfYear(today);
-    const travelerMap = new Map<string, TravelerSummaryRow>();
-
-    for (const trip of sortedTrips) {
-      if (isTripInactive(trip)) {
-        continue;
-      }
-
-      const tripStart = startOfDay(parseISO(toDateString(trip.startDate)));
-      const tripEnd = startOfDay(parseISO(toDateString(trip.endDate)));
-      const overlapsYear =
-        tripEnd.getTime() >= startYearBoundary.getTime() &&
-        tripStart.getTime() <= endYearBoundary.getTime();
-
-      if (!overlapsYear) {
-        continue;
-      }
-
-      const tripLabel = trip.name || trip.destination;
-
-      for (const member of trip.members) {
-        if (!member.userId || member.userId === user?.id || !member.user) {
-          continue;
-        }
-
-        const tripEntry: TravelerTrip = {
-          id: trip.id,
-          name: tripLabel,
-          startDate: toDateString(trip.startDate),
-          endDate: toDateString(trip.endDate),
-        };
-
-        const existing = travelerMap.get(member.userId);
-
-        if (existing) {
-          if (!existing.trips.some((entry) => entry.id === tripEntry.id)) {
-            existing.trips.push(tripEntry);
-          }
-          if (!existing.avatar && member.user.profileImageUrl) {
-            existing.avatar = member.user.profileImageUrl;
-          }
-        } else {
-          travelerMap.set(member.userId, {
-            id: member.userId,
-            name: getMemberDisplayName(member.user),
-            avatar: member.user.profileImageUrl ?? null,
-            initial: getMemberInitial(member.user),
-            trips: [tripEntry],
-          });
-        }
-      }
-    }
-
-    return Array.from(travelerMap.values())
-      .map((entry) => ({
-        ...entry,
-        trips: entry.trips
-          .slice()
-          .sort(
-            (a, b) =>
-              parseISO(a.startDate).getTime() -
-              parseISO(b.startDate).getTime(),
-          ),
-      }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [sortedTrips, today, user?.id]);
 
   const memberLookup = useMemo<DashboardNotificationMemberLookup>(() => {
     const byId: DashboardNotificationMemberLookup["byId"] = {};
@@ -926,74 +629,6 @@ export default function Home() {
 
   const statsLoading = isLoading && !trips;
   const isError = Boolean(error);
-  const upcomingCount = upcomingTripsForStats.length;
-  const destinationsCount = uniqueDestinations.size;
-  const travelersCount = travelersThisYear.size;
-  const isUpcomingExpanded = expandedCard === "upcoming";
-  const isDestinationsExpanded = expandedCard === "destinations";
-  const isNextTripExpanded = expandedCard === "next";
-  const isTravelersExpanded = expandedCard === "travelers";
-  const cardLabelIds: Record<ExpandedCardKey, string> = {
-    upcoming: upcomingCardLabelId,
-    destinations: destinationsCardLabelId,
-    next: nextTripCardLabelId,
-    travelers: travelersCardLabelId,
-  };
-  const panelTitles: Record<ExpandedCardKey, string> = {
-    upcoming: "Upcoming trips",
-    destinations: "Destinations",
-    next: "Days to next trip",
-    travelers: "Travelers this year",
-  };
-
-  const handlePanelKeyDown = useCallback(
-    (event: ReactKeyboardEvent<HTMLDivElement>) => {
-      if (event.key === "Escape" && expandedCard) {
-        event.preventDefault();
-        handleClosePanel();
-      }
-    },
-    [expandedCard, handleClosePanel],
-  );
-
-
-  const insights: Insight[] = useMemo(() => {
-    if (!primaryTrip) {
-      return [];
-    }
-    const base = `/trip/${primaryTrip.id}`;
-    return [
-      {
-        id: "invite",
-        title: "Invite your crew",
-        description: "Make sure everyone is looped in before takeoff.",
-        href: `${base}?view=members`,
-        icon: "👥",
-      },
-      {
-        id: "schedule",
-        title: "Review day one",
-        description: "Double-check the first day’s plans to start strong.",
-        href: `${base}?view=activities`,
-        icon: "🗓️",
-      },
-      {
-        id: "expenses",
-        title: "Track shared costs",
-        description: "Peek at expenses so there are no surprises later.",
-        href: `${base}?view=expenses`,
-        icon: "💳",
-      },
-    ];
-  }, [primaryTrip]);
-
-  const nextTripChip = primaryTrip
-    ? `Next up: ${primaryTrip.name || primaryTrip.destination} · ${formatDateRange(
-        toDateString(primaryTrip.startDate),
-        toDateString(primaryTrip.endDate),
-      )}`
-    : null;
-
 
   const handlePlanTrip = useCallback(() => {
     setLocation("/trips/new");
@@ -1072,309 +707,6 @@ export default function Home() {
     setLastConversion(conversion);
     storeLastConversion(conversion);
   };
-
-  let panelContent: ReactNode = null;
-
-  if (expandedCard === "upcoming") {
-    if (statsLoading) {
-      panelContent = (
-        <div className="space-y-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <div
-              key={`upcoming-expanded-skeleton-${index}`}
-              className="space-y-2 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
-            >
-              <Skeleton className="h-4 w-2/3" />
-              <Skeleton className="h-3 w-1/2" />
-              <Skeleton className="h-2 w-full rounded-full" />
-            </div>
-          ))}
-        </div>
-      );
-    } else if (upcomingPreviewTrips.length === 0) {
-      panelContent = (
-        <div className="space-y-4 text-sm text-slate-400">
-          <p>No upcoming trips yet. Plan a new trip.</p>
-          <Button
-            size="sm"
-            onClick={handlePlanTrip}
-            className="h-auto rounded-full px-4 py-2 text-sm font-semibold shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Plan a New Trip
-          </Button>
-        </div>
-      );
-    } else {
-      panelContent = (
-        <div className="space-y-4">
-          <div className="space-y-3">
-            {upcomingPreviewTrips.map((trip) => (
-              <Link
-                key={`upcoming-preview-${trip.id}`}
-                href={`/trip/${trip.id}`}
-                aria-label={buildTripAriaLabel(trip.name, trip.destination, trip.startDate, trip.endDate)}
-                data-analytics="trip_card_click"
-                data-trip-id={trip.id}
-                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:border-[rgba(13,148,136,0.30)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0D9488] active:-translate-y-0.5"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{trip.name}</p>
-                    <p className="text-xs text-slate-400">{formatDateRange(trip.startDate, trip.endDate)}</p>
-                  </div>
-                  <span className="text-xs font-semibold text-[#2563eb]">Open trip →</span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-                    {trip.destination}
-                  </Badge>
-                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-                    {getTravelersLabel(trip.travelersCount)}
-                  </Badge>
-                </div>
-                <div>
-                  <Progress value={trip.progressPercent} className="h-2 rounded-full bg-slate-700/50" />
-                  <p className="mt-1 text-xs text-slate-400">Planning {trip.progressPercent}%</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-          <button
-            type="button"
-            onClick={handleScrollToUpcoming}
-            className="text-sm font-semibold text-[#2563eb] transition hover:text-[#7C5CFF]"
-          >
-            View all trips
-          </button>
-        </div>
-      );
-    }
-  } else if (expandedCard === "destinations") {
-    if (statsLoading) {
-      panelContent = (
-        <div className="space-y-3">
-          {Array.from({ length: 2 }).map((_, index) => (
-            <div
-              key={`destinations-skeleton-${index}`}
-              className="space-y-2 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
-            >
-              <Skeleton className="h-4 w-1/2" />
-              <Skeleton className="h-3 w-2/3" />
-            </div>
-          ))}
-        </div>
-      );
-    } else if (destinationSummaries.length === 0) {
-      panelContent = <p className="text-sm text-slate-400">No destinations yet this year.</p>;
-    } else {
-      panelContent = (
-        <div className="space-y-3">
-          {destinationSummaries.map((destination) => {
-            const nextTrip = destination.nextTrip;
-            const nextTripDateRange = nextTrip
-              ? formatDateRange(
-                  toDateString(nextTrip.startDate),
-                  toDateString(nextTrip.endDate),
-                )
-              : null;
-            if (!nextTrip) {
-              return (
-                <div
-                  key={`destination-summary-${destination.key}`}
-                  className="flex flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-semibold text-white">{destination.city}</p>
-                      {destination.country ? (
-                        <p className="text-xs text-slate-400">{destination.country}</p>
-                      ) : null}
-                    </div>
-                    <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 text-xs font-semibold text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-                      {destination.tripCount} {destination.tripCount === 1 ? "trip" : "trips"}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-slate-400">Dates coming soon</p>
-                </div>
-              );
-            }
-
-            return (
-              <Link
-                key={`destination-summary-${destination.key}`}
-                href={`/trip/${nextTrip.id}`}
-                aria-label={buildTripAriaLabel(
-                  nextTrip.name,
-                  destination.city,
-                  toDateString(nextTrip.startDate),
-                  toDateString(nextTrip.endDate),
-                )}
-                data-analytics="trip_card_click"
-                data-trip-id={nextTrip.id}
-                className="group flex cursor-pointer flex-col gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm transition duration-150 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:border-[rgba(13,148,136,0.30)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#0D9488] active:-translate-y-0.5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-white">{destination.city}</p>
-                    {destination.country ? (
-                      <p className="text-xs text-slate-400">{destination.country}</p>
-                    ) : null}
-                  </div>
-                  <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 text-xs font-semibold text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-                    {destination.tripCount} {destination.tripCount === 1 ? "trip" : "trips"}
-                  </Badge>
-                </div>
-                <p className="text-xs text-slate-400">Next: {nextTripDateRange}</p>
-                <span className="text-xs font-semibold text-[#2563eb]">Open trip →</span>
-              </Link>
-            );
-          })}
-        </div>
-      );
-    }
-  } else if (expandedCard === "next") {
-    if (statsLoading) {
-      panelContent = (
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-3 w-2/3" />
-          <Skeleton className="h-2 w-full rounded-full" />
-        </div>
-      );
-    } else if (!nextTrip) {
-      panelContent = <p className="text-sm text-slate-400">No trips scheduled.</p>;
-    } else {
-      const startsToday = (daysToNextTrip ?? 0) === 0;
-      const travelerCountLabel = getTravelersLabel(nextTrip.memberCount ?? nextTrip.members.length);
-
-      panelContent = (
-        <Link
-          href={`/trip/${nextTrip.id}`}
-          aria-label={buildTripAriaLabel(
-            nextTrip.name,
-            nextTrip.destination,
-            toDateString(nextTrip.startDate),
-            toDateString(nextTrip.endDate),
-          )}
-          data-analytics="trip_card_click"
-          data-trip-id={nextTrip.id}
-          className="group block cursor-pointer space-y-4 rounded-xl transition duration-150 ease-out hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7C5CFF] active:-translate-y-0.5"
-        >
-          <div className="space-y-1">
-            <p className="text-lg font-semibold text-white">
-              {startsToday ? "Trip starts today 🎉" : nextTrip.name || nextTrip.destination}
-            </p>
-            <p className="text-sm text-slate-400">
-              {startsToday
-                ? `${nextTrip.name || nextTrip.destination} · ${formatDateRange(
-                    toDateString(nextTrip.startDate),
-                    toDateString(nextTrip.endDate),
-                  )}`
-                : `Starts in ${daysToNextTrip} ${
-                    daysToNextTrip === 1 ? "day" : "days"
-                  } (${formatDateRange(
-                    toDateString(nextTrip.startDate),
-                    toDateString(nextTrip.endDate),
-                  )})`}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2 text-xs">
-            <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-              {startsToday ? "Today" : `${daysToNextTrip} ${daysToNextTrip === 1 ? "day" : "days"} to go`}
-            </Badge>
-            <Badge className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] px-3 py-1 font-medium text-teal-700 dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 dark:text-cyan-300">
-              {travelerCountLabel}
-            </Badge>
-          </div>
-          {!startsToday ? (
-            <div className="space-y-2">
-              <Progress value={calculateTripPlanningProgress(nextTrip as TripWithPlanningData).percentage} className="h-2 rounded-full bg-slate-100" />
-              <ul className="space-y-1.5 text-sm text-slate-400">
-                {NEXT_TRIP_CHECKLIST.map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-[#2563eb]" aria-hidden="true" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-          <span className="inline-flex items-center text-xs font-semibold text-[#2563eb]">Open trip →</span>
-        </Link>
-      );
-    }
-  } else if (expandedCard === "travelers") {
-    if (statsLoading) {
-      panelContent = (
-        <div className="space-y-3">
-          {Array.from({ length: 2 }).map((_, index) => (
-            <div
-              key={`travelers-skeleton-${index}`}
-              className="flex items-center gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/40 p-4"
-            >
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-3 w-2/3" />
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    } else if (travelerSummaries.length === 0) {
-      panelContent = (
-        <div className="space-y-4 text-sm text-slate-400">
-          <p>No co-travelers yet. Invite someone.</p>
-          <Button
-            size="sm"
-            onClick={handleInviteMore}
-            className="h-auto rounded-full px-4 py-2 text-sm font-semibold shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-          >
-            Invite more
-          </Button>
-        </div>
-      );
-    } else {
-      panelContent = (
-        <div className="space-y-4">
-        <div className="space-y-3">
-          {travelerSummaries.map((traveler) => (
-            <div
-              key={`traveler-summary-${traveler.id}`}
-              className="flex items-start gap-3 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white dark:border-white/10 dark:bg-slate-800/50 p-4 shadow-sm"
-            >
-              <Avatar className="h-10 w-10 border-2 border-white bg-slate-100">
-                <AvatarImage src={traveler.avatar ?? undefined} alt={traveler.name} loading="lazy" />
-                <AvatarFallback>{traveler.initial}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 space-y-2">
-                <p className="text-sm font-semibold text-white">{traveler.name}</p>
-                <div className="flex flex-wrap gap-2">
-                  {traveler.trips.map((trip) => (
-                    <div
-                      key={`traveler-${traveler.id}-trip-${trip.id}`}
-                      className="flex flex-wrap items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-[11px] text-slate-400"
-                    >
-                      <span className="font-medium text-slate-700">{trip.name}</span>
-                      <span className="text-slate-400">· {formatDateRange(trip.startDate, trip.endDate)}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <Button
-          size="sm"
-          onClick={handleInviteMore}
-          className="self-start h-auto rounded-full px-4 py-2 text-sm font-semibold shadow-md transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-lg"
-        >
-          Invite more
-        </Button>
-        </div>
-      );
-    }
-  }
 
   const howItWorksFallback = (
     <div className="flex min-h-[420px] items-center justify-center bg-white px-8 py-12">
@@ -1593,35 +925,19 @@ export default function Home() {
             <div>
               <h1
                 id="dashboard-hero"
-                className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl"
+                className="font-fraunces text-3xl font-semibold tracking-tight text-[#0D3D39] dark:text-white sm:text-4xl"
               >
-                {user?.firstName ? `Hey, ${user.firstName} ✈️` : "Your trips"}
+                {user?.firstName ? `Hey, ${user.firstName}` : "Your trips"}
               </h1>
               {nextTrip ? (
-                <div className="mt-2 flex flex-wrap gap-2">
+                <div className="mt-2">
                   <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 px-3 py-1 text-xs font-medium text-teal-700 dark:text-slate-300">
                     <CalendarDays className="h-3.5 w-3.5" />
-                    {daysToNextTrip === 0 ? "Today!" : `${daysToNextTrip} days to go`}
+                    {daysToNextTrip === 0 ? "Trip starts today!" : `${daysToNextTrip} days to your next trip`}
                   </span>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 px-3 py-1 text-xs font-medium text-teal-700 dark:text-slate-300">
-                    <UserRound className="h-3.5 w-3.5" />
-                    {nextTrip.memberCount ?? nextTrip.members.length} {(nextTrip.memberCount ?? nextTrip.members.length) === 1 ? "traveler" : "travelers"}
-                  </span>
-                  {upcomingSummaries[0] && (
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium ${
-                      upcomingSummaries[0].progressPercent >= 50
-                        ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                        : upcomingSummaries[0].progressPercent > 0
-                          ? "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300"
-                          : "bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 text-teal-700 dark:text-slate-300"
-                    }`}>
-                      <Globe2 className="h-3.5 w-3.5" />
-                      Planning {upcomingSummaries[0].progressPercent}%
-                    </span>
-                  )}
                 </div>
               ) : (
-                <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Plan your next adventure</p>
+                <p className="mt-1 text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-400">Plan your next adventure</p>
               )}
             </div>
             <Button
@@ -1632,102 +948,42 @@ export default function Home() {
             </Button>
           </div>
 
-          {upcomingSummaries.length > 1 && (
-            <section aria-labelledby="needs-attention-heading" className="space-y-3">
-              <h2 id="needs-attention-heading" className="text-sm font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                Your trips at a glance
-              </h2>
-              <div className="divide-y divide-slate-100 dark:divide-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/60 overflow-hidden">
-                {upcomingSummaries.map((trip) => {
-                  const daysLeft = differenceInCalendarDays(
-                    parseISO(trip.startDate),
-                    startOfDay(new Date()),
-                  );
-                  const isUrgent = daysLeft <= 30 && trip.progressPercent < 40;
-                  return (
-                    <Link
-                      key={`glance-${trip.id}`}
-                      href={`/trip/${trip.id}`}
-                      className="flex items-center justify-between gap-4 bg-white dark:bg-slate-900/60 px-4 py-3 text-sm transition hover:bg-[#F0FDFA] dark:hover:bg-slate-800/60"
-                    >
-                      <div className="flex items-center gap-3 min-w-0">
-                        {isUrgent && (
-                          <span className="h-2 w-2 shrink-0 rounded-full bg-amber-400" aria-label="Needs attention" />
-                        )}
-                        <span className="font-medium text-slate-900 dark:text-white truncate">{trip.name}</span>
-                        <span className="hidden sm:inline text-slate-400 dark:text-slate-500 shrink-0">{trip.destination}</span>
-                      </div>
-                      <div className="flex items-center gap-3 shrink-0 text-slate-500 dark:text-slate-400">
-                        <span className={daysLeft <= 14 ? "font-semibold text-amber-600 dark:text-amber-400" : ""}>
-                          {daysLeft === 0 ? "Today" : daysLeft < 0 ? "In progress" : `${daysLeft}d`}
-                        </span>
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          trip.progressPercent >= 50
-                            ? "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300"
-                            : "bg-[rgba(13,148,136,0.08)] dark:bg-slate-800 text-teal-700 dark:text-slate-400"
-                        }`}>
-                          {trip.progressPercent}%
-                        </span>
-                        <Plane className="h-3.5 w-3.5" />
-                      </div>
-                    </Link>
-                  );
-                })}
-              </div>
-            </section>
-          )}
-
-          <section aria-labelledby="upcoming-trips-heading" className="space-y-6">
+          <section aria-labelledby="upcoming-trips-heading" className="space-y-4">
             <h2
               id="upcoming-trips-heading"
-              ref={upcomingSectionRef}
-              className="text-2xl font-semibold text-slate-900 dark:text-white"
+              className="text-lg font-semibold text-[#0D3D39] dark:text-white"
             >
               Upcoming trips
             </h2>
 
-            {error ? (
+            {isError ? (
               <Card className="rounded-2xl border border-amber-200 bg-amber-50/80 p-6 text-amber-900">
                 We’re having trouble loading your trips right now. Try refreshing the page.
               </Card>
             ) : null}
 
             {isLoading ? (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Card
-                    key={`trip-skeleton-${index}`}
-                    className="dashboard-themed-card overflow-hidden p-4"
-                  >
-                    <Skeleton className="aspect-video w-full rounded-xl" />
-                    <div className="mt-4 space-y-2">
-                      <Skeleton className="h-5 w-2/3" />
-                      <Skeleton className="h-4 w-1/2" />
-                      <Skeleton className="h-2 w-full rounded-full" />
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <Skeleton className="h-[300px] w-full rounded-2xl" />
             ) : upcomingSummaries.length > 0 ? (
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {upcomingSummaries.map((trip) => (
-                  <TripCard key={trip.id} trip={trip} />
-                ))}
-              </div>
+              <>
+                <FeaturedTripCard
+                  trip={upcomingSummaries[0]!}
+                  nextTripData={nextTripWithPlanningData}
+                  onNavigate={setLocation}
+                />
+                {upcomingSummaries.length > 1 && (
+                  <div
+                    className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-2"
+                    aria-label="Other upcoming trips"
+                  >
+                    {upcomingSummaries.slice(1).map((trip) => (
+                      <CompactTripPill key={`compact-${trip.id}`} trip={trip} />
+                    ))}
+                  </div>
+                )}
+              </>
             ) : (
-              <Card className="dashboard-themed-card flex flex-col items-center justify-center gap-5 p-10 text-center">
-                <div className="text-5xl">🌅</div>
-                <h3 className="text-2xl font-semibold text-white">Ready for your next getaway?</h3>
-                <p className="max-w-md text-sm text-slate-400">
-                  Start planning a new adventure to see it appear here with all the essentials at a glance.
-                </p>
-                <Button
-                  onClick={handlePlanTrip}
-                  className="h-auto rounded-full px-6 py-2.5 text-base font-semibold shadow-lg transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-xl"
-                >
-                  Plan a New Trip
-                </Button>
-              </Card>
+              <EmptyTripsState onPlanTrip={handlePlanTrip} />
             )}
           </section>
 
@@ -1736,172 +992,177 @@ export default function Home() {
             memberLookup={memberLookup}
             tripLookup={tripLookup}
           />
-
-          <TripCommandCenter
-            nextTrip={nextTripWithPlanningData}
-            upcomingTripsCount={upcomingCount}
-            today={today}
-            isLoading={statsLoading}
-            onCreateTrip={handlePlanTrip}
-          />
-
-          {(insights.length > 0 || primaryTrip) && (
-            <section aria-labelledby="insights-heading" className="space-y-6">
-              <h2 id="insights-heading" className="text-2xl font-semibold text-white">
-                Helpful insights
-              </h2>
-              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {insights.map((insight) => (
-                  <Link key={insight.id} href={insight.href} className="group">
-                    <Card className="dashboard-themed-card flex h-full flex-col justify-between overflow-hidden p-6 transition-transform duration-200 group-hover:-translate-y-1 group-hover:shadow-[0_32px_70px_-35px_rgba(79,70,229,0.45)]">
-                      <div className="space-y-3">
-                        <span className="text-2xl" aria-hidden="true">
-                          {insight.icon}
-                        </span>
-                        <h3 className="text-lg font-semibold text-white">{insight.title}</h3>
-                        <p className="text-sm text-slate-400">{insight.description}</p>
-                      </div>
-                      <span className="mt-6 text-sm font-semibold text-[#2563eb]">Go to trip →</span>
-                    </Card>
-                  </Link>
-                ))}
-                {primaryTrip ? (
-                  <Card className="dashboard-themed-card flex h-full flex-col justify-between p-6 text-left">
-                    <div className="flex flex-col gap-3">
-                      <span className="text-sm font-semibold uppercase tracking-wide text-slate-400">
-                        Next destination
-                      </span>
-                      <h3 className="text-xl font-semibold text-white">
-                        {primaryTrip.name || primaryTrip.destination}
-                      </h3>
-                      <div className="flex items-center gap-2 text-sm text-slate-400">
-                        <MapPin className="h-4 w-4" />
-                        {primaryTrip.destination}
-                      </div>
-                      <div className="text-sm text-slate-400">
-                        {formatDateRange(
-                          toDateString(primaryTrip.startDate),
-                          toDateString(primaryTrip.endDate),
-                        )}
-                      </div>
-                    </div>
-                  </Card>
-                ) : null}
-              </div>
-            </section>
-          )}
         </div>
       </main>
     </div>
   );
 }
 
-type TripCardProps = {
+function FeaturedTripCard({
+  trip,
+  nextTripData,
+  onNavigate,
+}: {
   trip: TripSummary;
-};
-
-function TripCard({ trip }: TripCardProps) {
+  nextTripData: TripWithPlanningData | null;
+  onNavigate: (path: string) => void;
+}) {
   const cardImageSrc = resolveCoverPhotoUrl(
-    trip.coverPhotoCardUrl ??
-      trip.coverPhotoOriginalUrl ??
-      trip.coverPhotoUrl ??
-      trip.coverImageUrl ??
-      null,
+    trip.coverPhotoCardUrl ?? trip.coverPhotoOriginalUrl ?? trip.coverPhotoUrl ?? trip.coverImageUrl ?? null,
   );
   const cardImageSrcSet = buildCoverPhotoSrcSet({
-    full:
-      trip.coverPhotoUrl ??
-      trip.coverPhotoOriginalUrl ??
-      trip.coverImageUrl ??
-      null,
-    card:
-      trip.coverPhotoCardUrl ??
-      trip.coverPhotoUrl ??
-      trip.coverPhotoOriginalUrl ??
-      trip.coverImageUrl ??
-      null,
-    thumb:
-      trip.coverPhotoThumbUrl ??
-      trip.coverPhotoCardUrl ??
-      trip.coverPhotoUrl ??
-      trip.coverPhotoOriginalUrl ??
-      trip.coverImageUrl ??
-      null,
+    full: trip.coverPhotoUrl ?? trip.coverPhotoOriginalUrl ?? trip.coverImageUrl ?? null,
+    card: trip.coverPhotoCardUrl ?? trip.coverPhotoUrl ?? trip.coverPhotoOriginalUrl ?? trip.coverImageUrl ?? null,
+    thumb: trip.coverPhotoThumbUrl ?? trip.coverPhotoCardUrl ?? trip.coverPhotoUrl ?? trip.coverPhotoOriginalUrl ?? trip.coverImageUrl ?? null,
   });
   const altText = buildCoverPhotoAltText(trip.name);
   const objectPosition = getCoverPhotoObjectPosition(trip.coverPhotoFocalX, trip.coverPhotoFocalY);
-  const {
-    showImage: showCardImage,
-    isLoaded: cardImageLoaded,
-    handleLoad: handleCardImageLoad,
-    handleError: handleCardImageError,
-  } = useCoverPhotoImage(cardImageSrc);
+  const { showImage, isLoaded, handleLoad, handleError } = useCoverPhotoImage(cardImageSrc);
+
+  const progress = nextTripData ? calculateTripPlanningProgress(nextTripData) : null;
+  const openDecisions = nextTripData ? countOpenDecisions(nextTripData) : null;
+  const totalOpen = openDecisions
+    ? (Object.values(openDecisions) as number[]).reduce((s, v) => s + v, 0)
+    : 0;
+
+  const daysLeft = differenceInCalendarDays(parseISO(trip.startDate), startOfDay(new Date()));
+  const daysLabel =
+    daysLeft === 0 ? "Starts today!" : daysLeft > 0 ? `${daysLeft} days to go` : "In progress";
+
+  return (
+    <div
+      role="region"
+      aria-label={`Featured trip: ${trip.name}`}
+      className="overflow-hidden rounded-2xl border border-[rgba(13,148,136,0.18)] shadow-[0_4px_32px_-8px_rgba(13,61,57,0.12)]"
+    >
+      <div className="relative min-h-[280px] bg-[#C8EDE9] md:min-h-[360px]">
+        {showImage && (
+          <img
+            src={cardImageSrc ?? undefined}
+            srcSet={cardImageSrcSet}
+            sizes="100vw"
+            alt={altText}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ${isLoaded ? "opacity-100" : "opacity-0"}`}
+            style={{ objectPosition }}
+            onLoad={handleLoad}
+            onError={handleError}
+            loading="eager"
+            decoding="async"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-[rgba(13,61,57,0.88)] via-[rgba(13,61,57,0.35)] to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+          <div className="mb-3">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#0D9488] px-3 py-1 text-xs font-semibold text-white">
+              <CalendarDays className="h-3.5 w-3.5" />
+              {daysLabel}
+            </span>
+          </div>
+          <h2 className="font-fraunces mb-1 text-3xl font-semibold leading-tight text-white md:text-4xl">
+            {trip.name}
+          </h2>
+          <p className="mb-5 flex items-center gap-1.5 text-sm text-white/80">
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+            <span>{trip.destination}</span>
+            <span className="text-white/50">·</span>
+            <span>{formatDateRange(trip.startDate, trip.endDate)}</span>
+          </p>
+          {trip.travelers.length > 0 && (
+            <div className="mb-5 flex items-center gap-2">
+              <div className="flex -space-x-2">
+                {trip.travelers.slice(0, 5).map((traveler, index) => (
+                  <Avatar
+                    key={`featured-traveler-${index}`}
+                    className="h-7 w-7 border-2 border-white/30 bg-[rgba(13,148,136,0.40)]"
+                  >
+                    <AvatarImage src={traveler.avatar ?? undefined} alt="" loading="lazy" />
+                    <AvatarFallback className="text-[10px] text-white">{traveler.initial}</AvatarFallback>
+                  </Avatar>
+                ))}
+              </div>
+              <span className="text-xs text-white/75">{getTravelersLabel(trip.travelersCount)}</span>
+            </div>
+          )}
+          {progress !== null && (
+            <div className="mb-5 max-w-xs">
+              <div className="mb-1.5 flex justify-between text-xs text-white/70">
+                <span>Planning progress</span>
+                <span>{progress.percentage}%</span>
+              </div>
+              <Progress
+                value={progress.percentage}
+                className="h-1.5 bg-white/20 [&>div]:bg-[#0D9488]"
+              />
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              onClick={() => onNavigate(`/trip/${trip.id}`)}
+              className="h-8 rounded-full px-4 text-xs font-semibold"
+            >
+              Open Trip
+            </Button>
+            {totalOpen > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => onNavigate(`/trip/${trip.id}?view=proposals`)}
+                className="h-8 rounded-full border-white/30 bg-transparent px-4 text-xs font-semibold text-white hover:bg-white/10 hover:text-white dark:border-white/20"
+              >
+                Proposals ({totalOpen})
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => onNavigate(`/trip/${trip.id}?view=members`)}
+              className="h-8 rounded-full border-white/30 bg-transparent px-4 text-xs font-semibold text-white hover:bg-white/10 hover:text-white dark:border-white/20"
+            >
+              Members
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CompactTripPill({ trip }: { trip: TripSummary }) {
+  const daysLeft = differenceInCalendarDays(parseISO(trip.startDate), startOfDay(new Date()));
+  const daysLabel =
+    daysLeft === 0 ? "Today!" : daysLeft > 0 ? `${daysLeft}d to go` : "In progress";
+
   return (
     <Link
       href={`/trip/${trip.id}`}
       aria-label={buildTripAriaLabel(trip.name, trip.destination, trip.startDate, trip.endDate)}
-      data-analytics="trip_card_click"
-      data-trip-id={trip.id}
-      className="group block h-full cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#7C5CFF]"
+      className="w-44 flex-shrink-0 rounded-xl border border-[rgba(13,148,136,0.15)] bg-white p-4 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-[rgba(13,148,136,0.30)] hover:shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#0D9488] dark:border-white/10 dark:bg-slate-800/60"
     >
-      <Card className="dashboard-themed-card flex h-full flex-col overflow-hidden transition duration-200 ease-out group-hover:-translate-y-1 group-hover:shadow-[0_35px_80px_-40px_rgba(79,70,229,0.48)] group-active:-translate-y-0.5">
-        <div className="relative aspect-video overflow-hidden">
-          <div
-            className="pointer-events-none absolute inset-0"
-            style={{ backgroundImage: TRIP_COVER_GRADIENT }}
-            aria-hidden="true"
-          />
-          {showCardImage ? (
-            <img
-              src={cardImageSrc ?? undefined}
-              srcSet={cardImageSrcSet}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              alt={altText}
-              className={`absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
-                cardImageLoaded ? "opacity-100" : "opacity-0"
-              } transition-opacity duration-700`}
-              onLoad={handleCardImageLoad}
-              onError={handleCardImageError}
-              loading="lazy"
-              decoding="async"
-              style={{ objectPosition }}
-            />
-          ) : null}
-          <div className="absolute bottom-3 left-4 right-4 flex flex-wrap items-center gap-2 text-xs font-medium text-white">
-            <Badge className="rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-[#0D3D39] backdrop-blur">
-              {formatDateRange(trip.startDate, trip.endDate)}
-            </Badge>
-            <Badge className="rounded-full bg-white/80 px-3 py-1 text-xs font-medium text-[#0D3D39] backdrop-blur">
-              {getTravelersLabel(trip.travelersCount)}
-            </Badge>
-          </div>
-        </div>
-        <div className="flex flex-1 flex-col gap-4 p-6">
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold text-slate-900 dark:text-white" title={trip.name}>
-              {trip.name}
-            </h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{getCountdownLabel(trip.startDate, trip.endDate)}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex -space-x-2">
-              {trip.travelers.slice(0, 3).map((traveler, index) => (
-                <Avatar key={`trip-${trip.id}-traveler-${index}`} className="h-8 w-8 border-2 border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-700">
-                  <AvatarImage src={traveler.avatar ?? undefined} alt="" loading="lazy" />
-                  <AvatarFallback>{traveler.initial}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
-            <Badge variant="secondary" className="rounded-full border border-[rgba(13,148,136,0.25)] bg-[rgba(13,148,136,0.08)] dark:border-white/10 dark:bg-gradient-to-r dark:from-cyan-900/40 dark:via-violet-900/40 dark:to-fuchsia-900/40 px-3 py-1 text-xs font-medium text-teal-700 dark:text-cyan-300">
-              Planning {trip.progressPercent}%
-            </Badge>
-          </div>
-          <Progress value={trip.progressPercent} className="h-2 rounded-full bg-slate-200 dark:bg-slate-700/50" />
-          <span className="mt-auto inline-flex items-center font-semibold text-[#2563eb]">
-            Open trip →
-          </span>
-        </div>
-      </Card>
+      <p className="truncate text-sm font-semibold text-[#0D3D39] dark:text-white">{trip.name}</p>
+      <p className="mt-0.5 truncate text-xs text-[rgba(13,61,57,0.65)] dark:text-slate-400">{trip.destination}</p>
+      <p className="mt-2 text-xs font-semibold text-[#0D9488]">{daysLabel}</p>
     </Link>
+  );
+}
+
+function EmptyTripsState({ onPlanTrip }: { onPlanTrip: () => void }) {
+  return (
+    <Card className="flex flex-col items-center justify-center gap-5 p-12 text-center border-[rgba(13,148,136,0.15)]">
+      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[rgba(13,148,136,0.10)]">
+        <Plane className="h-8 w-8 text-[#0D9488]" />
+      </div>
+      <div>
+        <h3 className="font-fraunces mb-2 text-2xl font-semibold text-[#0D3D39] dark:text-white">
+          Ready for your next getaway?
+        </h3>
+        <p className="mx-auto max-w-sm text-sm text-[rgba(13,61,57,0.65)] dark:text-slate-400">
+          Start planning a new adventure to see it appear here.
+        </p>
+      </div>
+      <Button onClick={onPlanTrip} className="rounded-full px-6">
+        Plan a New Trip
+      </Button>
+    </Card>
   );
 }
