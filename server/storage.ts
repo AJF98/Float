@@ -3204,6 +3204,23 @@ export class DatabaseStorage implements IStorage {
             AND created_by IS NOT NULL
         `);
 
+        if (tableName === "hotel_proposals") {
+          const missingHotelCols: [string, string][] = [
+            ["hotel_name", "TEXT"],
+            ["location", "TEXT"],
+            ["price", "DECIMAL"],
+            ["amenities", "TEXT"],
+            ["platform", "TEXT"],
+            ["booking_url", "TEXT"],
+            ["average_ranking", "NUMERIC(5,2)"],
+          ];
+          for (const [col, colType] of missingHotelCols) {
+            if (!columnNames.has(col)) {
+              await query(`ALTER TABLE hotel_proposals ADD COLUMN IF NOT EXISTS ${col} ${colType}`);
+            }
+          }
+        }
+
         if (tableName === "flight_proposals") {
           const hasOrigin = columnNames.has("origin");
           const hasDestination = columnNames.has("destination");
@@ -12132,6 +12149,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         hp.booking_url,
         hp.status,
         hp.average_ranking,
+        hp.voting_deadline,
         hp.created_at,
         hp.updated_at,
         psl.scheduled_id AS linked_hotel_id,
@@ -12626,9 +12644,10 @@ ${selectUserColumns("participant_user", "participant_user_")}
         amenities,
         platform,
         booking_url,
-        status
+        status,
+        voting_deadline
       )
-      VALUES ($1, $2, $3::text, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, 'proposed'))
+      VALUES ($1, $2, $3::text, $3, $4, $5, $6, $7, $8, $9, $10, COALESCE($11, 'proposed'), $12)
       RETURNING
         id,
         trip_id,
@@ -12643,6 +12662,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         booking_url,
         status,
         average_ranking,
+        voting_deadline,
         created_at,
         updated_at
       `,
@@ -12658,6 +12678,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
         proposal.platform,
         proposal.bookingUrl,
         proposal.status ?? "proposed",
+        proposal.votingDeadline ?? null,
       ],
     );
 
@@ -14248,10 +14269,11 @@ ${selectUserColumns("participant_user", "participant_user_")}
         price_range,
         rating,
         data,
-        status
+        status,
+        voting_deadline
       )
       VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, 'active')
+        $1, $2, $3, $4, $5, $6, $7, $8, COALESCE($9, 'active'), $10
       )
       RETURNING
         id,
@@ -14289,6 +14311,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
           features: proposal.features ?? null,
         }),
         proposal.status ?? "active",
+        proposal.votingDeadline ?? null,
       ],
     );
 
