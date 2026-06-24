@@ -1,5 +1,5 @@
 export const FEATURE_FLAGS = {
   FLIGHT_SEARCH: false,
   HOTEL_SEARCH: false,
-  RESTAURANT_SEARCH: true,
+  RESTAURANT_SEARCH: false,
 } as const;
