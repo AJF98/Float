@@ -7766,16 +7766,18 @@ function RestaurantBooking({
         </div>
       </div>
 
-      <RestaurantSearchPanel
-        ref={searchPanelRef}
-        tripId={tripId}
-        trip={trip}
-        user={user ?? undefined}
-        onProposeRestaurant={handleProposeRestaurant}
-        onBookingLinkClick={handleBookingLinkClick}
-        onLogRestaurantManually={() => setManualDialogOpen(true)}
-        onExternalSearch={handleExternalRestaurantSearch}
-      />
+      {FEATURE_FLAGS.RESTAURANT_SEARCH && (
+        <RestaurantSearchPanel
+          ref={searchPanelRef}
+          tripId={tripId}
+          trip={trip}
+          user={user ?? undefined}
+          onProposeRestaurant={handleProposeRestaurant}
+          onBookingLinkClick={handleBookingLinkClick}
+          onLogRestaurantManually={() => setManualDialogOpen(true)}
+          onExternalSearch={handleExternalRestaurantSearch}
+        />
+      )}
 
       {hasRestaurants && (
         <Card>
