@@ -1148,9 +1148,9 @@ export function AddActivityModal({
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditMode ? "Edit activity" : "Create an activity"}</DialogTitle>
-          <DialogDescription>
-            {isEditMode 
+          <DialogTitle className="font-fraunces text-[#0D3D39]">{isEditMode ? "Edit activity" : "Create an activity"}</DialogTitle>
+          <DialogDescription className="text-[rgba(13,61,57,0.65)]">
+            {isEditMode
               ? "Update the details of your floated idea."
               : "Choose whether you're floating an idea or locking plans onto the schedule."
             }
@@ -1212,7 +1212,7 @@ export function AddActivityModal({
           />
 
           {/* Form Actions */}
-          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-neutral-200">
+          <div className="flex items-center justify-end space-x-3 pt-4 border-t border-[rgba(13,148,136,0.15)]">
             <Button
               type="button"
               variant="outline"
@@ -1224,7 +1224,7 @@ export function AddActivityModal({
 
             <Button
               type="submit"
-              className="bg-primary text-white hover:bg-red-600"
+              className="bg-[#0D9488] hover:bg-[#0B7C73] text-white"
               disabled={isSubmitDisabled}
               data-testid="button-submit"
             >
