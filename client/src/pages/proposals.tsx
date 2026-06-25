@@ -2640,7 +2640,7 @@ function ProposalsPage({
   // Empty state component
   const proposalTypeRouteMap: Record<string, string> = {
     Activity: "activities",
-    Hotel: "hotels",
+    Lodging: "hotels",
     Flight: "flights",
     Restaurant: "restaurants",
   };
@@ -2657,7 +2657,7 @@ function ProposalsPage({
         </h3>
         <p className="text-neutral-500 mb-6">
           {showGlobalEmpty
-            ? "Suggest an activity, restaurant, hotel, or flight to get started."
+            ? "Suggest an activity, restaurant, lodging, or flight to get started."
             : `Group members can propose ${type.toLowerCase()} options for voting. Check the ${type} page to add proposals!`}
         </p>
         <Link href={`/trip/${tripId}/${routeSegment}`}>
@@ -2679,7 +2679,7 @@ function ProposalsPage({
       <p className="text-neutral-500">
         {hasAny
           ? "Try adjusting the filters to see your floaters."
-          : "Suggest an activity, restaurant, hotel, or flight to get started."}
+          : "Suggest an activity, restaurant, lodging, or flight to get started."}
       </p>
     </div>
   );
@@ -2994,7 +2994,7 @@ function ProposalsPage({
             </TabsTrigger>
             <TabsTrigger value="hotels" className="flex items-center gap-2" data-testid="tab-hotels">
               <Hotel className="w-4 h-4" />
-              Hotels {filteredHotelProposals.length > 0 && `(${filteredHotelProposals.length})`}
+              Lodging {filteredHotelProposals.length > 0 && `(${filteredHotelProposals.length})`}
             </TabsTrigger>
             <TabsTrigger value="flights" className="flex items-center gap-2" data-testid="tab-flights">
               <Plane className="w-4 h-4" />
@@ -3260,9 +3260,9 @@ function ProposalsPage({
                 ))}
               </div>
             ) : activeHotelProposalsForCategories.length > 0 ? (
-              <FilteredEmptyState type="Hotel" />
+              <FilteredEmptyState type="Lodging" />
             ) : (
-              <EmptyState type="Hotel" icon={Hotel} />
+              <EmptyState type="Lodging" icon={Hotel} />
             )}
           </TabsContent>
 

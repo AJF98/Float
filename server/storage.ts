@@ -12138,8 +12138,7 @@ ${selectUserColumns("participant_user", "participant_user_")}
 
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
-    const { rows } = await query<HotelProposalWithProposerRow>(
-      `
+    const hotelProposalSql = `
       SELECT
         hp.id,
         hp.trip_id,
@@ -12174,9 +12173,24 @@ ${selectUserColumns("participant_user", "participant_user_")}
       LEFT JOIN users u ON u.id = hp.created_by
       ${whereClause}
       ORDER BY hp.created_at DESC NULLS LAST, hp.id DESC
-      `,
-      values,
-    );
+    `;
+
+    let queryResult: { rows: HotelProposalWithProposerRow[] };
+    try {
+      queryResult = await query<HotelProposalWithProposerRow>(hotelProposalSql, values);
+    } catch (err: any) {
+      // If hotels table is missing city/country/currency columns, add them and retry once
+      if (err?.code === '42703' || (err?.message && /column .+ does not exist/i.test(err.message))) {
+        for (const col of ["city", "country", "currency"]) {
+          await query(`ALTER TABLE hotels ADD COLUMN IF NOT EXISTS ${col} TEXT`).catch(() => {});
+        }
+        queryResult = await query<HotelProposalWithProposerRow>(hotelProposalSql, values);
+      } else {
+        throw err;
+      }
+    }
+
+    const { rows } = queryResult;
 
     if (rows.length === 0) {
       return [];
