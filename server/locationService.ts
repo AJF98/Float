@@ -169,6 +169,59 @@ class LocationService {
     'Caribbean': ['Havana', 'Kingston', 'Nassau', 'Bridgetown', 'Port of Spain', 'Santo Domingo', 'San Juan']
   };
 
+  private readonly US_STATE_HUBS: Record<string, { lat: number; lng: number; label: string }> = {
+    "alabama": { lat: 33.52, lng: -86.81, label: "Alabama" },
+    "alaska": { lat: 61.22, lng: -149.90, label: "Alaska" },
+    "arizona": { lat: 33.43, lng: -112.01, label: "Arizona" },
+    "arkansas": { lat: 34.73, lng: -92.33, label: "Arkansas" },
+    "california": { lat: 34.05, lng: -118.24, label: "California" },
+    "colorado": { lat: 39.74, lng: -104.98, label: "Colorado" },
+    "connecticut": { lat: 41.76, lng: -72.67, label: "Connecticut" },
+    "delaware": { lat: 39.74, lng: -75.55, label: "Delaware" },
+    "florida": { lat: 25.79, lng: -80.13, label: "Florida" },
+    "georgia": { lat: 33.64, lng: -84.43, label: "Georgia" },
+    "hawaii": { lat: 21.32, lng: -157.92, label: "Hawaii" },
+    "idaho": { lat: 43.57, lng: -116.24, label: "Idaho" },
+    "illinois": { lat: 41.98, lng: -87.91, label: "Illinois" },
+    "indiana": { lat: 39.72, lng: -86.28, label: "Indiana" },
+    "iowa": { lat: 41.53, lng: -93.66, label: "Iowa" },
+    "kansas": { lat: 37.65, lng: -97.43, label: "Kansas" },
+    "kentucky": { lat: 38.18, lng: -85.74, label: "Kentucky" },
+    "louisiana": { lat: 29.99, lng: -90.26, label: "Louisiana" },
+    "maine": { lat: 43.65, lng: -70.30, label: "Maine" },
+    "maryland": { lat: 39.18, lng: -76.67, label: "Maryland" },
+    "massachusetts": { lat: 42.36, lng: -71.01, label: "Massachusetts" },
+    "michigan": { lat: 42.21, lng: -83.35, label: "Michigan" },
+    "minnesota": { lat: 44.88, lng: -93.22, label: "Minnesota" },
+    "mississippi": { lat: 32.31, lng: -90.07, label: "Mississippi" },
+    "missouri": { lat: 38.75, lng: -90.37, label: "Missouri" },
+    "montana": { lat: 46.60, lng: -112.02, label: "Montana" },
+    "nebraska": { lat: 41.30, lng: -96.02, label: "Nebraska" },
+    "nevada": { lat: 36.08, lng: -115.15, label: "Nevada" },
+    "new hampshire": { lat: 42.93, lng: -71.44, label: "New Hampshire" },
+    "new jersey": { lat: 40.69, lng: -74.17, label: "New Jersey" },
+    "new mexico": { lat: 35.05, lng: -106.61, label: "New Mexico" },
+    "new york": { lat: 40.64, lng: -73.78, label: "New York" },
+    "north carolina": { lat: 35.21, lng: -80.94, label: "North Carolina" },
+    "north dakota": { lat: 46.92, lng: -96.81, label: "North Dakota" },
+    "ohio": { lat: 39.99, lng: -82.89, label: "Ohio" },
+    "oklahoma": { lat: 35.39, lng: -97.60, label: "Oklahoma" },
+    "oregon": { lat: 45.59, lng: -122.60, label: "Oregon" },
+    "pennsylvania": { lat: 39.87, lng: -75.24, label: "Pennsylvania" },
+    "rhode island": { lat: 41.73, lng: -71.43, label: "Rhode Island" },
+    "south carolina": { lat: 32.90, lng: -80.04, label: "South Carolina" },
+    "south dakota": { lat: 43.58, lng: -96.74, label: "South Dakota" },
+    "tennessee": { lat: 36.12, lng: -86.68, label: "Tennessee" },
+    "texas": { lat: 32.90, lng: -97.04, label: "Texas" },
+    "utah": { lat: 40.79, lng: -111.98, label: "Utah" },
+    "vermont": { lat: 44.47, lng: -73.15, label: "Vermont" },
+    "virginia": { lat: 38.94, lng: -77.46, label: "Virginia" },
+    "washington": { lat: 47.45, lng: -122.31, label: "Washington" },
+    "west virginia": { lat: 38.37, lng: -81.60, label: "West Virginia" },
+    "wisconsin": { lat: 42.95, lng: -87.90, label: "Wisconsin" },
+    "wyoming": { lat: 41.15, lng: -104.80, label: "Wyoming" },
+  };
+
   constructor() {
     this.ensureCacheDirectory();
   }
@@ -1252,6 +1305,37 @@ class LocationService {
     });
   }
 
+  private async queryAirportsByCoords(lat: number, lng: number, limit: number) {
+    const { rows } = await query<{
+      iata_code: string | null;
+      icao_code: string | null;
+      name: string | null;
+      municipality: string | null;
+      iso_country: string | null;
+      latitude: number | string | null;
+      longitude: number | string | null;
+    }>(
+      `SELECT iata_code, icao_code, name, municipality, iso_country, latitude, longitude
+       FROM airports
+       WHERE iata_code IS NOT NULL
+         AND type IN ('large_airport','medium_airport')
+       ORDER BY (
+         6371 * acos(
+           cos(radians($1)) * cos(radians(latitude))
+           * cos(radians(longitude) - radians($2))
+           + sin(radians($1)) * sin(radians(latitude))
+         )
+       )
+       LIMIT $3;`,
+      [lat, lng, limit],
+    );
+    return rows.map((row, idx) => {
+      const result = this.mapAirportRowToResult(row);
+      result.relevance = 2000 - idx;
+      return result;
+    });
+  }
+
   private mapCityRowToResult(row: {
     geoname_id: string | number | null;
     name: string;
@@ -1872,6 +1956,11 @@ class LocationService {
       }
 
       if (normalizedTypes.includes('AIRPORT')) {
+        const stateHub = this.US_STATE_HUBS[query.toLowerCase()];
+        if (stateHub) {
+          const hubAirports = await this.queryAirportsByCoords(stateHub.lat, stateHub.lng, 5);
+          results.push(...hubAirports);
+        }
         const localAirports = await this.queryAirportsByQuery(query, limit);
         if (localAirports.length > 0) {
           results.push(...localAirports);

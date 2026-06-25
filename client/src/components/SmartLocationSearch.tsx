@@ -912,16 +912,25 @@ const SmartLocationSearch = forwardRef<HTMLInputElement, SmartLocationSearchProp
                         {getLocationIcon(location.type)}
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-medium">{location.displayName}</span>
+                            {displayType === "airport" ? (
+                              <span className="font-medium">
+                                {(location.cityName || location.name) + " (" + (location.iata ?? location.code) + ")"}
+                              </span>
+                            ) : (
+                              <span className="font-medium">{location.displayName}</span>
+                            )}
                             <Badge variant="outline" className={getTypeColor(location.type)}>
                               {displayType === "metro" ? "metro area" : displayType}
                             </Badge>
                           </div>
                           <div className="text-sm text-gray-600">
                             {displayType === "airport"
-                              ? [location.cityName, location.countryName ?? location.country]
-                                  .filter(Boolean)
-                                  .join(", ")
+                              ? (() => {
+                                  const airportName = location.name ?? location.displayName ?? "";
+                                  const truncated = airportName.length > 40 ? airportName.slice(0, 40) + "…" : airportName;
+                                  const countryCode = location.country ?? "";
+                                  return [truncated, countryCode].filter(Boolean).join(" · ");
+                                })()
                               : location.countryName ?? location.country}
                             {displayType === "metro" && location.airports && (
                               <div className="mt-1 text-xs text-blue-600">
@@ -936,9 +945,11 @@ const SmartLocationSearch = forwardRef<HTMLInputElement, SmartLocationSearchProp
                             </div>
                           )}
                         </div>
-                        <div className="text-sm font-mono text-gray-600">
-                          {location.iata ?? location.code}
-                        </div>
+                        {displayType !== "airport" && (
+                          <div className="text-sm font-mono text-gray-600">
+                            {location.iata ?? location.code}
+                          </div>
+                        )}
                       </div>
                     </div>
                   );
