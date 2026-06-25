@@ -78,14 +78,18 @@ async function populateAirports() {
       const lat = airport.latitude_deg ? parseFloat(airport.latitude_deg) : null;
       const lon = airport.longitude_deg ? parseFloat(airport.longitude_deg) : null;
       
-      values.push(iata, icao, name, type, municipality, isoCountry, lat, lon);
-      placeholders.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5}, $${paramIndex + 6}, $${paramIndex + 7})`);
-      paramIndex += 8;
+      const isoRegion = airport.iso_region || null;
+      values.push(iata, icao, name, type, municipality, isoCountry, isoRegion, lat, lon);
+      placeholders.push(`($${paramIndex}, $${paramIndex + 1}, $${paramIndex + 2}, $${paramIndex + 3}, $${paramIndex + 4}, $${paramIndex + 5}, $${paramIndex + 6}, $${paramIndex + 7}, $${paramIndex + 8})`);
+      paramIndex += 9;
     }
-    
+
     if (placeholders.length > 0) {
       await pool.query(
-        `INSERT INTO airports (iata_code, icao_code, name, type, municipality, iso_country, latitude, longitude)
+        `ALTER TABLE airports ADD COLUMN IF NOT EXISTS iso_region TEXT`,
+      );
+      await pool.query(
+        `INSERT INTO airports (iata_code, icao_code, name, type, municipality, iso_country, iso_region, latitude, longitude)
          VALUES ${placeholders.join(', ')}
          ON CONFLICT DO NOTHING`,
         values
