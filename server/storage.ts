@@ -2246,6 +2246,10 @@ export class DatabaseStorage implements IStorage {
 
   private proposalLinksInitialized = false;
 
+  private userAuthCompatInitPromise: Promise<void> | null = null;
+
+  private userAuthCompatInitialized = false;
+
   private proposalCreatorCompatInitPromise: Promise<void> | null = null;
 
   private proposalCreatorCompatInitialized = false;
@@ -2313,6 +2317,34 @@ export class DatabaseStorage implements IStorage {
   private userPushDevicesInitPromise: Promise<void> | null = null;
 
   private userPushDevicesInitialized = false;
+
+  private async ensureUserAuthCompatibility(): Promise<void> {
+    if (this.userAuthCompatInitialized) return;
+    if (this.userAuthCompatInitPromise) {
+      await this.userAuthCompatInitPromise;
+      return;
+    }
+    this.userAuthCompatInitPromise = (async () => {
+      const cols: [string, string][] = [
+        ['username', 'TEXT'],
+        ['password_hash', 'TEXT'],
+        ['auth_provider', 'TEXT'],
+        ['phone_number', 'TEXT'],
+        ['first_name', 'TEXT'],
+        ['last_name', 'TEXT'],
+        ['profile_image_url', 'TEXT'],
+      ];
+      for (const [col, type] of cols) {
+        await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS ${col} ${type}`);
+      }
+      this.userAuthCompatInitialized = true;
+    })();
+    try {
+      await this.userAuthCompatInitPromise;
+    } finally {
+      this.userAuthCompatInitPromise = null;
+    }
+  }
 
   private async ensureUserLegacyPaymentCompatibility(): Promise<void> {
     if (this.userLegacyPaymentCompatInitialized) {
@@ -3970,6 +4002,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
+    await this.ensureUserAuthCompatibility();
     const { rows } = await query<User>(
       `
       SELECT id,
@@ -3992,6 +4025,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
+    await this.ensureUserAuthCompatibility();
     const { rows } = await query<User>(
       `
       SELECT id,
