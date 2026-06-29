@@ -7155,34 +7155,11 @@ function HotelBooking({
   return (
     <>
       <div className="space-y-8">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-1.5">
-            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Lodging</h2>
-            <p className="text-sm text-muted-foreground">
-              Keep your lodging plans, floaters, and confirmations easy for everyone to find.
-            </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">Lodging</h2>
+            <p className="text-slate-400">Keep your lodging plans and confirmations in one place</p>
           </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button className="inline-flex items-center gap-2 px-4">
-                <Plus className="h-4 w-4" />
-                Add lodging
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              {FEATURE_FLAGS.HOTEL_SEARCH && (
-                <DropdownMenuItem onClick={focusSearchPanel}>
-                  <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                  Search lodging
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem onClick={openManualForm}>
-                <Building className="mr-2 h-4 w-4 text-muted-foreground" />
-                Add manually
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
         {FEATURE_FLAGS.HOTEL_SEARCH && <HotelSearchPanel
@@ -7209,18 +7186,11 @@ function HotelBooking({
           toast={toast}
         />}
 
-        <div className="border-t border-border/60" />
-
         <div className="space-y-4">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <h3 className="text-lg font-semibold text-neutral-900">Manually Added Lodging</h3>
-              <p className="text-sm text-muted-foreground">
-                Reservations you’ve tracked outside of the hotel search results.
-              </p>
-            </div>
+            <h3 className="text-lg font-semibold">Manually Added Lodging</h3>
             {manualHotels.length > 0 ? (
-              <Button variant="outline" onClick={openManualForm} className="sm:w-auto">
+              <Button variant="outline" size="sm" onClick={openManualForm}>
                 Add lodging
               </Button>
             ) : null}
