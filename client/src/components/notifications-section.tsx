@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Bell, Check, CheckCheck, MapPin, Calendar, DollarSign } from "lucide-react";
+import { Bell, Check, CheckCheck, MapPin, Calendar, DollarSign, X, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { apiRequest } from "@/lib/queryClient";
 import type { Notification } from "@shared/schema";
@@ -56,6 +56,30 @@ export function NotificationsSection() {
     },
   });
 
+  const clearNotificationMutation = useMutation({
+    mutationFn: async (notificationId: number) => {
+      await apiRequest(`/api/notifications/${notificationId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+    },
+  });
+
+  const clearAllNotificationsMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("/api/notifications", {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+    },
+  });
+
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'new_member':
@@ -98,17 +122,30 @@ export function NotificationsSection() {
               Stay updated with your trips and activities
             </CardDescription>
           </div>
-          {unreadNotifications.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => markAllAsReadMutation.mutate()}
-              disabled={markAllAsReadMutation.isPending}
-            >
-              <CheckCheck className="w-4 h-4 mr-2" />
-              Mark All Read
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadNotifications.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => markAllAsReadMutation.mutate()}
+                disabled={markAllAsReadMutation.isPending}
+              >
+                <CheckCheck className="w-4 h-4 mr-2" />
+                Mark All Read
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => clearAllNotificationsMutation.mutate()}
+                disabled={clearAllNotificationsMutation.isPending}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear All
+              </Button>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -156,16 +193,28 @@ export function NotificationsSection() {
                                   addSuffix: true,
                                 })}
                               </p>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => markAsReadMutation.mutate(notification.id)}
-                                disabled={markAsReadMutation.isPending}
-                                className="text-xs"
-                              >
-                                <Check className="w-3 h-3 mr-1" />
-                                Mark Read
-                              </Button>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => markAsReadMutation.mutate(notification.id)}
+                                  disabled={markAsReadMutation.isPending}
+                                  className="text-xs"
+                                >
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Mark Read
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => clearNotificationMutation.mutate(notification.id)}
+                                  disabled={clearNotificationMutation.isPending}
+                                  className="text-xs"
+                                  aria-label="Clear notification"
+                                >
+                                  <X className="w-3 h-3" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -206,11 +255,23 @@ export function NotificationsSection() {
                             <p className="text-sm text-gray-600 mb-1">
                               {notification.message}
                             </p>
-                            <p className="text-xs text-gray-400">
-                              {formatDistanceToNow(new Date(notification.createdAt!), {
-                                addSuffix: true,
-                              })}
-                            </p>
+                            <div className="flex items-center justify-between">
+                              <p className="text-xs text-gray-400">
+                                {formatDistanceToNow(new Date(notification.createdAt!), {
+                                  addSuffix: true,
+                                })}
+                              </p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => clearNotificationMutation.mutate(notification.id)}
+                                disabled={clearNotificationMutation.isPending}
+                                className="text-xs"
+                                aria-label="Clear notification"
+                              >
+                                <X className="w-3 h-3" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>

@@ -7754,6 +7754,32 @@ export class DatabaseStorage implements IStorage {
 
     return rows[0] ? Number(rows[0].count ?? 0) : 0;
   }
+
+  async deleteNotification(notificationId: number, userId: string): Promise<void> {
+    const { rows } = await query<{ id: number }>(
+      `
+      DELETE FROM notifications
+      WHERE id = $1 AND user_id = $2
+      RETURNING id
+      `,
+      [notificationId, userId],
+    );
+
+    if (!rows[0]) {
+      throw new Error("Notification not found");
+    }
+  }
+
+  async deleteAllNotifications(userId: string): Promise<void> {
+    await query(
+      `
+      DELETE FROM notifications
+      WHERE user_id = $1
+      `,
+      [userId],
+    );
+  }
+
   async createGroceryItem(
     item: InsertGroceryItem,
     userId: string,

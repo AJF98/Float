@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import {
   Calendar,
@@ -20,6 +20,7 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { formatDistanceToNowStrict } from "date-fns";
@@ -28,8 +29,10 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import type { Notification, Activity, Expense } from "@shared/schema";
 
@@ -93,6 +96,7 @@ export function DashboardNotifications({
 }: DashboardNotificationsProps) {
   const { user, isLoading: authLoading } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     data: notifications = [],
@@ -103,6 +107,26 @@ export function DashboardNotifications({
     enabled: Boolean(user),
     staleTime: 60_000,
     refetchInterval: 120_000,
+  });
+
+  const clearAllMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest("/api/notifications", { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+    },
+  });
+
+  const clearOneMutation = useMutation({
+    mutationFn: async (notificationId: number) => {
+      await apiRequest(`/api/notifications/${notificationId}`, { method: "DELETE" });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/notifications/unread-count"] });
+    },
   });
 
   const relevantNotifications = useMemo(
@@ -212,6 +236,21 @@ export function DashboardNotifications({
               {relevantNotifications.length}
             </Badge>
           ) : null}
+          {relevantNotifications.length > 0 ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              className="h-auto px-2 py-1 text-xs font-medium text-[#0D3D39]/60 hover:text-[#0D3D39]"
+              disabled={clearAllMutation.isPending}
+              onClick={(event) => {
+                event.stopPropagation();
+                clearAllMutation.mutate();
+              }}
+            >
+              Clear all
+            </Button>
+          ) : null}
           {collapsed
             ? <ChevronDown className="h-4 w-4 text-[#0D3D39]/40" />
             : <ChevronUp className="h-4 w-4 text-[#0D3D39]/40" />}
@@ -303,11 +342,27 @@ export function DashboardNotifications({
                         ) : null}
                       </div>
                     </div>
-                    {href ? (
-                      <div className="ml-auto flex h-full items-center text-[#0D3D39]/25 transition-colors group-hover:text-[#0D9488]">
-                        <ChevronRight className="h-4 w-4" aria-hidden="true" />
-                      </div>
-                    ) : null}
+                    <div className="ml-auto flex h-full items-center gap-1">
+                      <button
+                        type="button"
+                        aria-label="Clear notification"
+                        className="rounded-full p-1 text-[#0D3D39]/25 transition-colors hover:bg-[rgba(13,148,136,0.10)] hover:text-[#0D3D39]/70"
+                        disabled={clearOneMutation.isPending}
+                        onClick={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          clearOneMutation.mutate(notification.id);
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      </button>
+                      {href ? (
+                        <ChevronRight
+                          className="h-4 w-4 text-[#0D3D39]/25 transition-colors group-hover:text-[#0D9488]"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                    </div>
                   </>
                 );
 
