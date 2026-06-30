@@ -6743,6 +6743,51 @@ export function setupRoutes(app: Express) {
     }
   });
 
+  app.delete("/api/notifications/:id", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getRequestUserId(req);
+
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
+
+      let validatedParams;
+      try {
+        validatedParams = notificationIdSchema.parse(req.params);
+      } catch (validationError: unknown) {
+        return res.status(400).json({
+          message: "Invalid notification ID",
+          error: validationError instanceof Error ? validationError.message : "Unknown error"
+        });
+      }
+
+      await storage.deleteNotification(validatedParams.id, userId);
+      res.json({ success: true });
+    } catch (error: unknown) {
+      if (error instanceof Error && error.message === "Notification not found") {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
+    }
+  });
+
+  app.delete("/api/notifications", isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = getRequestUserId(req);
+
+      if (!userId) {
+        return res.status(401).json({ message: "User ID not found" });
+      }
+
+      await storage.deleteAllNotifications(userId);
+      res.json({ success: true });
+    } catch (error: unknown) {
+      console.error("Error clearing notifications:", error);
+      res.status(500).json({ message: "Failed to clear notifications" });
+    }
+  });
+
   const getShareCodeFromRequest = (req: any): string | null => {
     const rawHeader = req.headers?.["x-trip-share-code"];
     if (typeof rawHeader === "string") {
