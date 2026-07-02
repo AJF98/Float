@@ -2201,8 +2201,9 @@ function ProposalsPage({
 
     const isCanceled = isCanceledStatus(proposal.status);
     const isScheduled = proposal.status === "scheduled";
-    const canCancel = isMyProposal(proposal) && !isCanceled;
-    const canConvert = isMyProposal(proposal) && !isCanceled && !isScheduled && (proposal.status === "active" || proposal.status === "proposed");
+    const isActuallyMyProposal = isMyProposal(proposal);
+    const canCancel = isActuallyMyProposal && !isCanceled;
+    const canConvert = isActuallyMyProposal && !isCanceled && !isScheduled && (proposal.status === "active" || proposal.status === "proposed");
     const isCancelling =
       cancelProposalMutation.isPending &&
       cancelProposalMutation.variables?.proposalId === proposal.id &&
@@ -2442,6 +2443,7 @@ function ProposalsPage({
       getUserRanking(proposal.rankings || [], user?.id || "");
     const isCanceled = isCanceledStatus(proposal.status);
     const isScheduled = proposal.status === "scheduled" || proposal.status === "confirmed";
+    const isActuallyMyProposal = isMyProposal(proposal);
     const canCancel = Boolean(proposal.permissions?.canCancel && !isCanceled);
     const canConvert = Boolean(proposal.permissions?.canCancel && !isCanceled && !isScheduled && (proposal.status === "active" || proposal.status === "proposed"));
     const isCancelling =
@@ -2500,37 +2502,48 @@ function ProposalsPage({
         </CardHeader>
         <CardContent>
           {/* Departure → Arrival date pill */}
-          <div className="flex items-center gap-2 px-3 py-2.5 bg-[rgba(13,148,136,0.06)] rounded-lg border border-[rgba(13,148,136,0.15)] mb-4">
-            <Calendar className="w-4 h-4 text-[#0D9488] shrink-0" />
-            <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-date`}>
-              {proposal.departureTime
-                ? format(new Date(proposal.departureTime), "EEE, MMM d, yyyy")
-                : "Date TBD"}
-            </div>
-            {proposal.departureTime && (
-              <>
-                <span className="text-[rgba(13,61,57,0.35)] mx-0.5">·</span>
-                <Clock className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
-                <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-time`}>
-                  {format(new Date(proposal.departureTime), "h:mm a")}
+          {(() => {
+            const toValidDate = (value?: string | Date | null): Date | null => {
+              if (!value) {
+                return null;
+              }
+              const parsed = value instanceof Date ? value : new Date(value);
+              return Number.isNaN(parsed.getTime()) ? null : parsed;
+            };
+            const departureDate = toValidDate(proposal.departureTime);
+            const arrivalDate = toValidDate(proposal.arrivalTime);
+            return (
+              <div className="flex items-center gap-2 px-3 py-2.5 bg-[rgba(13,148,136,0.06)] rounded-lg border border-[rgba(13,148,136,0.15)] mb-4">
+                <Calendar className="w-4 h-4 text-[#0D9488] shrink-0" />
+                <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-date`}>
+                  {departureDate
+                    ? format(departureDate, "EEE, MMM d, yyyy")
+                    : "Date TBD"}
                 </div>
-              </>
-            )}
-            {proposal.arrivalTime && (() => {
-              const dep = proposal.departureTime ? new Date(proposal.departureTime) : null;
-              const arr = new Date(proposal.arrivalTime);
-              const sameDay = dep && format(dep, "yyyy-MM-dd") === format(arr, "yyyy-MM-dd");
-              return (
-                <>
-                  <span className="text-[rgba(13,61,57,0.35)] mx-0.5">→</span>
-                  {!sameDay && (
-                    <span className="text-sm font-semibold text-[#0D3D39]">{format(arr, "MMM d")}</span>
-                  )}
-                  <span className="text-sm text-[rgba(13,61,57,0.55)]">{format(arr, "h:mm a")}</span>
-                </>
-              );
-            })()}
-          </div>
+                {departureDate && (
+                  <>
+                    <span className="text-[rgba(13,61,57,0.35)] mx-0.5">·</span>
+                    <Clock className="w-3.5 h-3.5 text-[#0D9488] shrink-0" />
+                    <div className="text-sm font-semibold text-[#0D3D39]" data-testid={`flight-proposal-${proposal.id}-time`}>
+                      {format(departureDate, "h:mm a")}
+                    </div>
+                  </>
+                )}
+                {arrivalDate && (() => {
+                  const sameDay = departureDate && format(departureDate, "yyyy-MM-dd") === format(arrivalDate, "yyyy-MM-dd");
+                  return (
+                    <>
+                      <span className="text-[rgba(13,61,57,0.35)] mx-0.5">→</span>
+                      {!sameDay && (
+                        <span className="text-sm font-semibold text-[#0D3D39]">{format(arrivalDate, "MMM d")}</span>
+                      )}
+                      <span className="text-sm text-[rgba(13,61,57,0.55)]">{format(arrivalDate, "h:mm a")}</span>
+                    </>
+                  );
+                })()}
+              </div>
+            );
+          })()}
 
           <div className="mb-4">{renderRankingPreview(proposal.rankings ?? [])}</div>
 
